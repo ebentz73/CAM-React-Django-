@@ -1,0 +1,10 @@
+---
+- name: Create VM Instance
+  hosts: provisioner
+  gather_facts: false
+  roles:
+    - role: gce-create
+      tags: [ never, gcp ]
+
+    - role: aws-create
+      tags: [ never, aws ]

@@ -1,0 +1,10 @@
+---
+- name: Delete VM Instance
+  hosts: provisioner
+  gather_facts: false
+  roles:
+    - role: gce-delete
+      tags: [ never, gcp ]
+    
+    - role: aws-delete
+      tags: [ never, aws ]

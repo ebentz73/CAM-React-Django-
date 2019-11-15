@@ -1,0 +1,14 @@
+{% load static %}
+<link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}"/>
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<form action="{% url 'app:start' %}" method="post">
+    {% csrf_token %}
+    <input type="submit" value="Start">
+</form>
+<br><br>
+<form action="{% url 'app:stop' %}" method="post">
+    {% csrf_token %}
+    <input type="submit" value="Stop">
+</form>

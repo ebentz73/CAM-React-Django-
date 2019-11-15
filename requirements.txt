@@ -1,0 +1,7 @@
+django==2.2.7
+djangorestframework==3.10.3
+django-rest-framework-mongoengine==3.4.0
+mongoengine==0.18.2
+ansible==2.9.1
+requests==2.22.0
+google-auth==1.7.1

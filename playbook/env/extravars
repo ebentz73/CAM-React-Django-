@@ -1,0 +1,8 @@
+---
+gcp_project: mmars-test
+gcp_cred_file: ./ansible-credentials.json
+gcp_cred_kind: serviceaccount
+
+instance_name: mmars-instance
+zone: us-central1-a
+region: us-central1

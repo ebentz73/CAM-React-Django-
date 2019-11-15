@@ -1,0 +1,3 @@
+- name: Not yet implemented
+  debug:
+    msg: This role has not yet been implemented
