@@ -1,1 +1,6 @@
-playbook/env/google_compute_engine
+playbook/artifacts
+
+.idea
+.pytest_cache
+id_rsa
+*.pyc
