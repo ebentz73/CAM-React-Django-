@@ -3,6 +3,9 @@
   hosts: provisioner
   gather_facts: false
   roles:
+    - role: gcs-bucket-upload
+      tags: [ never, gcp ]
+
     - role: gce-create
       tags: [ never, gcp ]
 

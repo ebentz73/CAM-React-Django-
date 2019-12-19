@@ -1,14 +1,24 @@
+{#{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}#}
+
+{#<form action="{% url 'app:start' %}" method="post">#}
+{#    {% csrf_token %}#}
+{#    <input type="submit" value="Start">#}
+{#</form>#}
+{#<br><br>#}
+{#<form action="{% url 'app:stop' %}" method="post">#}
+{#    {% csrf_token %}#}
+{#    <input type="submit" value="Stop">#}
+{#</form>#}
+
+{#{% for input in exec_view.inputs %}#}
+{#    {% with template_name=input.get_template %}#}
+{#        {% include "app/"|add:template_name|add:".html" with widget=input %}#}
+{#    {% endwith %}#}
+{#{% endfor %}#}
+
 {% load static %}
-<link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}"/>
-
-{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-
-<form action="{% url 'app:start' %}" method="post">
+<form action="{# url 'app:test' #}" method="post">
     {% csrf_token %}
-    <input type="submit" value="Start">
-</form>
-<br><br>
-<form action="{% url 'app:stop' %}" method="post">
-    {% csrf_token %}
-    <input type="submit" value="Stop">
+    {{ form }}
+    <input type="submit">
 </form>

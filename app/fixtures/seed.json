@@ -1,0 +1,260 @@
+[
+  {
+    "model": "app.evaljob",
+    "pk": 1,
+    "fields": {
+      "name": "Best Penguin Evaluation",
+      "upload_date": "2005-05-27T00:00:00Z",
+      "file_url": "https://www.penguins.com/rcute.file"
+    }
+  },
+  {
+    "model": "app.model",
+    "pk": 1,
+    "fields": {
+      "eval_job": 1,
+      "name": "Cuteness"
+    }
+  },
+  {
+    "model": "app.model",
+    "pk": 2,
+    "fields": {
+      "eval_job": 1,
+      "name": "Diving"
+    }
+  },
+  {
+    "model": "app.inputpage",
+    "pk": 1,
+    "fields": {
+      "model": 1,
+      "name": "Waddle"
+    }
+  },
+  {
+    "model": "app.inputpage",
+    "pk": 2,
+    "fields": {
+      "model": 1,
+      "name": "Huggability"
+    }
+  },
+  {
+    "model": "app.inputpage",
+    "pk": 3,
+    "fields": {
+      "model": 2,
+      "name": "Cool Factor"
+    }
+  },
+  {
+    "model": "app.node",
+    "pk": 1,
+    "fields": {
+      "input_page": 1,
+      "name": "Number of little waddles"
+    }
+  },
+  {
+    "model": "app.node",
+    "pk": 2,
+    "fields": {
+      "input_page": 1,
+      "name": "A penguin walked up to a lemonade stand"
+    }
+  },
+  {
+    "model": "app.inputdataset",
+    "pk": 1,
+    "fields": {
+      "input_page": 1,
+      "name": "Penguin waddle factor"
+    }
+  },
+  {
+    "model": "app.inputdataset",
+    "pk": 2,
+    "fields": {
+      "input_page": 1,
+      "name": "Penguin waddle factor"
+    }
+  },
+  {
+    "model": "app.inputdataset",
+    "pk": 3,
+    "fields": {
+      "input_page": 1,
+      "name": "Penguin waddle factor"
+    }
+  },
+  {
+    "model": "app.inputdataset",
+    "pk": 4,
+    "fields": {
+      "input_page": 1,
+      "name": "Then he waddled away (waddle waddle)"
+    }
+  },
+  {
+    "model": "app.inputdatasetnode",
+    "pk": 1,
+    "fields": {
+      "low_value": "49.00000",
+      "mid_value": "50.00000",
+      "high_value": "51.00000",
+      "lower_bound": "0.00000",
+      "upper_bound": "100.00000",
+      "node": 1,
+      "ids": 3
+    }
+  },
+  {
+    "model": "app.inputdatasetnode",
+    "pk": 2,
+    "fields": {
+      "low_value": "49.00000",
+      "mid_value": "50.00000",
+      "high_value": "51.00000",
+      "lower_bound": "0.00000",
+      "upper_bound": "100.00000",
+      "node": 2,
+      "ids": 4
+    }
+  },
+  {
+    "model": "app.scenario",
+    "pk": 1,
+    "fields": {
+      "eval_job": 1,
+      "name": ""
+    }
+  },
+  {
+    "model": "app.scenariodataset",
+    "pk": 1,
+    "fields": {
+      "scenario": 1,
+      "ids": 3
+    }
+  },
+  {
+    "model": "app.scenariodataset",
+    "pk": 2,
+    "fields": {
+      "scenario": 1,
+      "ids": 4
+    }
+  },
+  {
+    "model": "app.executiveview",
+    "pk": 1,
+    "fields": {
+      "eval_job": 1
+    }
+  },
+  {
+    "model": "app.input",
+    "pk": 1,
+    "fields": {
+      "exec_view": 1,
+      "label": "Penguin Waddle",
+      "order": 1
+    }
+  },
+  {
+    "model": "app.input",
+    "pk": 2,
+    "fields": {
+      "exec_view": 1,
+      "label": "The penguin continues to waddle",
+      "order": 2
+    }
+  },
+  {
+    "model": "app.inputchoice",
+    "pk": 1,
+    "fields": {
+      "polymorphic_ctype": [
+        "app",
+        "constantchoice"
+      ],
+      "input": 1,
+      "ids": 4,
+      "label": "PENGUIN :D"
+    }
+  },
+  {
+    "model": "app.inputchoice",
+    "pk": 2,
+    "fields": {
+      "polymorphic_ctype": [
+        "app",
+        "distributiondropdownchoice"
+      ],
+      "input": 2,
+      "ids": 1,
+      "label": "Very Cute Waddle"
+    }
+  },
+  {
+    "model": "app.inputchoice",
+    "pk": 3,
+    "fields": {
+      "polymorphic_ctype": [
+        "app",
+        "distributiondropdownchoice"
+      ],
+      "input": 2,
+      "ids": 2,
+      "label": "Extremely Cute Waddle"
+    }
+  },
+  {
+    "model": "app.inputchoice",
+    "pk": 4,
+    "fields": {
+      "polymorphic_ctype": [
+        "app",
+        "distributiondropdownchoice"
+      ],
+      "input": 2,
+      "ids": 3,
+      "label": "Super Duper Cute Waddle"
+    }
+  },
+  {
+    "model": "app.constantchoice",
+    "pk": 1,
+    "fields": {
+      "value": ""
+    }
+  },
+  {
+    "model": "app.distributiondropdownchoice",
+    "pk": 2,
+    "fields": {
+      "low_value": "99.00000",
+      "mid_value": "999.00000",
+      "high_value": "9999.00000"
+    }
+  },
+  {
+    "model": "app.distributiondropdownchoice",
+    "pk": 3,
+    "fields": {
+      "low_value": "999.00000",
+      "mid_value": "9999.00000",
+      "high_value": "99999.00000"
+    }
+  },
+  {
+    "model": "app.distributiondropdownchoice",
+    "pk": 4,
+    "fields": {
+      "low_value": "9999.00000",
+      "mid_value": "99999.00000",
+      "high_value": "999999.00000"
+    }
+  }
+]

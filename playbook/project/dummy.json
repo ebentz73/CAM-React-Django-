@@ -1,0 +1,12 @@
+{
+    "nodes":[
+        {
+            "name": "asdf",
+            "nominal": 40
+        },
+        {
+            "name": "asdf2",
+            "nominal": 41
+        }
+    ]
+}

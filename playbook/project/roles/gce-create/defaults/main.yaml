@@ -3,4 +3,4 @@ machine_type: n1-standard-1
 os_image: https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/family/cos-stable
 boot_disk_size: 10
 boot_disk_type: pd-ssd
-container_image: gcr.io/cloud-marketplace/google/nginx1:latest
+container_image: gcr.io/mmars-test/dummy-engine:latest

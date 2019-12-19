@@ -6,9 +6,9 @@
     service_account_file: "{{ gcp_cred_file }}"
   register: serviceaccount
 
-- name: Create a disk for instance
+- name: Create a disk for GCE instance
   gcp_compute_disk:
-    name: "{{ instance_name }}-disk"
+    name: "{{ instance_name }}-{{ run_id }}-disk"
     size_gb: "{{ boot_disk_size }}"
     source_image: "{{ os_image }}"
     type: "{{ boot_disk_type }}"
@@ -19,9 +19,9 @@
     state: present
   register: disk
 
-- name: Create an IP address for instance
+- name: Create an IP address for GCE instance
   gcp_compute_address:
-    name: "{{ instance_name }}-ip"
+    name: "{{ instance_name }}-{{ run_id }}-ip"
     region: "{{ region }}"
     project: "{{ gcp_project }}"
     auth_kind: "{{ gcp_cred_kind }}"
@@ -29,9 +29,9 @@
     state: present
   register: address
 
-- name: Create an instance
+- name: Create a GCE instance
   gcp_compute_instance:
-    name: "{{ instance_name }}"
+    name: "{{ instance_name }}-{{ run_id }}"
     machine_type: "{{ machine_type }}"
     disks:
       - auto_delete: true
@@ -39,7 +39,7 @@
         source: "{{ disk }}"
     metadata:
       google-logging-enabled: true
-      gce-container-declaration: "spec:\n  containers:\n    - name: {{ instance_name }}\n      image: '{{ container_image }}'\n      stdin: false\n      tty: false\n  restartPolicy: Always\n"
+      gce-container-declaration: "spec:\n  containers:\n    - name: {{ instance_name }}\n      image: '{{ container_image }}'\n      env:\n        - name: RUN_ID\n          value: '{{ run_id }}'\n      stdin: false\n      tty: false\n  restartPolicy: Always\n"
     network_interfaces:
       - access_configs:
           - name: External NAT
@@ -58,8 +58,8 @@
     auth_kind: "{{ gcp_cred_kind }}"
     service_account_file: "{{ gcp_cred_file }}"
     state: present
-  register: instancetemplate
+  register: instance
 
-- name: Print instance ip
+- name: Print GCE instance ip
   debug:
-    msg: "{{ address.address }}"
+    msg: "IP address for instance {{ instance.name }}: {{ address.address }}"

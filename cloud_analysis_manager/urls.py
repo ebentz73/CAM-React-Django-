@@ -16,27 +16,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, re_path, include
 from django.views.generic.base import TemplateView
-from django.conf import settings
-from django.conf.urls.static import static
-from rest_framework import routers
-
-from app.views import EvalJobViewSet, BaselineConfigViewSet, ScenarioViewSet
-
-# We use a single global DRF Router that routes views from all apps in project
-router = routers.DefaultRouter()
-
-# app views and viewsets
-router.register('eval', EvalJobViewSet, 'eval')
-router.register('baseline', BaselineConfigViewSet, 'baseline')
-router.register('scenario', ScenarioViewSet, 'scenario')
 
 urlpatterns = [
     # default django admin interface (currently unused)
     path('admin/', admin.site.urls),
+    # index view
     re_path(r'^$', TemplateView.as_view(template_name='index.html')),
 
-    # root view of our REST app
-    re_path(r'^api/v1/', include(router.urls)),
-
-    path('app/', include('app.urls'))
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    path('app/', include('app.urls')),
+]
