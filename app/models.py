@@ -1,3 +1,5 @@
+from operator import attrgetter
+
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -118,7 +120,7 @@ class ExecutiveView(models.Model):
 
     @property
     def inputs(self):
-        return sorted(self.input_set.all(), key=lambda x: x.order)
+        return sorted(self.input_set.all(), key=attrgetter('order'))
 
 
 class Input(models.Model):
