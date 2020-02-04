@@ -29,9 +29,17 @@ CREATE DATABASE cloud_analysis_manager
 1. Run ```python manage.py makemigrations``` to make the migration scripts
 2. Run ```python manage.py migrate``` to apply the migration scripts
 
+### Seeding the DB
+
+There is a json file with some fixture data. This can be used to seed the db.
+
+```
+python manage.py loaddata seed.json
+```
+
 ## Django-Admin
 
-A user will need to be created who can login to the admin site.
+A user will need to be created who can login to the admin site (e.g. http://localhost/admin).
 
 ```
 python manage.py createsuperuser
