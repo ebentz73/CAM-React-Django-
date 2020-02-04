@@ -39,7 +39,8 @@ python manage.py loaddata seed.json
 
 ## Django-Admin
 
-A user will need to be created who can login to the admin site (e.g. http://localhost/admin).
+Accessing the django admin locally can be done so at http://127.0.0.1:8000/admin/. 
+A user will need to be created who can login to the admin site.
 
 ```
 python manage.py createsuperuser
