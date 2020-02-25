@@ -1,0 +1,6 @@
+{% block content %}
+<option value="">---------</option>
+{% for ds in data_sets %}
+<option value="{{ ds.pk }}">{{ ds.name }}</option>
+{% endfor %}
+{% endblock %}

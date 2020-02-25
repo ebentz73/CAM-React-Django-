@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Highcharts Area Range and Line chart</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <style>
+        form {
+    width: 300px;
+    margin: 0 auto;
+}
+        .custom { min-height: 100px;
+        padding:20px }
+        select:required:invalid {
+            color: gray;
+        }
+        option[value=""][disabled] {
+            display: none;
+        }
+        option {
+            color: black;
+        }
+        label {
+            color: black;
+            font-weight: bold;
+            display: block;
+            float: left;
+        }
+        .content-main {
+  background-color: #E2E2E2;
+  border-style: solid;
+  border-width: 1em;
+  border-color: white;
+  width: 100%;
+  overflow: auto;
+}
+    </style>
+
+
+</head>
+<body>
+    <h2 style="text-align:center">Lone_Star</h2>
+    <form id="target">
+        <div class="form-row align-items-center">
+            <div class="form-group" class="col-auto">
+            <select id="selectNode" class="form-control form-control-lg" class="col-auto" class="custom" required>
+                <option value="" disabled selected>Select a node...</option>
+            </select>
+            </div>
+            <div class="col-auto">
+            <button type="submit" class="btn btn-info">View Chart</button>
+        </div>
+        </div>
+    </form>
+    <div id="container0" style="min-width: 310px; height: 400px;border-width: 1em; margin: 0 auto"></div>
+    <div id="container1" style="min-width: 310px; height: 400px;border-width: 1em; margin: 0 auto"></div>
+
+    <script language="javascript">
+       //$(document).ready(function() {
+       // $.getJSON('json_data.json', function(json_data) {
+        $(function () {
+     var json_data={
+    "scenarios":[
+    {
+            "name":"scenario1",
+            "nodes":[
+                {
+                    "name": "node1s1",
+                    "layers":[
+                        {
+                            "name":"layer1",
+                            "result_10":1,
+                            "result_30":2,
+                            "result_50":3,
+                            "result_70":4,
+                            "result_90":5
+                        },
+                        {
+                            "name":"layer2",
+                            "result_10":2,
+                            "result_30":3,
+                            "result_50":4,
+                            "result_70":5,
+                            "result_90":6
+                        },
+                        {
+                            "name":"layer3",
+                            "result_10":5,
+                            "result_30":6,
+                            "result_50":7,
+                            "result_70":8,
+                            "result_90":9
+                        }
+
+                    ]
+                },
+                {
+                    "name": "node2s1",
+                    "layers":[
+                        {
+                            "name":"layer1",
+                            "result_10":10,
+                            "result_30":20,
+                            "result_50":30,
+                            "result_70":40,
+                            "result_90":50
+                        },
+                        {
+                            "name":"layer2",
+                            "result_10":20,
+                            "result_30":30,
+                            "result_50":40,
+                            "result_70":50,
+                            "result_90":60
+                        },
+                        {
+                            "name":"layer3",
+                            "result_10":50,
+                            "result_30":60,
+                            "result_50":70,
+                            "result_70":80,
+                            "result_90":90
+                        }
+
+                    ]
+                }
+            ]
+        },
+        {
+            "name":"scenario2",
+            "nodes":[
+                {
+                    "name": "node1s2",
+                    "layers":[
+                        {
+                            "name":"layer1",
+                            "result_10":1,
+                            "result_30":2,
+                            "result_50":3,
+                            "result_70":4,
+                            "result_90":5
+                        },
+                        {
+                            "name":"layer2",
+                            "result_10":2,
+                            "result_30":3,
+                            "result_50":4,
+                            "result_70":5,
+                            "result_90":6
+                        },
+                        {
+                            "name":"layer3",
+                            "result_10":5,
+                            "result_30":6,
+                            "result_50":7,
+                            "result_70":8,
+                            "result_90":9
+                        }
+
+                    ]
+                },
+                {
+                    "name": "node2s2",
+                    "layers":[
+                        {
+                            "name":"layer1",
+                            "result_10":10,
+                            "result_30":20,
+                            "result_50":30,
+                            "result_70":40,
+                            "result_90":50
+                        },
+                        {
+                            "name":"layer2",
+                            "result_10":20,
+                            "result_30":30,
+                            "result_50":40,
+                            "result_70":50,
+                            "result_90":60
+                        },
+                        {
+                            "name":"layer3",
+                            "result_10":50,
+                            "result_30":60,
+                            "result_50":70,
+                            "result_70":80,
+                            "result_90":90
+                        }
+
+                    ]
+                }
+            ]
+        }]
+     }
+            //console.log(json_data.scenarios[0].nodes[0].layers[0]);
+            for(var i=0;i<json_data.scenarios[0].nodes.length;i++){
+                //node_names.push(json_data.scenarios[0].nodes[i].name)
+                var opt = json_data.scenarios[0].nodes[i].name;
+                var el = document.createElement("option");
+                el.textContent = opt;
+                el.value = i;
+                selectNode.appendChild(el);
+            }
+            //var sel_node = $("#selectNode :selected").val();
+            $( "#target" ).submit(function( event ){
+            //$('#selectNode').change(function(){
+                event.preventDefault();
+                //console.log($("#selectNode :selected").val());
+
+                var sel_node=$("#selectNode :selected").val();
+
+            for (var k=0;k<2;k++){
+
+                var result_out=[],result_in=[],average=[],layer_name=[],node_names=[];
+            for(var i=0;i<json_data.scenarios[k].nodes[sel_node].layers.length;i++){
+                layer_name.push(json_data.scenarios[k].nodes[sel_node].layers[i].name);
+                result_out.push({low:json_data.scenarios[k].nodes[sel_node].layers[i].result_10,
+                                 high:json_data.scenarios[k].nodes[sel_node].layers[i].result_90});
+                result_in.push({low:json_data.scenarios[k].nodes[sel_node].layers[i].result_30,
+                                 high:json_data.scenarios[k].nodes[sel_node].layers[i].result_70});
+                average.push(json_data.scenarios[k].nodes[sel_node].layers[i].result_50);
+            }
+            //console.log(average);
+
+            var chartitle = {
+                text: json_data.scenarios[k].name
+            }
+            var chartxaxis = {
+                type: 'category',
+                categories: layer_name
+                /*title:{
+                    text:"Layers"
+                }*/
+            }
+            var chartyaxis = {
+                title: {
+                    text: null
+                }
+            }
+            var chartooltip = {
+                crosshairs: true,
+                shared: true,
+                formatter:function(){
+                    //console.log(this.points[2].point)
+                    return ''+
+                    'Result_90 : '+this.points[0].point.high+'<br/>'+
+                    'Result_70 : '+this.points[2].point.high+'<br/>'+
+                    'Result_50 : '+this.points[1].point.y+'<br/>'+
+                    'Result_30 : '+this.points[2].point.low+'<br/>'+
+                    'Result_10 : '+this.points[0].point.low
+                }
+            }
+            var chartlegends = {
+                enabled : false
+            }
+            var chartseries = [{
+                name: 'Result_10-90',
+                data: result_out,
+                type: 'arearange',
+                lineWidth: 0,
+                linkedTo: ':previous',
+                color: Highcharts.getOptions().colors[0],
+                fillOpacity: 0.3,
+                zIndex: 0
+            },{
+                name: 'Result_50',
+                data: average,
+                zIndex: 1,
+                marker: {
+                    fillColor: 'white',
+                    lineWidth: 2,
+                    lineColor: Highcharts.getOptions().colors[0]
+                }
+            }, {
+                name: 'Result_30-70',
+                data: result_in,
+                type: 'arearange',
+                lineWidth: 0,
+                linkedTo: ':previous',
+                color: Highcharts.getOptions().colors[1],
+                fillOpacity: 0.3,
+                zIndex: 0
+            }]
+
+                $('#'+"container"+k).highcharts({
+                    title: chartitle,
+                    xAxis: chartxaxis,
+                    yAxis: chartyaxis,
+                    tooltip: chartooltip,
+                    legend: chartlegends,
+                    series: chartseries
+            });
+            }
+        });
+        });
+    </script>
+
+</body>
+</html>

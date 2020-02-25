@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{%  block title %}
+Render Exceutive View
+{% endblock %}
+{% block body %}
+    Executive View!
+    {% for scenario in scenarios %}
+        <h1>{{ scenario.0}}</h1>
+    {% endfor %}
+{%  endblock %}
