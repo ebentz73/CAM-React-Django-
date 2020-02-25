@@ -16,12 +16,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, re_path, include
 from django.views.generic.base import TemplateView
+from django.conf.urls import url
 
 urlpatterns = [
     # default django admin interface (currently unused)
     path('admin/', admin.site.urls),
     # index view
     re_path(r'^$', TemplateView.as_view(template_name='index.html')),
-
     path('app/', include('app.urls')),
 ]

@@ -2,8 +2,8 @@ django==3.0.0
 django-polymorphic==2.1.2
 django-environ==0.4.5
 django-range-slider==0.2.4
-ansible==2.9.1
-ansible-runner==1.4.4
+//ansible==2.9.1
+//ansible-runner==1.4.4
 requests==2.22.0
 google-auth==1.7.1
 psycopg2-binary==2.8.4
