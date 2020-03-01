@@ -20,6 +20,8 @@ from django.conf.urls import url
 
 from app import views
 
+from app import views
+
 urlpatterns = [
     # default django admin interface
     path('admin/', admin.site.urls),
