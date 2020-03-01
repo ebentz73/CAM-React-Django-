@@ -1,4 +1,4 @@
-"""mysite URL Configuration
+"""cloud_analysis_manager URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/2.2/topics/http/urls/
@@ -18,10 +18,14 @@ from django.urls import path, re_path, include
 from django.views.generic.base import TemplateView
 from django.conf.urls import url
 
+from app import views
+
 urlpatterns = [
-    # default django admin interface (currently unused)
+    # default django admin interface
     path('admin/', admin.site.urls),
     # index view
     re_path(r'^$', TemplateView.as_view(template_name='index.html')),
     path('app/', include('app.urls')),
+    path('api/results', views.NodeResultView.as_view()),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
