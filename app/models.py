@@ -39,6 +39,21 @@ class AnalyticsSolution(models.Model):
         return self.scenario_set.all()
 
 
+class EvalJob(models.Model):
+    solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
+    definition = JSONField()
+    DateCreated = models.DateTimeField()
+    Status = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def node_results(self):
+        return self.noderesult_set.all()
+
+
 class Model(models.Model):
     solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
@@ -83,6 +98,19 @@ class Scenario(models.Model):
         return self.inputpagedsasc_set.all()
 
 
+class NodeResult(models.Model):
+    eval_job = models.ForeignKey(EvalJob, on_delete=models.CASCADE)
+    scenario = models.CharField(max_length=255)
+    model = models.CharField(max_length=255)
+    node = models.CharField(max_length=255)
+    layer = models.CharField(max_length=255)
+    result_10 = models.FloatField()
+    result_30 = models.FloatField()
+    result_50 = models.FloatField()
+    result_70 = models.FloatField()
+    result_90 = models.FloatField()
+
+
 class InputDataSet(models.Model):
     input_page = models.ForeignKey(InputPage, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
@@ -97,10 +125,6 @@ class InputDataSet(models.Model):
     @property
     def input_choice(self):
         return self.inputchoice_set.all()
-
-    @property
-    def input_data_sets(self):
-        return self.inputdataset_set.all()
 
 
 class InputPageDsAsc(BoundedDistribution):
@@ -166,28 +190,3 @@ class InputChoice(PolymorphicModel):
         if any(not isinstance(x, type(self)) for x in self.input.input_choices):
             raise ValidationError(_('An input can only have one type of input choice.'))
 '''
-
-
-class EvalJob(models.Model):
-    solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
-    definition = JSONField()
-    DateCreated = models.DateTimeField()
-    Status = models.CharField(max_length=255)
-    name = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.name
-
-
-class NodeResult(models.Model):
-    eval_job = models.ForeignKey(EvalJob, on_delete=models.CASCADE)
-    scenario = models.CharField(max_length=255)
-    model = models.CharField(max_length=255)
-    node = models.CharField(max_length=255)
-    layer = models.CharField(max_length=255)
-    result_10 = models.FloatField()
-    result_30 = models.FloatField()
-    result_50 = models.FloatField()
-    result_70 = models.FloatField()
-    result_90 = models.FloatField()
-
