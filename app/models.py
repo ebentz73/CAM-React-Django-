@@ -39,6 +39,10 @@ class EvalJob(models.Model):
     def scenarios(self):
         return self.scenario_set.all()
 
+    @property
+    def node_results(self):
+        return self.noderesult_set.all()
+
 
 class Model(models.Model):
     eval_job = models.ForeignKey(EvalJob, on_delete=models.CASCADE)
@@ -78,6 +82,19 @@ class Node(models.Model):
     @property
     def ids_node(self):
         return self.inputdatasetnode
+
+
+class NodeResult(models.Model):
+    eval_job = models.ForeignKey(EvalJob, on_delete=models.CASCADE)
+    scenario = models.CharField(max_length=255)
+    model = models.CharField(max_length=255)
+    node = models.CharField(max_length=255)
+    layer = models.CharField(max_length=255)
+    result_10 = models.FloatField()
+    result_30 = models.FloatField()
+    result_50 = models.FloatField()
+    result_70 = models.FloatField()
+    result_90 = models.FloatField()
 
 
 class InputDataSet(models.Model):
