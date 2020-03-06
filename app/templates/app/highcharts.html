@@ -1,3 +1,17 @@
+{% extends "admin/base_site.html" %}
+
+{% load i18n admin_urls static admin_modify %}
+{% block extrahead %}{{ block.super }}
+<script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+{{ media }}
+{% endblock %}
+
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">{% endblock %}
+
+{% block coltype %}colM{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-form{% endblock %}
+{% block content %}
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -16,11 +30,10 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
 
     <style>
-        form {
-    width: 300px;
-    margin: 0 auto;
-}
+
         .custom { min-height: 100px;
+            border:1px solid black;
+            text-align:center;
         padding:20px }
         select:required:invalid {
             color: gray;
@@ -45,15 +58,47 @@
   width: 100%;
   overflow: auto;
 }
+        container{
+            min-width: 310px;
+            height: 400px;
+            border-width: 1em;
+            margin: 0 auto;
+        }
     </style>
 
 
 </head>
 <body>
-    <h2 style="text-align:center">Lone_Star</h2>
+<h2>Cloud Analysis Manager</h2>
+<fieldset class="module aligned {{ fieldset.classes }}">
+
+<form id="target">
+    <div class="form-row field-solution">
+    <div>
+        <label class="required" for=id_solution">
+            Node :
+        </label>
+        <div class="related-widget-wrapper">
+            <select name="dataset" required id="selectNode">
+                <option value="" disabled selected>Select a node...</option>
+            </select>
+        </div>
+
+    </div>
+</div>
+    <div>
+        <button type="submit" class="btn btn-info" style="float: left">View Chart</button>
+            </div>
+</form>
+
+</fieldset>
+
+<!--
+<fieldset class="module aligned {{ fieldset.classes }}">
+
+    <h1 style="text-align:center">Cloud Analysis Manager</h1>
     <form id="target">
-        <div class="form-row align-items-center">
-            <div class="form-group" class="col-auto">
+            <div class="form-group" class="col-auto" align="center">
             <select id="selectNode" class="form-control form-control-lg" class="col-auto" class="custom" required>
                 <option value="" disabled selected>Select a node...</option>
             </select>
@@ -61,148 +106,24 @@
             <div class="col-auto">
             <button type="submit" class="btn btn-info">View Chart</button>
         </div>
-        </div>
     </form>
-    <div id="container0" style="min-width: 310px; height: 400px;border-width: 1em; margin: 0 auto"></div>
-    <div id="container1" style="min-width: 310px; height: 400px;border-width: 1em; margin: 0 auto"></div>
+    <div id="target"></div>
+</fieldset>
+
+    <div id="container"+{{ i }} style="min-width: 310px; height: 400px;border-width: 1em; margin: 0 auto"></div>-->
+
 
     <script language="javascript">
        //$(document).ready(function() {
        // $.getJSON('json_data.json', function(json_data) {
         $(function () {
-     var json_data={
-    "scenarios":[
-    {
-            "name":"scenario1",
-            "nodes":[
-                {
-                    "name": "node1s1",
-                    "layers":[
-                        {
-                            "name":"layer1",
-                            "result_10":1,
-                            "result_30":2,
-                            "result_50":3,
-                            "result_70":4,
-                            "result_90":5
-                        },
-                        {
-                            "name":"layer2",
-                            "result_10":2,
-                            "result_30":3,
-                            "result_50":4,
-                            "result_70":5,
-                            "result_90":6
-                        },
-                        {
-                            "name":"layer3",
-                            "result_10":5,
-                            "result_30":6,
-                            "result_50":7,
-                            "result_70":8,
-                            "result_90":9
-                        }
 
-                    ]
-                },
-                {
-                    "name": "node2s1",
-                    "layers":[
-                        {
-                            "name":"layer1",
-                            "result_10":10,
-                            "result_30":20,
-                            "result_50":30,
-                            "result_70":40,
-                            "result_90":50
-                        },
-                        {
-                            "name":"layer2",
-                            "result_10":20,
-                            "result_30":30,
-                            "result_50":40,
-                            "result_70":50,
-                            "result_90":60
-                        },
-                        {
-                            "name":"layer3",
-                            "result_10":50,
-                            "result_30":60,
-                            "result_50":70,
-                            "result_70":80,
-                            "result_90":90
-                        }
+            for(var i =0; i<{{ scenario_num }}; i++){
+                $('#target').append($('<div/>', { id: "container"+i, 'class' : 'container'}))
+            }
 
-                    ]
-                }
-            ]
-        },
-        {
-            "name":"scenario2",
-            "nodes":[
-                {
-                    "name": "node1s2",
-                    "layers":[
-                        {
-                            "name":"layer1",
-                            "result_10":1,
-                            "result_30":2,
-                            "result_50":3,
-                            "result_70":4,
-                            "result_90":5
-                        },
-                        {
-                            "name":"layer2",
-                            "result_10":2,
-                            "result_30":3,
-                            "result_50":4,
-                            "result_70":5,
-                            "result_90":6
-                        },
-                        {
-                            "name":"layer3",
-                            "result_10":5,
-                            "result_30":6,
-                            "result_50":7,
-                            "result_70":8,
-                            "result_90":9
-                        }
-
-                    ]
-                },
-                {
-                    "name": "node2s2",
-                    "layers":[
-                        {
-                            "name":"layer1",
-                            "result_10":10,
-                            "result_30":20,
-                            "result_50":30,
-                            "result_70":40,
-                            "result_90":50
-                        },
-                        {
-                            "name":"layer2",
-                            "result_10":20,
-                            "result_30":30,
-                            "result_50":40,
-                            "result_70":50,
-                            "result_90":60
-                        },
-                        {
-                            "name":"layer3",
-                            "result_10":50,
-                            "result_30":60,
-                            "result_50":70,
-                            "result_70":80,
-                            "result_90":90
-                        }
-
-                    ]
-                }
-            ]
-        }]
-     }
+     var json_data={{ json_data|safe }}
+            console.log(json_data)
             //console.log(json_data.scenarios[0].nodes[0].layers[0]);
             for(var i=0;i<json_data.scenarios[0].nodes.length;i++){
                 //node_names.push(json_data.scenarios[0].nodes[i].name)
@@ -220,7 +141,7 @@
 
                 var sel_node=$("#selectNode :selected").val();
 
-            for (var k=0;k<2;k++){
+            for (var k=0;k<3;k++){
 
                 var result_out=[],result_in=[],average=[],layer_name=[],node_names=[];
             for(var i=0;i<json_data.scenarios[k].nodes[sel_node].layers.length;i++){
@@ -308,3 +229,4 @@
 
 </body>
 </html>
+{% endblock %}

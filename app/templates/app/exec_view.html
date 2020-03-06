@@ -1,8 +1,5 @@
 {% extends "admin/base_site.html" %}
 {% load i18n admin_urls static admin_modify %}
-{%  for i in asolution %}
-    {{ i.name }}
-{% endfor %}
 
 {% block extrahead %}{{ block.super }}
 <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
@@ -40,7 +37,7 @@
 <div>
 {% if is_popup %}<input type="hidden" name="{{ is_popup_var }}" value="1">{% endif %}
 {% if to_field %}<input type="hidden" name="{{ to_field_var }}" value="{{ to_field }}">{% endif %}
-{% if save_on_top %}{% block submit_buttons_top %}{% submit_row %}{% endblock %}{% endif %}
+ {% if save_on_top %}{% block submit_buttons_top %}{% endblock %}{% endif %}
 {% if errors %}
     <p class="errornote">
     {% if errors|length == 1 %}{% trans "Please correct the error below." %}{% else %}{% trans "Please correct the errors below." %}{% endif %}
@@ -48,72 +45,11 @@
     {{ adminform.form.non_field_errors }}
 {% endif %}
 
-
 {% block field_sets %}
-
-
 {% for fieldset in adminform %}
   {% include "admin/includes/fieldset.html" %}
 {% endfor %}
 {% endblock %}
-
-{% block custom %}
-<fieldset class="module aligned {{ fieldset.classes }}">
-
-<h2>CUSTOM BLOCK</h2>
-
-    <div class="form-row field-solution">
-    <div>
-        <label class="required" for=id_solution">
-            Scenario :
-        </label>
-        <div class="related-widget-wrapper">
-            <select name="Scenario" required id="id_scenario">
-            <option disabled="" selected="">Choose Scenario</option>
-                {% for scenario in scenarios %}
-                    <option value={{ scenario.0}}>{{ scenario.1}}</option>
-                {% endfor %}
-            </select>
-        </div>
-    </div>
-</div>
-
-<div class="form-row field-solution">
-    <div>
-        <label class="required" for=id_solution">
-            Model :
-        </label>
-        <div class="related-widget-wrapper">
-            <select name="Model" required id="id_model">
-            <option disabled="" selected="">Choose Model</option>
-                {% for model in models %}
-                    <option value={{ model.0}}>{{ model.1}}</option>
-                {% endfor %}
-            </select>
-        </div>
-    </div>
-</div>
-<!--
-    <div class="form-row field-solution">
-    <div>
-        <label class="required" for=id_solution">
-            Input Page:
-        </label>
-        <div class="related-widget-wrapper">
-            <select name="ip_page" required id="ip_model">
-                <option value="1">IP1</option>
-            </select>
-        </div>
-    </div>
-    </div>
-    -->
-
-
-
-</fieldset>
-
-{% endblock %}
-
 
 {% block after_field_sets %}{% endblock %}
 
@@ -125,27 +61,21 @@
 
 {% block after_related_objects %}{% endblock %}
 
-
 {% block custom_block %}
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <div>
-    <form id="evaluate" method="POST">
+    <form id="evaluate-form" class="col-sm-10" id="evaluate" method="POST">
         {%  csrf_token %}
-       <!--<a role="button" class="btn btn-default" id="id_go" href ="{% url 'app:load_chart' evaljob_id=50 %}"> Evaluate and View Chart </a>-->
-        <a href='' style="float:right"  id="executive" > Render Executive View </a>
+     <a class="button" id="a_json" href="/app/load_chart/50/"> View Charts for Executive View </a>
+   <!-- <input type="hidden" id="myVar" name="variable" value="{{ json_data }}">-->
     </form>
-
     <br>
     </div>
-
 {% endblock %}
 
 
-
 {% block submit_buttons_bottom %}{% submit_row %}{% endblock %}
-
-
 
 {% block admin_change_form_document_ready %}
     <script type="text/javascript"
@@ -162,18 +92,5 @@
 
 </div>
 </form></div>
-    <script type="text/javascript">
-    jQuery(document).ready(function ($) {
-        $("#id_scenario").change(function () {
-            console.log("Scenario ID:",this.value)
-        });
-        $("#id_model").change(function () {
-            console.log("Model ID:",this.value)
-            var temp=$("#id_scenario").children("option:selected").val();
-            console.log(temp)
-            $("#executive").attr("href", "/app/render_executive/{{ executive }}/"+ temp +"/"+$(this).val());
-        });
 
-    });
- </script>
 {% endblock %}

@@ -50,16 +50,27 @@ class HideModelAdmin(ModelAdminBase):
 class AnalyticsSolution(ModelAdminBase, admin.ModelAdmin):
     change_form_template = 'app/solution_view.html'
 
+
+    def changeform_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = {}
+        extra_context['solution_id'] = object_id
+        return super(AnalyticsSolution,self).changeform_view(
+            request, object_id, form_url, extra_context=extra_context)
+
+'''
     def json_data(self,object_id):
         solution={}
         scenario = models.Scenario.objects.filter(solution=object_id).values_list('id', 'name')
         model = models.Model.objects.filter(solution=object_id).values_list('id', 'name')
-        input_pg = models.InputPage.objects.filter(model=model[0]).values_list('id', 'name')
+        input_pg = models.InputPage.objects.filter(model=model.first()).values_list('id', 'name')
         input_ds=[]
         for i in input_pg:
             temp = models.InputDataSet.objects.filter(input_page=i[0]).values_list('id', 'name')
             input_ds.append(temp)
         solution["analytics_job_id"] = object_id
+        print(models.AnalyticsSolution.objects.filter(id=object_id).values_list('file_url')[0][0])
+        #print(object_id)
+        #print(models.AnalyticsSolution.objects.filter(id=object_id).values_list('file_url').first())
         solution["tam_model_url"] = models.AnalyticsSolution.objects.filter(id=object_id).values_list('file_url')[0][0]
         model_temp=[]
         for i in model:
@@ -76,13 +87,8 @@ class AnalyticsSolution(ModelAdminBase, admin.ModelAdmin):
             temp2["models"].extend(model_temp)
             solution["scenarios"].append(temp2)
         return solution
+'''
 
-    def changeform_view(self, request, object_id, form_url='', extra_context=None):
-        extra_context = {}
-        extra_context['json_data'] = self.json_data(object_id)
-        return super(AnalyticsSolution,self).changeform_view(
-            request, object_id, form_url, extra_context=extra_context,
-        )
 
 
 @admin.register(models.ExecutiveView)
@@ -100,10 +106,20 @@ class ExecutiveView(ModelAdminBase, admin.ModelAdmin):
         extra_context['models'] = info[0]
         extra_context['scenarios'] = info[1]
         extra_context['view_type'] = "executive"
+        extra_context['executive'] = object_id
         return super(ExecutiveView,self).changeform_view(
             request, object_id, form_url, extra_context=extra_context,
         )
 
+@admin.register(models.EvalJob)
+class EvalJob(HideModelAdmin, admin.ModelAdmin):
+    change_form_template = 'app/exec_view.html'
+
+    def changeform_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = {}
+        extra_context['eval_id'] = object_id
+        return super(EvalJob,self).changeform_view(
+            request, object_id, form_url, extra_context=extra_context)
 
 '''
 class ExecutiveViewAdmin(admin.ModelAdmin):
@@ -132,10 +148,10 @@ admin.site.register(models.InputDataSet, HideModelAdmin)
 admin.site.register(models.InputPageDsAsc, HideModelAdmin)
 admin.site.register(models.Scenario, HideModelAdmin)
 admin.site.register(models.ScenarioDataSet, HideModelAdmin)
-admin.site.register(models.EvalJob, HideModelAdmin)
 #admin.site.register(models.ExecutiveView, ModelAdminBase)
+admin.site.register(models.InputChoice, HideModelAdmin)
 
-
+'''
 class InputChoiceInline(StackedPolymorphicInline):
     model = models.InputChoice
 
@@ -150,11 +166,12 @@ class InputChoiceInline(StackedPolymorphicInline):
         """Create and return the base inline class for a polymorphic child."""
         return type('PolymorphicChildInline', (StackedPolymorphicInline.Child,),
                     {'show_change_link': True, 'model': model_cls})
+'''
 
 
 @admin.register(models.Input)
-class InputAdmin(PolymorphicInlineSupportMixin, admin.ModelAdmin):
-    inlines = [InputChoiceInline]
+class InputAdmin(admin.ModelAdmin):
+    #inlines = [InputChoiceInline]
     ordering = ['-order']
     change_form_template = 'app/input_view.html'
 

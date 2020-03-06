@@ -168,6 +168,16 @@ class InputChoice(PolymorphicModel):
     name = models.CharField(max_length=255)
     input = models.ForeignKey(Input, on_delete=models.CASCADE)
     ids = models.ForeignKey(InputDataSet, on_delete=models.CASCADE)
+    label = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.label
+
+'''
+class InputChoice(PolymorphicModel):
+    name = models.CharField(max_length=255)
+    input = models.ForeignKey(Input, on_delete=models.CASCADE)
+    ids = models.ForeignKey(InputDataSet, on_delete=models.CASCADE)
     #ids = models.ForeignKey(InputDataSet, on_delete=models.CASCADE, verbose_name='Input Data Set')
     label = models.CharField(max_length=255)
 
@@ -178,18 +188,34 @@ class InputChoice(PolymorphicModel):
         # allow only one type of input choice for each input
         if any(not isinstance(x, type(self)) for x in self.input.input_choices):
             raise ValidationError(_('An input can only have one type of input choice.'))
+'''
 
 
 class EvalJob(models.Model):
     solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
     definition = JSONField()
-    Result = JSONField()
     DateCreated = models.DateTimeField()
     Status = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
+
+
+class NodeResult(models.Model):
+    eval_job = models.ForeignKey(EvalJob, on_delete=models.CASCADE)
+    scenario = models.CharField(max_length=255)
+    model = models.CharField(max_length=255)
+    node = models.CharField(max_length=255)
+    layer = models.CharField(max_length=255)
+    result_10 = models.FloatField()
+    result_30 = models.FloatField()
+    result_50 = models.FloatField()
+    result_70 = models.FloatField()
+    result_90 = models.FloatField()
+
+
+
 '''
 class EvalJob(models.Model):
     name = models.CharField(max_length=255)

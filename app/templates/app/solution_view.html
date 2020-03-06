@@ -77,8 +77,8 @@
     <div>
     <form id="evaluate-form" class="col-sm-10" id="evaluate" method="POST">
         {%  csrf_token %}
-     <a class="button" id="a_json"> CREATE JSON </a>
-    <input type="hidden" id="myVar" name="variable" value="{{ json_data }}">
+     <a class="button" id="a_json"> View Charts for Executive View </a>
+   <!-- <input type="hidden" id="myVar" name="variable" value="{{ json_data }}">-->
     </form>
     <br>
     </div>
@@ -106,8 +106,15 @@
     <script type="text/javascript">
     $(document).ready(function() {
             $("#a_json").click(function(){
-                var temp = document.getElementById("myVar").value;
-                console.log(temp)
+                $.ajax({
+                  type: "POST",
+                  data: {'solution_id': {{solution_id}}},
+                  url: "/app/create_json/{{ solution_id }}/",
+                    success : function (data) {
+                        alert("Saved Successfully!!!")
+                         window.location.href="/app/load_chart/50/"
+                    }
+              })
             });
         });
 
