@@ -7,8 +7,6 @@ admin.site.site_header = 'Cloud Analysis Manager Admin'
 admin.site.site_title = 'Cloud Analysis Manager Admin'
 admin.site.index_title = 'Cloud Analysis Manager site administration'
 
-# model cls -> inline cls
-# Changes what inline class is used for a model
 inline_overrides = {}
 
 
@@ -46,109 +44,59 @@ class HideModelAdmin(ModelAdminBase):
         # hide this model from admin index
         return False
 
+
 @admin.register(models.AnalyticsSolution)
 class AnalyticsSolution(ModelAdminBase, admin.ModelAdmin):
-    change_form_template = 'app/solution_view.html'
-
+    change_form_template = 'app/change_form_update.html'
 
     def changeform_view(self, request, object_id, form_url='', extra_context=None):
-        extra_context = {}
-        extra_context['solution_id'] = object_id
+        extra_context = {'solution_id' : object_id,
+                         'view_type' : "analyticssolution"}
         return super(AnalyticsSolution,self).changeform_view(
             request, object_id, form_url, extra_context=extra_context)
-
-'''
-    def json_data(self,object_id):
-        solution={}
-        scenario = models.Scenario.objects.filter(solution=object_id).values_list('id', 'name')
-        model = models.Model.objects.filter(solution=object_id).values_list('id', 'name')
-        input_pg = models.InputPage.objects.filter(model=model.first()).values_list('id', 'name')
-        input_ds=[]
-        for i in input_pg:
-            temp = models.InputDataSet.objects.filter(input_page=i[0]).values_list('id', 'name')
-            input_ds.append(temp)
-        solution["analytics_job_id"] = object_id
-        print(models.AnalyticsSolution.objects.filter(id=object_id).values_list('file_url')[0][0])
-        #print(object_id)
-        #print(models.AnalyticsSolution.objects.filter(id=object_id).values_list('file_url').first())
-        solution["tam_model_url"] = models.AnalyticsSolution.objects.filter(id=object_id).values_list('file_url')[0][0]
-        model_temp=[]
-        for i in model:
-            temp1 = {}
-            temp1["name"]=i[1]
-            temp1["input_data_sets"]=[j[1] for j in input_ds[0]]
-            model_temp.append(temp1)
-        solution["scenarios"]=[]
-
-        for i in scenario:
-            temp2 = {}
-            temp2["name"]=i[1]
-            temp2["models"]=[]
-            temp2["models"].extend(model_temp)
-            solution["scenarios"].append(temp2)
-        return solution
-'''
-
 
 
 @admin.register(models.ExecutiveView)
 class ExecutiveView(ModelAdminBase, admin.ModelAdmin):
-    change_form_template = 'app/change_view.html'
+    change_form_template = 'app/change_form_update.html'
 
-    def get_osm_info(self):
+    def get_ip_page(self):
+        ip_page = models.InputPage.objects.all().values_list('id','name')
+        return ip_page
+
+    def get_mod_scn(self):
         models1 = models.Model.objects.all().values_list('id','name')
         scenario = models.Scenario.objects.all().values_list('id', 'name')
         return (models1, scenario)
 
     def changeform_view(self, request, object_id, form_url='', extra_context=None):
-        extra_context = {}
-        info = self.get_osm_info()
-        extra_context['models'] = info[0]
-        extra_context['scenarios'] = info[1]
-        extra_context['view_type'] = "executive"
-        extra_context['executive'] = object_id
+        info = self.get_mod_scn()
+        extra_context = {'models' : info[0],
+        'scenarios' : info[1],
+        'view_type' : "executive",
+        'executive' : object_id,
+        'ip_pages' : self.get_ip_page()
+        }
         return super(ExecutiveView,self).changeform_view(
             request, object_id, form_url, extra_context=extra_context,
         )
+
 
 @admin.register(models.EvalJob)
 class EvalJob(HideModelAdmin, admin.ModelAdmin):
     change_form_template = 'app/exec_view.html'
 
     def changeform_view(self, request, object_id, form_url='', extra_context=None):
-        extra_context = {}
-        extra_context['eval_id'] = object_id
         return super(EvalJob,self).changeform_view(
-            request, object_id, form_url, extra_context=extra_context)
+            request, object_id, form_url, extra_context={'eval_id': object_id, 'view_type' : "evaljob"})
 
-'''
-class ExecutiveViewAdmin(admin.ModelAdmin):
-    
- 
-    def __new__(cls, model, admin_site):
-        instance = super().__new__(cls)
-        relations = cls._get_reverse_relations(model)
-        inlines = [type(f'{rel.__qualname__}Inline', (inline_overrides.get(rel, InlineBase),),
-                        {'model': rel, '__module__': __name__})
-                   for rel in
-                   relations]  # for unknown reasons, without __module__ the class would 'live' in the wrong place
-        instance.inlines = inlines
-        return instance
 
-    @staticmethod
-    def _get_reverse_relations(model):
-        """Get all relations that have a reference to the given model."""
-        return [field.related_model for field in model._meta.get_fields() if field.auto_created and not field.concrete]
-'''
-
-#admin.site.register(models.AnalyticsSolution, ModelAdminBase)
 admin.site.register(models.Model, HideModelAdmin)
 admin.site.register(models.InputPage, HideModelAdmin)
 admin.site.register(models.InputDataSet, HideModelAdmin)
 admin.site.register(models.InputPageDsAsc, HideModelAdmin)
 admin.site.register(models.Scenario, HideModelAdmin)
 admin.site.register(models.ScenarioDataSet, HideModelAdmin)
-#admin.site.register(models.ExecutiveView, ModelAdminBase)
 admin.site.register(models.InputChoice, HideModelAdmin)
 
 '''
@@ -171,7 +119,6 @@ class InputChoiceInline(StackedPolymorphicInline):
 
 @admin.register(models.Input)
 class InputAdmin(admin.ModelAdmin):
-    #inlines = [InputChoiceInline]
     ordering = ['-order']
     change_form_template = 'app/input_view.html'
 
@@ -179,14 +126,14 @@ class InputAdmin(admin.ModelAdmin):
         # hide this model from admin index
         return False
 
-    def get_osm_info(self):
+    def get_ip_page(self):
         ip_page = models.InputPage.objects.all().values_list('id','name')
         return ip_page
 
     def changeform_view(self, request, object_id, form_url='', extra_context=None):
-        extra_cont = {}
-        extra_cont['ip_pages'] = self.get_osm_info()
+        extra_context = {'ip_pages' : self.get_ip_page(),
+                         'view_type' : "input"}
         return super(InputAdmin,self).changeform_view(
-            request, object_id, form_url, extra_context=extra_cont,
+            request, object_id, form_url, extra_context=extra_context,
         )
 

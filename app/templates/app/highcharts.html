@@ -92,6 +92,7 @@
 </form>
 
 </fieldset>
+<div id="target1"></div>
 
 <!--
 <fieldset class="module aligned {{ fieldset.classes }}">
@@ -119,11 +120,10 @@
         $(function () {
 
             for(var i =0; i<{{ scenario_num }}; i++){
-                $('#target').append($('<div/>', { id: "container"+i, 'class' : 'container'}))
+                $('#target1').append($('<div/>', { id: "container"+i, 'class' : 'container'}))
             }
 
      var json_data={{ json_data|safe }}
-            console.log(json_data)
             //console.log(json_data.scenarios[0].nodes[0].layers[0]);
             for(var i=0;i<json_data.scenarios[0].nodes.length;i++){
                 //node_names.push(json_data.scenarios[0].nodes[i].name)

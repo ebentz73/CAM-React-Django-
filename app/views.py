@@ -1,11 +1,9 @@
 from .models import AnalyticsSolution, Model
 from app.models import ExecutiveView, InputDataSet, Scenario, Input, EvalJob, InputPage, NodeResult
-#from app.utils import run_playbook
-from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
-from django.views.generic import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+import json
 
 '''
 def index(request):
@@ -23,13 +21,14 @@ def stop(request):
     return render(request, 'index.html')
 
 
+#Load Datasets for the executive views
 def load_ds(request):
-    inputpage_id = request.GET.get('country')
+    inputpage_id = request.GET.get('page')
     data_sets = InputDataSet.objects.filter(input_page=inputpage_id)
-    #data_sets = [{"pk":"1", "name":"a"}, {"pk":"2", "name":"b"}]
     return render(request, 'app/hr/dropdown_test_view.html', {'data_sets': data_sets})
 
 
+#Render_executive view
 def render_executive(request,executiveview_id,scenario_id,model_id):
     executive = ExecutiveView.objects.get(id=executiveview_id)
     url = AnalyticsSolution.objects.filter(id=executive.solution_id).values_list('file_url')
@@ -52,7 +51,8 @@ def render_executive(request,executiveview_id,scenario_id,model_id):
     return render(request, 'app/render_executive.html',context)
 
 
-def load_chart(request,evaljob_id):
+#Create JSON and View Charts
+def load_chart(request, evaljob_id):
     definition = NodeResult.objects.filter(eval_job=evaljob_id).values()
     scenarios={}
     for qs in definition:
@@ -87,7 +87,7 @@ def load_chart(request,evaljob_id):
     return render(request, 'app/highcharts.html', context)
 
 
-
+#Update Eval Job table from Executive View
 @csrf_exempt
 def update(request, pk):
     obj = ExecutiveView.objects.filter(id=pk).values_list('id','solution_id')
@@ -95,21 +95,22 @@ def update(request, pk):
     sol_id=obj[0][1]
     if request.method == "POST" and request.is_ajax():
         receive_data=request.POST['someVar']
-        temp_eval = EvalJob(definition=receive_data,DateCreated=timezone.now(),Status="Pending",solution_id=sol_id)
+        receive_data=json.loads(receive_data)
+        exec_name=request.POST.get('name',False)
+        print(exec_name)
+        temp_eval = EvalJob(definition=receive_data,DateCreated=timezone.now(),Status="Pending",solution_id=sol_id,name=exec_name)
         temp_eval.save()
-        t = EvalJob.objects.get(id=temp_eval.id)
-        t.name = "EvalJob_" + str(temp_eval.id)
-        t.save()
     return redirect('/')
 
 
+#Create EvalJob from Analytics Solution View and update Table
 @csrf_exempt
 def create_json(request,pk):
     if request.method == "POST" and request.is_ajax():
         object_id = request.POST['solution_id']
-        solution = {}
-        solution["analytics_job_id"] = object_id
-        solution["tam_model_url"] = AnalyticsSolution.objects.filter(id=object_id).values_list('file_url')[0][0]
+        solution = {"analytics_job_id" : object_id,
+                    "tam_model_url" : AnalyticsSolution.objects.filter(id=object_id).values_list('file_url')[0][0],
+                    "scenarios" : []}
         scenario = Scenario.objects.filter(solution=object_id).values_list('id', 'name')
         model = Model.objects.filter(solution=object_id).values_list('id', 'name')
         input_pg = InputPage.objects.filter(model=model.first()).values_list('id', 'name')
@@ -131,6 +132,7 @@ def create_json(request,pk):
             temp2["models"] = []
             temp2["models"].extend(model_temp)
             solution["scenarios"].append(temp2)
+        print(solution)
         temp_eval = EvalJob(definition=solution, DateCreated=timezone.now(), Status="Pending",solution_id=object_id)
         temp_eval.save()
         t=EvalJob.objects.get(id=temp_eval.id)
@@ -139,28 +141,10 @@ def create_json(request,pk):
         return redirect('/')
 
 
-
-
-
-
-
+#Pass Models as data to Executive View Change Form
 def change_view(request):
-    print("Executing*************")
     models = Model.objects.all().values_list('name')
-    return render(request, 'app/change_view.html', {'models' : models})
-
-
-'''
-class LoadTemplateView(View):
-    template_name = ['app/highcharts.html']
-
-    @csrf_exempt
-    def get(self, request, *args, **kwargs):
-        return render(request, self.template_name)
-'''
-
-
-
+    return render(request, 'app/change_form_update.html', {'models' : models})
 
 
 def search_ds(request):

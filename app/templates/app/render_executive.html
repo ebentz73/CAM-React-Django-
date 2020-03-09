@@ -25,8 +25,17 @@ Render Exceutive View
 
     <form method="post">
        {% csrf_token %}
+    <div class = "form-row field-solution">
+    <div>
+        <label class="required" for="name">
+            Eval Job Name:
+        </label>
+        <input tpe="text" name="name" class="vTextField" maxlength="255" required id="name">
+    </div>
+    </div>
     {% for input in inputs %}
 {% block custom %}
+
 <fieldset class="module aligned {{ fieldset.classes }}">
 
 <h2>{{ input.name }}</h2>
@@ -68,7 +77,8 @@ Render Exceutive View
               console.log(someVar);
               $.ajax({
                   type: "POST",
-                  data: {'someVar': someVar},
+                  data: {'someVar': someVar,
+                  'name':$("#name").val()},
                   url: "/app/update/{{ executive }}/",
                     success : function (data) {
                         alert("Saved Successfully!!!")

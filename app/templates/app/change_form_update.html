@@ -1,8 +1,11 @@
 {% extends "admin/base_site.html" %}
 {% load i18n admin_urls static admin_modify %}
+
+{%ifequal view_type "analyticssolution" %}
 {%  for i in asolution %}
     {{ i.name }}
 {% endfor %}
+{% endifequal %}
 
 {% block extrahead %}{{ block.super }}
 <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
@@ -48,15 +51,14 @@
     {{ adminform.form.non_field_errors }}
 {% endif %}
 
-
 {% block field_sets %}
-
-
 {% for fieldset in adminform %}
   {% include "admin/includes/fieldset.html" %}
 {% endfor %}
 {% endblock %}
 
+
+{% ifequal view_type "executive" %}
 {% block custom %}
 <fieldset class="module aligned {{ fieldset.classes }}">
 
@@ -93,26 +95,9 @@
         </div>
     </div>
 </div>
-<!--
-    <div class="form-row field-solution">
-    <div>
-        <label class="required" for=id_solution">
-            Input Page:
-        </label>
-        <div class="related-widget-wrapper">
-            <select name="ip_page" required id="ip_model">
-                <option value="1">IP1</option>
-            </select>
-        </div>
-    </div>
-    </div>
-    -->
-
-
-
 </fieldset>
-
-{% endblock %}
+    {% endblock %}
+{% endifequal %}
 
 
 {% block after_field_sets %}{% endblock %}
@@ -125,8 +110,25 @@
 
 {% block after_related_objects %}{% endblock %}
 
+{%ifequal view_type "analyticssolution" %}
 
 {% block custom_block %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <div>
+    <form id="evaluate-form" class="col-sm-10" id="evaluate" method="POST">
+        {%  csrf_token %}
+     <a class="button" id="a_json"> View Charts for Executive View </a>
+   <!-- <input type="hidden" id="myVar" name="variable" value="{{ json_data }}">-->
+    </form>
+    <br>
+    </div>
+{% endblock %}
+{% endifequal %}
+
+
+{% ifequal view_type "executive" %}
+
+{% block executive %}
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <div>
@@ -141,11 +143,10 @@
 
 {% endblock %}
 
+{% endifequal %}
 
 
 {% block submit_buttons_bottom %}{% submit_row %}{% endblock %}
-
-
 
 {% block admin_change_form_document_ready %}
     <script type="text/javascript"
@@ -162,7 +163,28 @@
 
 </div>
 </form></div>
-    <script type="text/javascript">
+    {%ifequal view_type "analyticssolution" %}
+            <script type="text/javascript">
+    $(document).ready(function() {
+            $("#a_json").click(function(){
+                $.ajax({
+                  type: "POST",
+                  data: {'solution_id': {{solution_id}}},
+                  url: "/app/create_json/{{ solution_id }}/",
+                    success : function (data) {
+                        alert("Saved Successfully!!!")
+                         window.location.href="/app/load_chart/50/"
+                    }
+              })
+            });
+        });
+
+ </script>
+    {% endifequal %}
+
+    {% ifequal view_type "executive" %}
+
+            <script type="text/javascript">
     jQuery(document).ready(function ($) {
         $("#id_scenario").change(function () {
             console.log("Scenario ID:",this.value)
@@ -176,4 +198,8 @@
 
     });
  </script>
+
+    {% endifequal %}
+
+
 {% endblock %}
