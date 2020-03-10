@@ -1,5 +1,5 @@
 playbook/artifacts
-
+venv
 .idea
 .pytest_cache
 id_rsa
