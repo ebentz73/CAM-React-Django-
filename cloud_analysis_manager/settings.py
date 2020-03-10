@@ -16,6 +16,9 @@ import environ
 env = environ.Env()
 env.read_env()
 
+DEFAULT_FILE_STORAGE = env('DEFAULT_FILE_STORAGE')
+GS_BUCKET_NAME = env('GS_BUCKET_NAME')
+
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -31,7 +34,7 @@ SECRET_KEY = 'qn65+4-)g=tu*v8zg_6#4^ma=5ay_6&%)8=4qc^3f&xf7bx9-!'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', 'host.docker.internal']
+ALLOWED_HOSTS = ['localhost', 'host.docker.internal', '127.0.0.1']
 
 
 # Application definition
@@ -132,5 +135,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]

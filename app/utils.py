@@ -1,17 +1,34 @@
-from threading import Thread
-
-from ansible_runner.interface import run_async
+from django.core.files.storage import default_storage
 
 
-def run_playbook(playbook, extra_vars=None, tags=None):
-    runner_thread, r = run_async(private_data_dir='playbook', playbook=playbook, extravars=extra_vars, tags=tags)
-    log_thread = Thread(target=log_playbook, args=(r,))
-    log_thread.start()
+def check_gcp_file_exists(file_name: str) -> bool:
+    """Check if the given file exists in gcp storage.
+
+    The bucket used is the one defined as the GS_BUCKET_NAME variable in
+    settings.py."""
+    return default_storage.exists(file_name)
 
 
-def log_playbook(r):
-    print(f'{r.status}: {r.rc}')
-    for each_host_event in r.events:
-        print(each_host_event['event'])
-    print('Final status:')
-    print(r.stats)
+def upload_file_to_gcp(file_name: str, file_content):
+    """Upload the given file to gcp storage.
+
+    The bucket used is the one defined as the GS_BUCKET_NAME variable in
+    settings.py."""
+    with default_storage.open(file_name, 'w') as f:
+        f.write(file_content)
+
+
+def delete_file_from_gcp(file_name: str):
+    """Delete the given file from gcp storage.
+
+    The bucket used is the one defined as the GS_BUCKET_NAME variable in
+    settings.py."""
+    default_storage.delete(file_name)
+
+
+def get_gcp_url(file_name: str) -> str:
+    """Return the url for the Blob associated with the given file.
+
+    The bucket used is the one defined as the GS_BUCKET_NAME variable in
+    settings.py"""
+    return default_storage.url(file_name)

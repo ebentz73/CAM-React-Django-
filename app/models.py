@@ -1,8 +1,8 @@
 from operator import attrgetter
 
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 from polymorphic.models import PolymorphicModel
-from django.contrib.postgres.fields import JSONField
 
 
 class Distribution(models.Model):
@@ -173,20 +173,3 @@ class InputChoice(PolymorphicModel):
 
     def __str__(self):
         return self.label
-
-'''
-class InputChoice(PolymorphicModel):
-    name = models.CharField(max_length=255)
-    input = models.ForeignKey(Input, on_delete=models.CASCADE)
-    ids = models.ForeignKey(InputDataSet, on_delete=models.CASCADE)
-    #ids = models.ForeignKey(InputDataSet, on_delete=models.CASCADE, verbose_name='Input Data Set')
-    label = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.label
-
-    def clean(self):
-        # allow only one type of input choice for each input
-        if any(not isinstance(x, type(self)) for x in self.input.input_choices):
-            raise ValidationError(_('An input can only have one type of input choice.'))
-'''

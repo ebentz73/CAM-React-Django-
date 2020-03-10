@@ -3,6 +3,7 @@ django-polymorphic==2.1.2
 django-environ==0.4.5
 django-range-slider==0.2.4
 djangorestframework==3.11.0
+django-storages==1.9.1
 ansible==2.9.1
 ansible-runner==1.4.4
 requests==2.22.0
