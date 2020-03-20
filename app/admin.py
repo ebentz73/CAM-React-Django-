@@ -1,5 +1,4 @@
 from django.contrib import admin
-from polymorphic.admin import StackedPolymorphicInline, PolymorphicInlineSupportMixin
 
 from app import models
 
@@ -15,6 +14,7 @@ class InlineBase(admin.StackedInline):
     extra = 0
     show_change_link = True
     can_delete = False
+
     # exclude = ['name']
 
     def has_change_permission(self, request, obj=None):
@@ -27,7 +27,8 @@ class ModelAdminBase(admin.ModelAdmin):
     def __new__(cls, model, admin_site):
         instance = super().__new__(cls)
         relations = cls._get_reverse_relations(model)
-        inlines = [type(f'{rel.__qualname__}Inline', (inline_overrides.get(rel, InlineBase),), {'model': rel, '__module__': __name__})
+        inlines = [type(f'{rel.__qualname__}Inline', (inline_overrides.get(rel, InlineBase),),
+                        {'model': rel, '__module__': __name__})
                    for rel in relations]  # for unknown reasons, without __module__ the class would 'live' in the wrong place
         instance.inlines = inlines
         return instance
@@ -48,47 +49,48 @@ class HideModelAdmin(ModelAdminBase):
 @admin.register(models.AnalyticsSolution)
 class AnalyticsSolution(ModelAdminBase, admin.ModelAdmin):
     change_form_template = 'app/change_form_update.html'
+    exclude = ['file_url']
 
-    def changeform_view(self, request, object_id, form_url='', extra_context=None):
-        extra_context = {'solution_id' : object_id,
-                         'view_type' : "analyticssolution"}
-        return super(AnalyticsSolution,self).changeform_view(
-            request, object_id, form_url, extra_context=extra_context)
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = {
+            'view_type': 'analyticssolution',
+            'solution_id': object_id,
+        }
+        return super().changeform_view(request, object_id, form_url, extra_context=extra_context)
 
 
 @admin.register(models.ExecutiveView)
 class ExecutiveView(ModelAdminBase, admin.ModelAdmin):
     change_form_template = 'app/change_form_update.html'
 
-    def get_ip_page(self):
-        ip_page = models.InputPage.objects.all().values_list('id','name')
-        return ip_page
-
-    def get_mod_scn(self):
-        models1 = models.Model.objects.all().values_list('id','name')
-        scenario = models.Scenario.objects.all().values_list('id', 'name')
-        return (models1, scenario)
-
-    def changeform_view(self, request, object_id, form_url='', extra_context=None):
-        info = self.get_mod_scn()
-        extra_context = {'models' : info[0],
-        'scenarios' : info[1],
-        'view_type' : "executive",
-        'executive' : object_id,
-        'ip_pages' : self.get_ip_page()
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = {
+            'view_type': 'executive',
+            'executive': object_id,
+            'ip_pages': self._get_input_pages(),
         }
-        return super(ExecutiveView,self).changeform_view(
-            request, object_id, form_url, extra_context=extra_context,
-        )
+        return super().changeform_view(request, object_id, form_url, extra_context=extra_context)
+
+    @staticmethod
+    def _get_input_pages():
+        return models.InputPage.objects.all().values_list('id', 'name')
 
 
 @admin.register(models.EvalJob)
 class EvalJob(HideModelAdmin, admin.ModelAdmin):
     change_form_template = 'app/exec_view.html'
 
-    def changeform_view(self, request, object_id, form_url='', extra_context=None):
-        return super(EvalJob,self).changeform_view(
-            request, object_id, form_url, extra_context={'eval_id': object_id, 'view_type' : "evaljob"})
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = {
+            'view_type': 'evaljob',
+            'eval_id': object_id,
+        }
+        return super().changeform_view(request, object_id, form_url, extra_context=extra_context)
+
+
+@admin.register(models.Input)
+class InputAdmin(HideModelAdmin, admin.ModelAdmin):
+    ordering = ['-order']
 
 
 admin.site.register(models.Model, HideModelAdmin)
@@ -96,44 +98,4 @@ admin.site.register(models.InputPage, HideModelAdmin)
 admin.site.register(models.InputDataSet, HideModelAdmin)
 admin.site.register(models.InputPageDsAsc, HideModelAdmin)
 admin.site.register(models.Scenario, HideModelAdmin)
-admin.site.register(models.ScenarioDataSet, HideModelAdmin)
 admin.site.register(models.InputChoice, HideModelAdmin)
-
-'''
-class InputChoiceInline(StackedPolymorphicInline):
-    model = models.InputChoice
-
-    @property
-    def child_inlines(self):
-        """Get all the input choice inline classes."""
-        return [self._get_polymorphic_child(relation.related_model)
-                for relation in models.InputChoice._meta.fields_map.values()]
-
-    @staticmethod
-    def _get_polymorphic_child(model_cls):
-        """Create and return the base inline class for a polymorphic child."""
-        return type('PolymorphicChildInline', (StackedPolymorphicInline.Child,),
-                    {'show_change_link': True, 'model': model_cls})
-'''
-
-
-@admin.register(models.Input)
-class InputAdmin(admin.ModelAdmin):
-    ordering = ['-order']
-    change_form_template = 'app/input_view.html'
-
-    def has_module_permission(self, request):
-        # hide this model from admin index
-        return False
-
-    def get_ip_page(self):
-        ip_page = models.InputPage.objects.all().values_list('id','name')
-        return ip_page
-
-    def changeform_view(self, request, object_id, form_url='', extra_context=None):
-        extra_context = {'ip_pages' : self.get_ip_page(),
-                         'view_type' : "input"}
-        return super(InputAdmin,self).changeform_view(
-            request, object_id, form_url, extra_context=extra_context,
-        )
-

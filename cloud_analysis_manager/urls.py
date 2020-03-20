@@ -25,6 +25,7 @@ urlpatterns = [
     # index view
     re_path(r'^$', TemplateView.as_view(template_name='index.html')),
     path('app/', include('app.urls')),
-    path('api/results', views.NodeResultView.as_view()),
+    path('api/evaljob/<int:pk>/', views.EvalJobDefinitionViewSet.as_view({'get': 'retrieve'})),
+    path('api/results/', views.NodeResultView.as_view()),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]

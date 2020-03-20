@@ -1,8 +1,13 @@
+import tempfile
+import uuid
 from operator import attrgetter
 
-from django.contrib.postgres.fields import JSONField
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from polymorphic.models import PolymorphicModel
+
+from app.utils import Sqlite
 
 
 class Distribution(models.Model):
@@ -22,13 +27,17 @@ class BoundedDistribution(Distribution):
         abstract = True
 
 
+def _name_tam_file(*_):
+    return f'tam_models/{uuid.uuid4().hex}'
+
+
 class AnalyticsSolution(models.Model):
     name = models.CharField(max_length=255)
-    upload_date = models.DateTimeField()
-    file_url = models.URLField(max_length=255)
+    upload_date = models.DateTimeField(auto_now=True)
+    tam_file = models.FileField(upload_to=_name_tam_file)
 
     def __str__(self):
-        return f'EvalJob ({self.id}) - {self.name}'
+        return f'Analytics Solution ({self.id}) - {self.name}'
 
     @property
     def models(self):
@@ -39,19 +48,24 @@ class AnalyticsSolution(models.Model):
         return self.scenario_set.all()
 
 
-class EvalJob(models.Model):
-    solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
-    definition = JSONField()
-    DateCreated = models.DateTimeField()
-    Status = models.CharField(max_length=255)
-    name = models.CharField(max_length=255)
+@receiver(post_save, sender=AnalyticsSolution)
+def update_model(sender, **kwargs):
+    solution = kwargs['instance']
 
-    def __str__(self):
-        return self.name
+    # Download file from GCS
+    with tempfile.NamedTemporaryFile() as f:
+        f.write(solution.tam_file.read())
 
-    @property
-    def node_results(self):
-        return self.noderesult_set.all()
+        # Open sqlite file
+        with Sqlite(f.name) as cursor:
+            cursor.execute('SELECT * from TruNavModel')
+            for model_record in cursor.fetchall():
+                temp_model = Model(name=model_record[2], solution=solution)
+                temp_model.save()
+                cursor.execute('SELECT * from ModelDataPage where ModelId=? and pagetype=0', (model_record[1],))
+                for data_page_record in cursor.fetchall():
+                    temp_ip = InputPage(name=data_page_record[3], model=Model.objects.get(id=temp_model.id))
+                    temp_ip.save()
 
 
 class Model(models.Model):
@@ -90,25 +104,8 @@ class Scenario(models.Model):
         return self.name
 
     @property
-    def scenario_data_sets(self):
-        return self.scenariodataset_set.all()
-
-    @property
     def input_page_ds_ascs(self):
         return self.inputpagedsasc_set.all()
-
-
-class NodeResult(models.Model):
-    eval_job = models.ForeignKey(EvalJob, on_delete=models.CASCADE)
-    scenario = models.CharField(max_length=255)
-    model = models.CharField(max_length=255)
-    node = models.CharField(max_length=255)
-    layer = models.CharField(max_length=255)
-    result_10 = models.FloatField()
-    result_30 = models.FloatField()
-    result_50 = models.FloatField()
-    result_70 = models.FloatField()
-    result_90 = models.FloatField()
 
 
 class InputDataSet(models.Model):
@@ -127,17 +124,10 @@ class InputDataSet(models.Model):
         return self.inputchoice_set.all()
 
 
-class InputPageDsAsc(BoundedDistribution):
-    inputPage = models.ForeignKey(InputPage, on_delete=models.CASCADE, verbose_name='Input Page')
+class InputPageDsAsc(models.Model):
+    input_page = models.ForeignKey(InputPage, on_delete=models.CASCADE, verbose_name='Input Page')
     ids = models.ForeignKey(InputDataSet, on_delete=models.CASCADE, verbose_name='Input Data Set')
     scenarios = models.ForeignKey(Scenario, on_delete=models.CASCADE, verbose_name='Scenario')
-
-
-class ScenarioDataSet(models.Model):
-    # TODO: is https://django-select2.readthedocs.io/en/latest/index.html useful?
-    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
-    ip = models.ForeignKey(InputPage, on_delete=models.CASCADE, default=1)
-    ids = models.ForeignKey(InputDataSet, on_delete=models.CASCADE)
 
 
 class ExecutiveView(models.Model):
@@ -166,10 +156,33 @@ class Input(models.Model):
 
 
 class InputChoice(PolymorphicModel):
-    name = models.CharField(max_length=255)
     input = models.ForeignKey(Input, on_delete=models.CASCADE)
-    ids = models.ForeignKey(InputDataSet, on_delete=models.CASCADE)
+    ids = models.ForeignKey(InputDataSet, on_delete=models.CASCADE, verbose_name='Data Set')
     label = models.CharField(max_length=255)
 
     def __str__(self):
-        return self.label
+        return f'{self.input}-{self.ids}'
+
+
+class EvalJob(models.Model):
+    solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
+    date_created = models.DateTimeField()
+    status = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
+    source = models.IntegerField(editable=False)
+
+    def __str__(self):
+        return self.name
+
+
+class NodeResult(models.Model):
+    eval_job = models.ForeignKey(EvalJob, on_delete=models.CASCADE)
+    scenario = models.CharField(max_length=255)
+    model = models.CharField(max_length=255)
+    node = models.CharField(max_length=255)
+    layer = models.CharField(max_length=255)
+    result_10 = models.FloatField()
+    result_30 = models.FloatField()
+    result_50 = models.FloatField()
+    result_70 = models.FloatField()
+    result_90 = models.FloatField()
