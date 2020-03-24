@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import ManyToManyRel
 
 from app import models
 
@@ -6,19 +7,17 @@ admin.site.site_header = 'Cloud Analysis Manager Admin'
 admin.site.site_title = 'Cloud Analysis Manager Admin'
 admin.site.index_title = 'Cloud Analysis Manager site administration'
 
+# Can be used to specify a different Inline class for a relation
 inline_overrides = {}
 
 
 class InlineBase(admin.StackedInline):
-    # TODO: Can I unexclude 'name' when a new entry is being added?
     extra = 0
     show_change_link = True
     can_delete = False
 
-    # exclude = ['name']
-
     def has_change_permission(self, request, obj=None):
-        # make all inlines read-only
+        # Make all inlines read-only
         return False
 
 
@@ -29,20 +28,23 @@ class ModelAdminBase(admin.ModelAdmin):
         relations = cls._get_reverse_relations(model)
         inlines = [type(f'{rel.__qualname__}Inline', (inline_overrides.get(rel, InlineBase),),
                         {'model': rel, '__module__': __name__})
-                   for rel in relations]  # for unknown reasons, without __module__ the class would 'live' in the wrong place
+                   for rel in
+                   relations]  # For unknown reasons, without __module__ the class would 'live' in the wrong place
         instance.inlines = inlines
         return instance
 
     @staticmethod
     def _get_reverse_relations(model):
         """Get all relations that have a reference to the given model."""
-        return [field.related_model for field in model._meta.get_fields() if field.auto_created and not field.concrete]
+        return [field.through if isinstance(field, ManyToManyRel) else field.related_model
+                for field in model._meta.get_fields()
+                if field.auto_created and not field.concrete]
 
 
 class HideModelAdmin(ModelAdminBase):
 
     def has_module_permission(self, request):
-        # hide this model from admin index
+        # Hide this model from admin index
         return False
 
 
@@ -88,14 +90,13 @@ class EvalJob(HideModelAdmin, admin.ModelAdmin):
         return super().changeform_view(request, object_id, form_url, extra_context=extra_context)
 
 
-@admin.register(models.Input)
-class InputAdmin(HideModelAdmin, admin.ModelAdmin):
-    ordering = ['-order']
+@admin.register(models.Scenario)
+class Scenario(HideModelAdmin, admin.ModelAdmin):
+    readonly_fields = ['is_adhoc']
 
 
 admin.site.register(models.Model, HideModelAdmin)
 admin.site.register(models.InputPage, HideModelAdmin)
 admin.site.register(models.InputDataSet, HideModelAdmin)
-admin.site.register(models.InputPageDsAsc, HideModelAdmin)
-admin.site.register(models.Scenario, HideModelAdmin)
+admin.site.register(models.Input, HideModelAdmin)
 admin.site.register(models.InputChoice, HideModelAdmin)

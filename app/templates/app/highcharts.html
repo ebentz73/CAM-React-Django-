@@ -2,231 +2,209 @@
 
 {% load i18n admin_urls static admin_modify %}
 {% block extrahead %}{{ block.super }}
-<script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
-{{ media }}
+    <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+    {{ media }}
 {% endblock %}
 
-{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">{% endblock %}
+{% block extrastyle %}{{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
+{% endblock %}
 
 {% block coltype %}colM{% endblock %}
 
 {% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-form{% endblock %}
 {% block content %}
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <title>Highcharts Area Range and Line chart</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <!DOCTYPE html>
+    <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+    <head>
+        <title>Highcharts Area Range and Line chart</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 
-    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/highcharts-more.js"></script>
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+        <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+        <script src="https://code.highcharts.com/highcharts.js"></script>
+        <script src="https://code.highcharts.com/highcharts-more.js"></script>
+        <script src="https://code.highcharts.com/modules/exporting.js"></script>
 
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+              integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+              crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
 
-    <style>
-
-        .custom { min-height: 100px;
-            border:1px solid black;
-            text-align:center;
-        padding:20px }
-        select:required:invalid {
-            color: gray;
-        }
-        option[value=""][disabled] {
-            display: none;
-        }
-        option {
-            color: black;
-        }
-        label {
-            color: black;
-            font-weight: bold;
-            display: block;
-            float: left;
-        }
-        .content-main {
-  background-color: #E2E2E2;
-  border-style: solid;
-  border-width: 1em;
-  border-color: white;
-  width: 100%;
-  overflow: auto;
-}
-        container{
-            min-width: 310px;
-            height: 400px;
-            border-width: 1em;
-            margin: 0 auto;
-        }
-    </style>
-
-
-</head>
-<body>
-<h2>Cloud Analysis Manager</h2>
-<fieldset class="module aligned {{ fieldset.classes }}">
-
-<form id="target">
-    <div class="form-row field-solution">
-    <div>
-        <label class="required" for=id_solution">
-            Node :
-        </label>
-        <div class="related-widget-wrapper">
-            <select name="dataset" required id="selectNode">
-                <option value="" disabled selected>Select a node...</option>
-            </select>
-        </div>
-
-    </div>
-</div>
-    <div>
-        <button type="submit" class="btn btn-info" style="float: left">View Chart</button>
-            </div>
-</form>
-
-</fieldset>
-<div id="target1"></div>
-
-<!--
-<fieldset class="module aligned {{ fieldset.classes }}">
-
-    <h1 style="text-align:center">Cloud Analysis Manager</h1>
-    <form id="target">
-            <div class="form-group" class="col-auto" align="center">
-            <select id="selectNode" class="form-control form-control-lg" class="col-auto" class="custom" required>
-                <option value="" disabled selected>Select a node...</option>
-            </select>
-            </div>
-            <div class="col-auto">
-            <button type="submit" class="btn btn-info">View Chart</button>
-        </div>
-    </form>
-    <div id="target"></div>
-</fieldset>
-
-    <div id="container"+{{ i }} style="min-width: 310px; height: 400px;border-width: 1em; margin: 0 auto"></div>-->
-
-
-    <script language="javascript">
-       //$(document).ready(function() {
-       // $.getJSON('json_data.json', function(json_data) {
-        $(function () {
-
-            for(var i =0; i<{{ scenario_num }}; i++){
-                $('#target1').append($('<div/>', { id: "container"+i, 'class' : 'container'}))
+        <style>
+            .custom {
+                min-height: 100px;
+                border: 1px solid black;
+                text-align: center;
+                padding: 20px
             }
 
-     var json_data={{ json_data|safe }}
-            //console.log(json_data.scenarios[0].nodes[0].layers[0]);
-            for(var i=0;i<json_data.scenarios[0].nodes.length;i++){
-                //node_names.push(json_data.scenarios[0].nodes[i].name)
-                var opt = json_data.scenarios[0].nodes[i].name;
-                var el = document.createElement("option");
+            select:required:invalid {
+                color: gray;
+            }
+
+            option[value=""][disabled] {
+                display: none;
+            }
+
+            option {
+                color: black;
+            }
+
+            label {
+                color: black;
+                font-weight: bold;
+                display: block;
+                float: left;
+            }
+
+            .content-main {
+                background-color: #E2E2E2;
+                border-style: solid;
+                border-width: 1em;
+                border-color: white;
+                width: 100%;
+                overflow: auto;
+            }
+
+            container {
+                min-width: 310px;
+                height: 400px;
+                border-width: 1em;
+                margin: 0 auto;
+            }
+        </style>
+    </head>
+
+    <body>
+    <h2>Cloud Analysis Manager</h2>
+    <fieldset class="module aligned {{ fieldset.classes }}">
+        <form id="target">
+            <div class="form-row field-solution">
+                <div>
+                    <label class="required" for=id_solution">
+                        Node :
+                    </label>
+                    <div class="related-widget-wrapper">
+                        <select name="dataset" required id="selectNode">
+                            <option value="" disabled selected>Select a node...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-info" style="float: left">View Chart</button>
+            </div>
+        </form>
+    </fieldset>
+
+    <div id="target1"></div>
+
+    <script>
+        $(function () {
+            for (let i = 0; i <{{ scenario_num }}; i++) {
+                $('#target1').append($('<div/>', {id: "container" + i, 'class': 'container'}))
+            }
+
+            let json_data = {{ json_data|safe }};
+            for (let i = 0; i < json_data.scenarios[0].nodes.length; i++) {
+                let opt = json_data.scenarios[0].nodes[i].name;
+                let el = document.createElement("option");
                 el.textContent = opt;
-                el.value = i;
+                el.value = `${i}`;
                 selectNode.appendChild(el);
             }
-            //var sel_node = $("#selectNode :selected").val();
-            $( "#target" ).submit(function( event ){
-            //$('#selectNode').change(function(){
+            $("#target").submit(function (event) {
                 event.preventDefault();
-                //console.log($("#selectNode :selected").val());
 
-                var sel_node=$("#selectNode :selected").val();
+                let sel_node = $("#selectNode :selected").val();
 
-            for (var k=0;k<3;k++){
+                for (let k = 0; k < 4; k++) {
+                    let result_out = [], result_in = [], average = [], layer_name = [], node_names = [];
 
-                var result_out=[],result_in=[],average=[],layer_name=[],node_names=[];
-            for(var i=0;i<json_data.scenarios[k].nodes[sel_node].layers.length;i++){
-                layer_name.push(json_data.scenarios[k].nodes[sel_node].layers[i].name);
-                result_out.push({low:json_data.scenarios[k].nodes[sel_node].layers[i].result_10,
-                                 high:json_data.scenarios[k].nodes[sel_node].layers[i].result_90});
-                result_in.push({low:json_data.scenarios[k].nodes[sel_node].layers[i].result_30,
-                                 high:json_data.scenarios[k].nodes[sel_node].layers[i].result_70});
-                average.push(json_data.scenarios[k].nodes[sel_node].layers[i].result_50);
-            }
-            //console.log(average);
+                    for (let i = 0; i < json_data.scenarios[k].nodes[sel_node].layers.length; i++) {
+                        layer_name.push(json_data.scenarios[k].nodes[sel_node].layers[i].name);
+                        result_out.push({
+                            low: json_data.scenarios[k].nodes[sel_node].layers[i].result_10,
+                            high: json_data.scenarios[k].nodes[sel_node].layers[i].result_90
+                        });
+                        result_in.push({
+                            low: json_data.scenarios[k].nodes[sel_node].layers[i].result_30,
+                            high: json_data.scenarios[k].nodes[sel_node].layers[i].result_70
+                        });
+                        average.push(json_data.scenarios[k].nodes[sel_node].layers[i].result_50);
+                    }
 
-            var chartitle = {
-                text: json_data.scenarios[k].name
-            }
-            var chartxaxis = {
-                type: 'category',
-                categories: layer_name
-                /*title:{
-                    text:"Layers"
-                }*/
-            }
-            var chartyaxis = {
-                title: {
-                    text: null
+                    let chartitle = {
+                        text: json_data.scenarios[k].name
+                    };
+                    let chartxaxis = {
+                        type: 'category',
+                        categories: layer_name
+                    };
+                    let chartyaxis = {
+                        title: {
+                            text: null
+                        }
+                    };
+                    let chartooltip = {
+                        crosshairs: true,
+                        shared: true,
+                        formatter: function () {
+                            return '' +
+                                'Result_90 : ' + this.points[0].point.high + '<br/>' +
+                                'Result_70 : ' + this.points[2].point.high + '<br/>' +
+                                'Result_50 : ' + this.points[1].point.y + '<br/>' +
+                                'Result_30 : ' + this.points[2].point.low + '<br/>' +
+                                'Result_10 : ' + this.points[0].point.low
+                        }
+                    };
+                    let chartlegends = {
+                        enabled: false
+                    };
+                    let chartseries = [{
+                        name: 'Result_10-90',
+                        data: result_out,
+                        type: 'arearange',
+                        lineWidth: 0,
+                        linkedTo: ':previous',
+                        color: Highcharts.getOptions().colors[0],
+                        fillOpacity: 0.3,
+                        zIndex: 0
+                    }, {
+                        name: 'Result_50',
+                        data: average,
+                        zIndex: 1,
+                        marker: {
+                            fillColor: 'white',
+                            lineWidth: 2,
+                            lineColor: Highcharts.getOptions().colors[0]
+                        }
+                    }, {
+                        name: 'Result_30-70',
+                        data: result_in,
+                        type: 'arearange',
+                        lineWidth: 0,
+                        linkedTo: ':previous',
+                        color: Highcharts.getOptions().colors[1],
+                        fillOpacity: 0.3,
+                        zIndex: 0
+                    }];
+
+                    $('#' + "container" + k).highcharts({
+                        title: chartitle,
+                        xAxis: chartxaxis,
+                        yAxis: chartyaxis,
+                        tooltip: chartooltip,
+                        legend: chartlegends,
+                        series: chartseries
+                    });
                 }
-            }
-            var chartooltip = {
-                crosshairs: true,
-                shared: true,
-                formatter:function(){
-                    //console.log(this.points[2].point)
-                    return ''+
-                    'Result_90 : '+this.points[0].point.high+'<br/>'+
-                    'Result_70 : '+this.points[2].point.high+'<br/>'+
-                    'Result_50 : '+this.points[1].point.y+'<br/>'+
-                    'Result_30 : '+this.points[2].point.low+'<br/>'+
-                    'Result_10 : '+this.points[0].point.low
-                }
-            }
-            var chartlegends = {
-                enabled : false
-            }
-            var chartseries = [{
-                name: 'Result_10-90',
-                data: result_out,
-                type: 'arearange',
-                lineWidth: 0,
-                linkedTo: ':previous',
-                color: Highcharts.getOptions().colors[0],
-                fillOpacity: 0.3,
-                zIndex: 0
-            },{
-                name: 'Result_50',
-                data: average,
-                zIndex: 1,
-                marker: {
-                    fillColor: 'white',
-                    lineWidth: 2,
-                    lineColor: Highcharts.getOptions().colors[0]
-                }
-            }, {
-                name: 'Result_30-70',
-                data: result_in,
-                type: 'arearange',
-                lineWidth: 0,
-                linkedTo: ':previous',
-                color: Highcharts.getOptions().colors[1],
-                fillOpacity: 0.3,
-                zIndex: 0
-            }]
-
-                $('#'+"container"+k).highcharts({
-                    title: chartitle,
-                    xAxis: chartxaxis,
-                    yAxis: chartyaxis,
-                    tooltip: chartooltip,
-                    legend: chartlegends,
-                    series: chartseries
             });
-            }
-        });
         });
     </script>
-
-</body>
-</html>
+    </body>
+    </html>
 {% endblock %}

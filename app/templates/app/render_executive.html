@@ -2,91 +2,109 @@
 
 {% load i18n admin_urls static admin_modify %}
 {% block extrahead %}{{ block.super }}
-<script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
-{{ media }}
+    <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+    {{ media }}
 {% endblock %}
 
-{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">{% endblock %}
+{% block extrastyle %}{{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">{% endblock %}
 
 {% block coltype %}colM{% endblock %}
 
 {% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-form{% endblock %}
 
-
-
-{%  block title %}
-Render Exceutive View
+{% block title %}
+    Render Executive View
 {% endblock %}
+
 {% block content %}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://unpkg.com/json5@^2.0.0/dist/index.min.js"></script>
-    <!--<script src="./libs/json5.min.js"></script>-->
-    <h1>Input - InputDataset</h1>
+    <h1>Executive View</h1>
 
     <form method="post">
-       {% csrf_token %}
-    <div class = "form-row field-solution">
-    <div>
-        <label class="required" for="name">
-            Eval Job Name:
-        </label>
-        <input tpe="text" name="name" class="vTextField" maxlength="255" required id="name">
-    </div>
-    </div>
-    {% for input in inputs %}
-{% block custom %}
-
-<fieldset class="module aligned {{ fieldset.classes }}">
-
-<h2>{{ input.name }}</h2>
-
-    <div class="form-row field-solution">
-    <div>
-        <label class="required" for=id_solution">
-            DataSet :
-        </label>
-        <div class="related-widget-wrapper">
-            <select name="dataset" required id="id_{{ input.id }}">
-                {% for ds in inputds %}
-                    <option value={{ ds.id}} name={{ ds.name }}>{{ ds.name }}</option>
-                {% endfor %}
-            </select>
+        {% csrf_token %}
+        <div class="form-row field-solution">
+            <div>
+                <label class="required" for="name">
+                    Eval Job Name:
+                </label>
+                <input type="text" name="name" class="vTextField" maxlength="255" required id="name">
+            </div>
         </div>
-    </div>
-</div>
 
-</fieldset>
-{% endblock %}
-    {% endfor %}
-    <input type="submit" value="Submit" id="render" />
+        <div class="form-row field-solution">
+            <div>
+                <label class="required" for="id_scenario">
+                    Scenario to modify:
+                </label>
+                <select name="id_scenario" required id="id_scenario">
+                    {% for scenario in Scenarios %}
+                        <option value={{ scenario.id }} name={{ scenario.name }}>{{ scenario.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
 
+        <div class="form-row field-solution">
+            <div>
+                <label class="required" for="sc_name">
+                    Scenario Name:
+                </label>
+                <input type="text" name="sc_name" class="vTextField" maxlength="255" required id="sc_name">
+            </div>
+        </div>
+        {% for input in inputs %}
+            {% block custom %}
+                {% for ds in inputds|get_item:input.id %}
+                    {{ ds.name }}
+                {% endfor %}
+                <fieldset class="module aligned {{ fieldset.classes }}">
+
+                    <h2>{{ input.name }}</h2>
+
+                    <div class="form-row field-solution">
+                        <div>
+                            <label class="required" for="id_{{ input.id }}">
+                                DataSet :
+                            </label>
+                            <div class="related-widget-wrapper">
+                                <select name="dataset" required id="id_{{ input.id }}">
+                                    <option value="" disabled selected>Select DataSet...</option>
+                                    {% for ds in inputds|get_item:input.id %}
+                                        <option value={{ ds.0 }} name={{ ds.1 }}>{{ ds.1 }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            {% endblock %}
+        {% endfor %}
+        <input type="submit" value="Submit" id="render"/>
     </form>
 
     <script type=text/javascript>
-
-      jQuery(document).ready(function ($) {
-          $("#render").click(function () {
-              var arr = [];
-              {%  for input in inputs %}
-                  arr.push($("#id_{{ input.id }}").children("option:selected").text())
-              {% endfor %}
-              var someVar = "{{ definition|escapejs }}";
-              someVar = JSON5.parse(someVar);
-              someVar.scenarios[0].models[0].input_data_sets = arr;
-              someVar = JSON.stringify(someVar);
-              console.log(someVar);
-              $.ajax({
-                  type: "POST",
-                  data: {'someVar': someVar,
-                  'name':$("#name").val()},
-                  url: "/app/update/{{ executive }}/",
-                    success : function (data) {
-                        alert("Saved Successfully!!!")
-                         window.location.replace("/admin/app/evaljob/");
+        jQuery(document).ready(function ($) {
+            $("#render").click(function () {
+                let arr = {};
+                {%  for input in inputs %}
+                    arr[{{ input.id }}] = $("#id_{{ input.id }}").children("option:selected").val();
+                {% endfor %}
+                $.ajax({
+                    type: "POST",
+                    data: {
+                        "input": JSON.stringify(arr),
+                        "name": $("#name").val(),
+                        "scenario": $("#sc_name").val(),
+                        "sel_scenario": $('#id_scenario').val()
+                    },
+                    url: "/app/update/{{ executive }}/",
+                    success: function (data) {
+                        window.location.replace("/admin/app/evaljob/");
                     }
-              })
-          });
-      });
-</script>
-
-{%  endblock %}
+                })
+            });
+        });
+    </script>
+{% endblock %}

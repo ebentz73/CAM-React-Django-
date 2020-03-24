@@ -1,4 +1,5 @@
 import json
+from collections import defaultdict
 
 import docker
 import environ
@@ -13,7 +14,7 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from app.models import AnalyticsSolution, Model, ExecutiveView, InputDataSet, Scenario, Input, EvalJob, InputPage, \
-    NodeResult, InputChoice, InputPageDsAsc
+    NodeResult, InputChoice
 from app.serializers import EvalJobSerializer, NodeResultSerializer
 
 
@@ -38,25 +39,15 @@ def get_item(dictionary, key):
     return dictionary.get(key)
 
 
-def start(request, solution_id):
+def start(solution: AnalyticsSolution, evaljob_id: int):
     env = environ.Env()
-
-    # Create new eval job
-    evaljob = EvalJob(
-        solution=AnalyticsSolution.objects.get(pk=solution_id),
-        date_created=timezone.now(),
-        status='Running.',
-        name='Eval Job Test',
-        source=1,
-    )
-    evaljob.save()
 
     # Run eval engine docker container for eval job
     client = docker.APIClient(base_url='tcp://localhost:2375')
     container = client.create_container('trunavconsolecore:latest',
                                         detach=True,
                                         environment={
-                                            'EVALJOBDEF_URL': f'http://host.docker.internal:8000/api/evaljob/{evaljob.pk}',
+                                            'EVALJOBDEF_URL': f'http://host.docker.internal:8000/api/evaljob/{evaljob_id}',
                                             'RESULTS_URL': 'http://host.docker.internal:8000/api/results/',
                                             'GOOGLE_APPLICATION_CREDENTIALS': '/credentials.json'},
                                         volumes=['/credentials.json'],
@@ -66,7 +57,6 @@ def start(request, solution_id):
                                             ]
                                         ))
     client.start(container)
-    return render(request, 'index.html')
 
 
 def stop(request, evaljob_id):
@@ -91,15 +81,14 @@ def load_ds(request):
 
 # Render_executive view
 def render_executive(request, executiveview_id):
-    executive = ExecutiveView.objects.get(id=executiveview_id)
-    scenarios = Scenario.objects.filter(solution=executive.solution_id).values_list('id', 'name')
-    inputs = Input.objects.filter(exec_view=executive)
-    input_ds = {}
-    for i in inputs:
-        input_ds[i.id] = []
-        temp = list(InputChoice.objects.filter(input_id=i.id).values_list('ids_id', flat=True))
-        for j in temp:
-            input_ds[i.id].append((j, InputDataSet.objects.filter(id=j).values_list('name', flat=True)[0]))
+    exec_view = ExecutiveView.objects.get(id=executiveview_id)
+    scenarios = Scenario.objects.filter(solution=exec_view.solution, is_adhoc=False)
+    inputs = Input.objects.filter(exec_view=exec_view)
+    input_ds = defaultdict(list)
+    for inp in inputs:
+        input_choices = InputChoice.objects.filter(input_id=inp.id)
+        for input_choice in input_choices:
+            input_ds[inp.id].append((input_choice.ids_id, input_choice.ids.name))
     context = {'executive': executiveview_id, 'inputs': inputs, 'inputds': input_ds, 'Scenarios': scenarios}
     return render(request, 'app/render_executive.html', context)
 
@@ -166,46 +155,55 @@ def load_chart(request, evaljob_id):
 
 # Update Eval Job table from Executive View
 @csrf_exempt
-def update(request, pk):
-    obj = ExecutiveView.objects.filter(id=pk).values_list('id', 'solution_id')
-    model = Model.objects.filter(solution=obj[0][1]).values_list('id', 'name')
-    jobs = []
-    for i in EvalJob.objects.filter(solution=obj[0][1], source=1).values_list('definition', flat=True):
-        jobs.extend(i['scenarios'])
-    # print(jobs)
-    if request.method == "POST" and request.is_ajax():
-        data_set = json.loads(request.POST.get('input', ''))
-        ip_ds = {}
-        for k, v in data_set.items():
-            ip = InputPageDsAsc.objects.filter(ids=v).values_list('inputPage_id', flat=True)[0]
-            ip_ds[ip] = v
+def update(request, exec_view_id):
+    if request.method == 'POST' and request.is_ajax():
         scenario_name = request.POST.get('scenario')
-        scenario_change = request.POST['sel_scenario']
-        exec_name = request.POST.get('name', False)
-        temp_scenario = {}
-        temp_scenario["name"] = scenario_name
-        temp_scenario["models"] = []
-        for j in model:
-            temp_model = {}
-            temp_model["name"] = j[1]
-            temp_model["input_data_sets"] = []
-            input_dataset_list = InputPageDsAsc.objects.filter(scenarios=scenario_change).values_list('ids_id',
-                                                                                                      'inputPage_id')
-            for k in input_dataset_list:
-                if InputPage.objects.filter(id=k[1]).values_list('model', flat=True)[0] == j[0]:
-                    ds = ip_ds.get(k[1], InputDataSet.objects.filter(id=k[0]).values_list('id', flat=True)[0])
-                    temp_model["input_data_sets"].append(
-                        InputDataSet.objects.filter(id=ds).values_list('name', flat=True)[0])
-            temp_scenario["models"].append(temp_model)
-        jobs.append(temp_scenario)
-        definition = {
-            'analytics_job_id': obj[0][1],
-            'tam_model_url': AnalyticsSolution.objects.filter(id=obj[0][1]).values_list('file_url')[0][0],
-            'scenarios': jobs
-        }
-    temp_eval = EvalJob(date_created=timezone.now(), status="Pending", solution_id=obj[0][1],
-                        name=exec_name, source=0)
-    temp_eval.save()
+        selected_scenario_id = request.POST.get('sel_scenario')
+        evaljob_name = request.POST.get('name')
+        inputs = json.loads(request.POST.get('input'))
+
+        exec_view = ExecutiveView.objects.get(pk=exec_view_id)
+        selected_scenario = Scenario.objects.get(pk=selected_scenario_id)
+
+        # Create Ad Hoc Scenario
+        scenario = Scenario.objects.create(
+            solution=exec_view.solution,
+            name=scenario_name,
+            is_adhoc=True,
+        )
+
+        # Validate inputs
+        selected_input_pages = set()
+        for ids in selected_scenario.input_data_sets:
+            selected_input_pages.add(ids.input_page.id)
+
+        seen_input_pages = set()
+        for ids_id in inputs.values():
+            ids = InputDataSet.objects.get(pk=ids_id)
+            if ids.input_page.id not in seen_input_pages:
+                ids.scenarios.add(scenario)
+                seen_input_pages.add(ids.input_page.id)
+            else:
+                raise Exception('Cannot have multiple input data sets for a single input page.')
+
+        for ids in selected_scenario.input_data_sets:
+            if ids.input_page.id not in seen_input_pages:
+                ids.scenarios.add(scenario)
+                seen_input_pages.add(ids.input_page.id)
+
+        # Create Eval Job
+        evaljob = EvalJob.objects.create(
+            solution=exec_view.solution,
+            date_created=timezone.now(),
+            status='Running.',
+            name=evaljob_name,
+            adhoc_scenario=scenario,
+        )
+
+        if selected_input_pages == seen_input_pages:
+            start(exec_view.solution, evaljob.id)
+        else:
+            raise Exception('Input pages on modified scenario and ad hoc scenario do not match.')
     return redirect('/')
 
 
@@ -227,7 +225,7 @@ def create_json(request, pk):
                 temp_model = {}
                 temp_model["name"] = j[1]
                 temp_model["input_data_sets"] = []
-                input_dataset_list = InputPageDsAsc.objects.filter(scenarios=i[0]).values_list('ids_id', 'inputPage_id')
+                input_dataset_list = InputPageDsAsc.objects.filter(scenario=i[0]).values_list('ids_id', 'inputPage_id')
                 for k in input_dataset_list:
                     if InputPage.objects.filter(id=k[1]).values_list('model', flat=True)[0] == j[0]:
                         temp_model["input_data_sets"].append(
