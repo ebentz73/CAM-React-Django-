@@ -2,6 +2,7 @@ import uuid
 from operator import attrgetter
 
 from django.db import models
+from django.contrib.postgres.fields import JSONField
 
 __all__ = [
     'AnalyticsSolution',
@@ -114,6 +115,7 @@ class NodeResult(models.Model):
     model = models.CharField(max_length=255)
     node = models.CharField(max_length=255)
     layer = models.CharField(max_length=255)
+    node_tags = JSONField()
     result_10 = models.FloatField()
     result_30 = models.FloatField()
     result_50 = models.FloatField()
