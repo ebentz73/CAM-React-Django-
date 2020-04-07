@@ -23,26 +23,35 @@ class EvalJobSerializer(serializers.ModelSerializer):
             model_json = []
             # Get all Models for Analytics Solution
             for model in solution.models:
-                ids_json = []
+                ids_json, nodes_json = [], []
                 # Get all Input Page Data Sets associated with Model and Scenario
                 for ids in scenario.input_data_sets.filter(input_page__model=model):
                     ids_json.append(
                         GoogleCloudStorage.get_url(f'{ids.file}'))
-                # Only add Model to json if it contains at least one IDS
-                if ids_json:
-                    model_json.append({
-                        'name': model.name,
-                        'input_data_sets': ids_json
+
+                # Get all Node Overrides associated with Model and Scenario
+                for node_override in scenario.node_overrides.filter(node__model=model):
+                    nodes_json.append({
+                        'id': node_override.node.tam_id,
+                        'value': node_override.value,
                     })
-            # Only add Scenario to json if it contains at least one Model with an IDS
-            if any(x['input_data_sets'] for x in model_json):
-                scenario_json.append({
-                    'name': scenario.name,
-                    'models': model_json
+
+                # Only add Model to json if it contains at least one IDS
+                model_json.append({
+                    'id': model.tam_id,
+                    'input_data_sets': ids_json,
+                    'nodes': nodes_json,
                 })
+            # Only add Scenario to json if it contains at least one Model with an IDS
+            scenario_json.append({
+                'name': scenario.name,
+                'models': model_json
+            })
         evaljob_json = {
             'analytics_job_id': evaljob_id,
             'tam_model_url': GoogleCloudStorage.get_url(f'{solution.tam_file}'),
+            'time_start': evaljob['layer_time_start'],
+            'time_increment_unit': evaljob['layer_time_increment'],
             'scenarios': scenario_json
         }
         return evaljob_json

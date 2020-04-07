@@ -1,8 +1,18 @@
 import sqlite3
-from typing import Union
+from typing import Union, TypeVar, Generic, Iterator
 
+import docker
+import environ
 import storages.backends.gcloud
 from django.core.files.storage import default_storage
+from django.db.models import QuerySet
+
+_Z = TypeVar('_Z')
+
+
+class ModelType(Generic[_Z], QuerySet):
+    def __iter__(self) -> Iterator[_Z]:
+        ...
 
 
 class Sqlite:
@@ -85,3 +95,23 @@ class GoogleCloudStorage:
             storage: Storage backend to use. This sets which bucket is used.
         """
         return storage.url(filename)
+
+
+def run_eval_engine(evaljob_id: int):
+    env = environ.Env()
+
+    # Run eval engine docker container for eval job
+    client = docker.APIClient(base_url='tcp://localhost:2375')
+    container = client.create_container('trunavconsolecore:latest',
+                                        detach=True,
+                                        environment={
+                                            'EVALJOBDEF_URL': f'http://host.docker.internal:8000/api/evaljob/{evaljob_id}',
+                                            'RESULTS_URL': 'http://host.docker.internal:8000/api/results/',
+                                            'GOOGLE_APPLICATION_CREDENTIALS': '/credentials.json'},
+                                        volumes=['/credentials.json'],
+                                        host_config=client.create_host_config(
+                                            binds=[
+                                                f"{env('GOOGLE_APPLICATION_CREDENTIALS')}:/credentials.json"
+                                            ]
+                                        ))
+    client.start(container)

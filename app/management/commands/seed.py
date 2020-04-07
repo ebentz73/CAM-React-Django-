@@ -7,7 +7,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from app.models import AnalyticsSolution, Scenario, ExecutiveView, InputPage, InputDataSet, Input, InputChoice
+from app.models import AnalyticsSolution, Scenario, ExecutiveView, InputDataSet, InputDataSetInputChoice, \
+    InputDataSetInput, NumericInput, SliderInput
 
 """Clear all data and creates addresses"""
 MODE_REFRESH = 'refresh'
@@ -45,6 +46,11 @@ def create_analytics_solution():
             tam_file=SimpleUploadedFile('test_model.tam', f.read())
         )
 
+    model = solution.models.first()
+    input_page = model.input_pages.first()
+    node_1 = model.nodes.filter(name='1').first()
+    node_2 = model.nodes.filter(name='2').first()
+
     print('Creating Scenarios')
     low_scenario = Scenario.objects.create(
         solution=solution,
@@ -57,13 +63,6 @@ def create_analytics_solution():
     high_scenario = Scenario.objects.create(
         solution=solution,
         name='high'
-    )
-
-    print('Creating Input Pages')
-    model = solution.models.first()
-    input_page = InputPage.objects.create(
-        model=model,
-        name='Penguin Page'
     )
 
     print('Creating Input Data Sets')
@@ -102,31 +101,44 @@ def create_analytics_solution():
     )
 
     print('Creating Inputs')
-    input_ = Input.objects.create(
+    ids_input = InputDataSetInput.objects.create(
         exec_view=exec_view,
-        name='Penguin gotta input low'
+        name='Penguin gotta input data sets'
+    )
+    NumericInput.objects.create(
+        exec_view=exec_view,
+        name='Penguin gotta input numbers',
+        node=node_1,
+    )
+    SliderInput.objects.create(
+        exec_view=exec_view,
+        name='Penguin gotta slide',
+        node=node_2,
+        minimum=-10,
+        maximum=10,
+        step=1,
     )
 
     print('Creating Input Choices')
-    InputChoice.objects.create(
-        input=input_,
+    InputDataSetInputChoice.objects.create(
+        input=ids_input,
+        label='Penguin put low',
         ids=low_ids,
-        label='Penguin put low'
     )
-    InputChoice.objects.create(
-        input=input_,
+    InputDataSetInputChoice.objects.create(
+        input=ids_input,
+        label='Penguin put mid',
         ids=mid_ids,
-        label='Penguin put mid'
     )
-    InputChoice.objects.create(
-        input=input_,
+    InputDataSetInputChoice.objects.create(
+        input=ids_input,
+        label='Penguin put high',
         ids=high_ids,
-        label='Penguin put high'
     )
-    InputChoice.objects.create(
-        input=input_,
+    InputDataSetInputChoice.objects.create(
+        input=ids_input,
+        label='Penguin put very high',
         ids=highv2_ids,
-        label='Penguin put very high'
     )
 
 

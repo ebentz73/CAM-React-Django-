@@ -1,0 +1,40 @@
+{% extends 'app/base.html' %}
+
+{% load i18n material_frontend material_form %}
+
+{% block extracss %}
+  {{ block.super }}
+  <style>
+    .card form .section h5 {
+      font-size: 1.2rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid black;
+      margin-bottom: 10px;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <div class="left-panel">
+    <div class="card">
+      <form method="POST">
+        {% csrf_token %}
+        <div class="card-content">
+          <div class="card-title">
+            {% block formtitle %}{% endblock %}
+          </div>
+          {% block form %}
+            {% form %}{% endform %}
+          {% endblock %}
+        </div>
+        <div class="card-action">
+          <div class="right-align">
+            {% block submit_row %}
+              <button type="submit" class="waves-effect waves-light btn white-text">{% trans 'Save' %}</button>
+            {% endblock %}
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

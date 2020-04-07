@@ -3,7 +3,7 @@ import tempfile
 from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 
-from app.models import InputDataSet, AnalyticsSolution, InputPage, Model, Scenario
+from app.models import InputDataSet, AnalyticsSolution, InputPage, Model, Scenario, Node
 from app.utils import Sqlite
 
 
@@ -17,12 +17,25 @@ def update_model(sender, **kwargs):
 
         # Open sqlite file
         with Sqlite(f.name) as cursor:
-            cursor.execute('SELECT * from TruNavModel')
+            cursor.execute('select * from TruNavModel')
             for model_record in cursor.fetchall():
-                model = Model.objects.create(name=model_record[2], solution=solution)
-                cursor.execute('SELECT * from ModelDataPage where ModelId=? and pagetype=0', (model_record[1],))
+                model_id = model_record[1]
+                model_name = model_record[2]
+                model = Model.objects.create(name=model_name, solution=solution, tam_id=model_id)
+
+                # Save all input pages
+                cursor.execute('select * from ModelDataPage where ModelId=? and pagetype=0', (model_id,))
                 for data_page_record in cursor.fetchall():
-                    InputPage.objects.create(name=data_page_record[3], model=Model.objects.get(id=model.id))
+                    input_page_id = data_page_record[2]
+                    input_page_name = data_page_record[3]
+                    InputPage.objects.create(name=input_page_name, model=model, tam_id=input_page_id)
+
+                # Save all nodes
+                cursor.execute('select * from Node where ModelId=?', (model_id,))
+                for node_record in cursor.fetchall():
+                    node_id = node_record[2]
+                    node_name = node_record[3]
+                    Node.objects.create(name=node_name, model=model, tam_id=node_id)
 
 
 @receiver(m2m_changed, sender=InputDataSet.scenarios.through)

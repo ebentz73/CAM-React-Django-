@@ -1,0 +1,7 @@
+{% extends 'material/frontend/views/detail.html' %}
+{% load i18n material_frontend %}
+
+{% block actions_row %}
+  {{ block.super }}
+  <a href="{% url 'app:render_executive' object.pk %}" class="btn">{% trans 'Evaluate' %}</a>
+{% endblock %}
