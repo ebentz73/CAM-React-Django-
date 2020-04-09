@@ -65,15 +65,15 @@ def load_ds(request):
 # Render_executive view
 def render_executive(request, executiveview_id):
     instance = get_object_or_404(ExecutiveView, pk=executiveview_id)
-    if request.method == 'POST':
-        form = CreateEvalJobForm(request.POST, instance=instance)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect('/')
-    else:
-        form = CreateEvalJobForm(instance=instance)
+    form = CreateEvalJobForm(instance=instance, data=request.POST or None)
 
-    return render(request, 'app/ev.html', {'form': form, 'exec_view': instance})
+    if form.is_valid():
+        form.save()
+
+    return render(request, 'app/ev.html', {
+        'form': form,
+        'exec_view': instance,
+    })
 
 
 # Create JSON and View Charts
@@ -126,9 +126,30 @@ def search_ds(request):
         print(search_ds)
 
 
+class EvalJobDetailView(material.DetailModelView):
+    ...
+    # def get_object_data(self):
+    #     list_display = ('Solution', 'Date Created', 'Status', 'Name')
+    #     for field, value in super().get_object_data():
+    #         yield field, value
+    #
+    # def get_context_data(self, **kwargs):
+    #     return {}
+
+
 class EvalJobViewSet(material.ModelViewSet):
     model = EvalJob
-    form_class = CreateEvalJobForm
+    list_display = ('name', 'date_created', 'status')
+    detail_view_class = EvalJobDetailView
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class ExecutiveViewViewSet(material.ModelViewSet):
