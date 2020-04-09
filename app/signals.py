@@ -1,3 +1,4 @@
+import os
 import tempfile
 
 from django.db.models.signals import post_save, m2m_changed
@@ -12,11 +13,13 @@ def update_model(sender, **kwargs):
     solution = kwargs.get('instance')
 
     # Download file from GCS
-    with tempfile.NamedTemporaryFile() as f:
-        f.write(solution.tam_file.read())
+    f, filename = tempfile.mkstemp()
+    try:
+        os.write(f, solution.tam_file.read())
+        os.close(f)
 
         # Open sqlite file
-        with Sqlite(f.name) as cursor:
+        with Sqlite(filename) as cursor:
             cursor.execute('select * from TruNavModel')
             for model_record in cursor.fetchall():
                 model_id = model_record[1]
@@ -36,6 +39,8 @@ def update_model(sender, **kwargs):
                     node_id = node_record[2]
                     node_name = node_record[3]
                     Node.objects.create(name=node_name, model=model, tam_id=node_id)
+    finally:
+        os.remove(filename)
 
 
 @receiver(m2m_changed, sender=InputDataSet.scenarios.through)
