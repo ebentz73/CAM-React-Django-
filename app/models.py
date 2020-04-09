@@ -147,7 +147,7 @@ class EvalJob(models.Model):
     date_created = models.DateTimeField()
     status = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
-    layer_time_start = models.DateTimeField(null=True)
+    layer_time_start = models.DateField(null=True)
     layer_time_increment = models.TextField(null=True, choices=TIME_OPTIONS)
 
     def __str__(self):
@@ -163,7 +163,7 @@ class NodeResult(models.Model):
     scenario = models.CharField(max_length=255)
     model = models.CharField(max_length=255)
     node = models.CharField(max_length=255)
-    layer = models.CharField(max_length=255)
+    layer = models.DateField()
     node_tags = JSONField()
     result_10 = models.FloatField()
     result_30 = models.FloatField()
