@@ -10,7 +10,7 @@ class CreateEvalJobForm(forms.Form):
     evaljob_name = forms.CharField()
     scenario_name = forms.CharField()
     time_increment = forms.ChoiceField(choices=EvalJob.TIME_OPTIONS)
-    time_start = forms.DateField(initial=timezone.datetime.today)
+    time_start = forms.DateField(initial=timezone.localdate())
 
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop('instance')
