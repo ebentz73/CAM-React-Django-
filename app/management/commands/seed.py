@@ -1,7 +1,6 @@
 """Seed the database.
 
-Example:
-    >>> python manage.py seed --mode=refresh
+Example: python manage.py seed --mode=refresh
 """
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management.base import BaseCommand
