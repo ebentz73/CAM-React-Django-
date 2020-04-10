@@ -6,7 +6,7 @@ export default class AnimatedEllipsis extends HTMLElement {
     // If searching inside a jQuery DataTable
     if (forTable !== null) {
       setTimeout(() => {
-        let table = $(forTable).DataTable({destroy: true});
+        let table = $(forTable).DataTable();
 
         let cells = table.cells()[0].filter(x => {
           return table.cell(x.row, x.column).data().includes('...');
