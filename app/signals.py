@@ -10,37 +10,38 @@ from app.utils import Sqlite
 
 @receiver(post_save, sender=AnalyticsSolution)
 def update_model(sender, **kwargs):
-    solution = kwargs.get('instance')
+    if kwargs.get('created', False):
+        solution = kwargs.get('instance')
 
-    # Download file from GCS
-    f, filename = tempfile.mkstemp()
-    try:
-        os.write(f, solution.tam_file.read())
-        os.close(f)
+        # Download file from GCS
+        f, filename = tempfile.mkstemp()
+        try:
+            os.write(f, solution.tam_file.read())
+            os.close(f)
 
-        # Open sqlite file
-        with Sqlite(filename) as cursor:
-            cursor.execute('select * from TruNavModel')
-            for model_record in cursor.fetchall():
-                model_id = model_record[1]
-                model_name = model_record[2]
-                model = Model.objects.create(name=model_name, solution=solution, tam_id=model_id)
+            # Open sqlite file
+            with Sqlite(filename) as cursor:
+                cursor.execute('select * from TruNavModel')
+                for model_record in cursor.fetchall():
+                    model_id = model_record[1]
+                    model_name = model_record[2]
+                    model = Model.objects.create(name=model_name, solution=solution, tam_id=model_id)
 
-                # Save all input pages
-                cursor.execute('select * from ModelDataPage where ModelId=? and pagetype=0', (model_id,))
-                for data_page_record in cursor.fetchall():
-                    input_page_id = data_page_record[2]
-                    input_page_name = data_page_record[3]
-                    InputPage.objects.create(name=input_page_name, model=model, tam_id=input_page_id)
+                    # Save all input pages
+                    cursor.execute('select * from ModelDataPage where ModelId=? and pagetype=0', (model_id,))
+                    for data_page_record in cursor.fetchall():
+                        input_page_id = data_page_record[2]
+                        input_page_name = data_page_record[3]
+                        InputPage.objects.create(name=input_page_name, model=model, tam_id=input_page_id)
 
-                # Save all nodes
-                cursor.execute('select * from Node where ModelId=?', (model_id,))
-                for node_record in cursor.fetchall():
-                    node_id = node_record[2]
-                    node_name = node_record[3]
-                    Node.objects.create(name=node_name, model=model, tam_id=node_id)
-    finally:
-        os.remove(filename)
+                    # Save all nodes
+                    cursor.execute('select * from Node where ModelId=?', (model_id,))
+                    for node_record in cursor.fetchall():
+                        node_id = node_record[2]
+                        node_name = node_record[3]
+                        Node.objects.create(name=node_name, model=model, tam_id=node_id)
+        finally:
+            os.remove(filename)
 
 
 @receiver(m2m_changed, sender=InputDataSet.scenarios.through)
