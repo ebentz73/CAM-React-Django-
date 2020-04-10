@@ -118,7 +118,7 @@ class CreateEvalJobForm(forms.Form):
             evaljob = EvalJob.objects.create(
                 solution=self.instance.solution,
                 date_created=timezone.now(),
-                status='Running.',
+                status='Running...',
                 name=evaljob_name,
                 layer_time_start=time_start,
                 layer_time_increment=time_increment,

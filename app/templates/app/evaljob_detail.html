@@ -1,0 +1,8 @@
+{% extends 'app/base_detail.html' %}
+{% load i18n material_frontend %}
+
+{% block card %}
+  <animated-ellipsis>
+    {{ block.super }}
+  </animated-ellipsis>
+{% endblock %}

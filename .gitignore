@@ -4,3 +4,4 @@ venv
 .pytest_cache
 id_rsa
 *.pyc
+node_modules

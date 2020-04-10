@@ -1,0 +1,35 @@
+{
+  "name": "cloud-analysis-manager",
+  "version": "1.0.0",
+  "description": "| ENV                    | Default                         | Description                                                                               |\r |------------------------|---------------------------------|-------------------------------------------------------------------------------------------|\r | DJANGO_SETTINGS_MODULE | cloud_analysis_manager.settings | Django settings path. NOTE: This will need to be set through PyCharm's run configuration. |\r | DB_USER                |                                 | Database User                                                                             |\r | DB_PASSWORD            |                                 | Database Password                                                                         |\r | DB_HOST                |                                 | Database Host                                                                             |\r | DB_PORT                |                                 | Database Port                                                                             |",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/lonestaranalysis/cloud-analysis-manager.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/lonestaranalysis/cloud-analysis-manager#readme",
+  "devDependencies": {
+    "@babel/core": "^7.9.0",
+    "@babel/preset-env": "^7.9.5",
+    "@babel/register": "^7.9.0",
+    "babel-loader": "^8.1.0",
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11"
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "targets": "> 0.25%, not dead"
+        }
+      ]
+    ]
+  }
+}

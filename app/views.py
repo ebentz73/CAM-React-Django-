@@ -1,7 +1,6 @@
 from functools import wraps
 
 import material.frontend.views as material
-from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.template.defaulttags import register
 from rest_framework import status
@@ -70,7 +69,7 @@ def render_executive(request, executiveview_id):
     if form.is_valid():
         form.save()
 
-    return render(request, 'app/ev.html', {
+    return render(request, 'app/executiveview.html', {
         'form': form,
         'exec_view': instance,
     })
@@ -126,21 +125,9 @@ def search_ds(request):
         print(search_ds)
 
 
-class EvalJobDetailView(material.DetailModelView):
-    ...
-    # def get_object_data(self):
-    #     list_display = ('Solution', 'Date Created', 'Status', 'Name')
-    #     for field, value in super().get_object_data():
-    #         yield field, value
-    #
-    # def get_context_data(self, **kwargs):
-    #     return {}
-
-
 class EvalJobViewSet(material.ModelViewSet):
     model = EvalJob
     list_display = ('name', 'date_created', 'status')
-    detail_view_class = EvalJobDetailView
 
     def has_add_permission(self, request):
         return False

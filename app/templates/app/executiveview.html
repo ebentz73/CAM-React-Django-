@@ -1,0 +1,37 @@
+{% extends 'app/base_form.html' %}
+{% load i18n material_frontend material_form %}
+
+{% block breadcrumbs_items %}
+  <a href="{% url exec_view|frontend_urlname:'list' %}">{{ exec_view|verbose_name_plural|title }}</a>
+  <a href="{% url exec_view|frontend_urlname:'detail' exec_view.pk %}">{{ exec_view }}</a>
+  <a class="active">{% trans 'Run Eval Job' %}</a>
+{% endblock %}
+
+{% block content %}
+  <div class="left-panel">
+    <div class="card">
+      <range-value>
+        <dmc-form>
+          <form method="POST">
+            {% csrf_token %}
+            <div class="card-content">
+              <div class="card-title">
+                {% block formtitle %}Executive View{% endblock %}
+              </div>
+              {% block form %}
+                {% form %}{% endform %}
+              {% endblock %}
+            </div>
+            <div class="card-action">
+              <div class="right-align">
+                {% block submit_row %}
+                  <button type="submit" class="waves-effect waves-light btn white-text">{% trans 'Save' %}</button>
+                {% endblock %}
+              </div>
+            </div>
+          </form>
+        </dmc-form>
+      </range-value>
+    </div>
+  </div>
+{% endblock %}
