@@ -10,8 +10,7 @@ String.prototype.count = function (c) {
   return result;
 };
 
-window.addEventListener('load', () => {
-  console.debug('here');
+$(document).ready(() => {
   window.customElements.define('animated-ellipsis', AnimatedEllipsis);
   window.customElements.define('range-value', Range);
 });
