@@ -124,7 +124,7 @@ class InputDataSet(models.Model):
     input_page = models.ForeignKey(InputPage, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     file = models.FileField(upload_to=_name_ids_file)
-    scenarios = models.ManyToManyField(Scenario)
+    scenarios = models.ManyToManyField(Scenario, null=True)
 
     def __str__(self):
         return self.name
