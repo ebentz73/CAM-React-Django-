@@ -132,7 +132,7 @@ class Migration(migrations.Migration):
                 ('scenario', models.CharField(max_length=255)),
                 ('model', models.CharField(max_length=255)),
                 ('node', models.CharField(max_length=255)),
-                ('layer', models.CharField(max_length=255)),
+                ('layer', models.DateTimeField()),
                 ('node_tags', django.contrib.postgres.fields.jsonb.JSONField()),
                 ('result_10', models.FloatField()),
                 ('result_30', models.FloatField()),

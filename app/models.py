@@ -147,7 +147,7 @@ class EvalJob(models.Model):
     date_created = models.DateTimeField()
     status = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
-    layer_time_start = models.DateField(null=True)
+    layer_time_start = models.DateTimeField(null=True)
     layer_time_increment = models.TextField(null=True, choices=TIME_OPTIONS)
 
     def __str__(self):
