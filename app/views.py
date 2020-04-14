@@ -45,15 +45,6 @@ def get_item(dictionary, key):
     return dictionary.get(key)
 
 
-def stop(request, evaljob_id):
-    # Update the status of the eval job
-    evaljob = get_object_or_404(EvalJob, pk=evaljob_id)
-    evaljob.status = 'Stopped.'
-    # TODO: If running a VM, stop it
-
-    return render(request, 'app/index.html')
-
-
 # Load Datasets for the executive views
 def load_ds(request):
     inputpage_id = request.GET.get('page')

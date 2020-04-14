@@ -9,7 +9,6 @@ urlpatterns = [
     path('evaljob/', include(views.EvalJobViewSet().urls)),
 
     path('load_chart/<int:evaljob_id>/', views.load_chart, name='load_chart'),
-    path('stop/', views.stop, name='stop'),
     path('view/', views.search_ds, name='search_ds'),
     path('load-data-set/', views.load_ds, name='ajax_load_data_set'),
 ]
