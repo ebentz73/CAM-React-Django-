@@ -13,11 +13,11 @@ from app.models import Model, ExecutiveView, InputDataSet, EvalJob, NodeResult
 from app.serializers import EvalJobSerializer, NodeResultSerializer
 
 
-def validate_api(serializer_cls):
+def validate_api(serializer_cls, many=False):
     def decorator(function):
         @wraps(function)
         def wrapper(request):
-            serializer = serializer_cls(data=request.data)
+            serializer = serializer_cls(data=request.data, many=many)
             if serializer.is_valid():
                 return function(request, serializer)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -34,7 +34,7 @@ class NodeResultView(APIView):
     """Create or update a node result."""
 
     @staticmethod
-    @validate_api(NodeResultSerializer)
+    @validate_api(NodeResultSerializer, many=True)
     def post(request, serializer):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
