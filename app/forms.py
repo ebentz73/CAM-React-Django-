@@ -35,7 +35,7 @@ class CreateEvalJobForm(forms.Form):
 
         for slider_input in self.instance.slider_inputs:
             widget_id = f'input_slider_{slider_input.id}'
-            self.fields[widget_id] = forms.IntegerField(
+            self.fields[widget_id] = forms.FloatField(
                 widget=forms.NumberInput(attrs={
                     'type': 'range',
                     'step': slider_input.step,

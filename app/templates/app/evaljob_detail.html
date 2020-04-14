@@ -5,4 +5,10 @@
   <animated-ellipsis>
     {{ block.super }}
   </animated-ellipsis>
+
+
+
+{% endblock %}
+    {% block actions_row%}
+    <a href="http://localhost:3001/d/TFF_mLCWk/cam-demo?orgId=2&var-EvalJob={{ object.pk }}" class="btn" >{% trans 'View Results' %}</a>
 {% endblock %}
