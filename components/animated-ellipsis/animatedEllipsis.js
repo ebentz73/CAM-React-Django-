@@ -8,28 +8,50 @@ export default class AnimatedEllipsis extends HTMLElement {
       setTimeout(() => {
         let table = $(forTable).DataTable();
 
-        let cells = table.cells()[0].filter(x => {
-          return table.cell(x.row, x.column).data().includes('...');
-        });
-
+        let i = 0;
         this.interval = setInterval(() => {
-          cells.forEach((x) => {
-            let cell = table.cell(x.row, x.column);
-            let count = cell.data().count('.');
-            cell.data(count === 3 ? cell.data().slice(0, -3) : cell.data().concat('.'));
-          });
+          if (i === 3) {
+            table.draw();
+            i = 0;
+          } else {
+            let cells = table.cells()[0].filter(x => x.column === 2);
+
+            for (let c of cells) {
+              let cell = table.cell(c.row, c.column);
+              if (cell.data().includes('Running')) {
+                let count = cell.data().count('.');
+
+                if (count === 3) {
+                  cell.data(cell.data().slice(0, -3));
+                } else {
+                  cell.data(cell.data().concat('.'));
+                }
+              }
+            }
+            i++;
+          }
         }, 500);
       }, 500);
     } else {
-      let tds = $('td:contains("...")');
-
-      // Animate the ellipsis every half second
+      let i = 0;
       this.interval = setInterval(() => {
-        tds.each((index) => {
-          let td = tds.get(index);
-          let count = td.innerHTML.count('.');
-          td.innerHTML = count === 3 ? td.innerHTML.slice(0, -3) : td.innerHTML.concat('.');
-        });
+        if (i++ === 3) {
+          $.ajax({
+            type: 'GET',
+            url: window.location.href,
+            data: {},
+            success: (data) => {
+              $('.table').html($(data).find('.table').html());
+            }
+          });
+          i = 0;
+        }
+
+        let status = $('th:contains("Status")')[0].parentElement.children[1];
+        if (status.innerHTML.includes('Running')) {
+          let count = status.innerHTML.count('.');
+          status.innerHTML = count === 3 ? status.innerHTML.slice(0, -3) : status.innerHTML.concat('.');
+        }
       }, 500);
     }
   }
