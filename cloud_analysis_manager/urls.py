@@ -28,7 +28,7 @@ urlpatterns = [
 
     path('app/', include('app.urls')),
     path('api/evaljob/<int:pk>/', views.EvalJobDefinitionViewSet.as_view({
-        'get': 'retrieve', 'put': 'update'})),
+        'get': 'retrieve', 'patch': 'partial_update'})),
     path('api/results/', views.NodeResultView.as_view()),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]

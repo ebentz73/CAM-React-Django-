@@ -105,7 +105,7 @@ def run_eval_engine(evaljob_id: int):
     container = client.create_container('trunavconsolecore:latest',
                                         detach=True,
                                         environment={
-                                            'EVALJOBDEF_URL': f'http://host.docker.internal:8000/api/evaljob/{evaljob_id}',
+                                            'EVALJOBDEF_URL': f'http://host.docker.internal:8000/api/evaljob/{evaljob_id}/',
                                             'RESULTS_URL': 'http://host.docker.internal:8000/api/results/',
                                             'GOOGLE_APPLICATION_CREDENTIALS': '/credentials.json'},
                                         volumes=['/credentials.json'],
