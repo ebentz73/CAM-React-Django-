@@ -50,7 +50,7 @@ class HideModelAdmin(ModelAdminBase):
 
 @admin.register(models.AnalyticsSolution)
 class AnalyticsSolution(ModelAdminBase, admin.ModelAdmin):
-    change_form_template = 'app/change_form_update.html'
+    change_form_template = 'app/admin/change_form_update.html'
     exclude = ['file_url']
 
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
@@ -63,7 +63,7 @@ class AnalyticsSolution(ModelAdminBase, admin.ModelAdmin):
 
 @admin.register(models.ExecutiveView)
 class ExecutiveView(ModelAdminBase, admin.ModelAdmin):
-    change_form_template = 'app/change_form_update.html'
+    change_form_template = 'app/admin/change_form_update.html'
 
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
         extra_context = {
@@ -80,7 +80,7 @@ class ExecutiveView(ModelAdminBase, admin.ModelAdmin):
 
 @admin.register(models.EvalJob)
 class EvalJob(HideModelAdmin, admin.ModelAdmin):
-    change_form_template = 'app/exec_view.html'
+    change_form_template = 'app/admin/exec_view.html'
 
     def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
         extra_context = {
