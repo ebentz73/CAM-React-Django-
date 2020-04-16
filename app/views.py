@@ -63,13 +63,13 @@ class ExecutiveViewViewSet(material.ModelViewSet):
 
 
 def render_executive(request, executiveview_id):
-    instance = get_object_or_404(ExecutiveView, pk=executiveview_id)
-    form = CreateEvalJobForm(instance=instance, data=request.POST or None)
+    executive_view = get_object_or_404(ExecutiveView, pk=executiveview_id)
+    form = CreateEvalJobForm(executive_view=executive_view, data=request.POST or None)
 
     if form.is_valid():
         form.save()
 
     return render(request, 'app/executiveview.html', {
         'form': form,
-        'exec_view': instance,
+        'exec_view': executive_view,
     })

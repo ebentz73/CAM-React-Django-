@@ -13,27 +13,27 @@ class CreateEvalJobForm(forms.Form):
     time_start = forms.DateField(initial=timezone.localdate())
 
     def __init__(self, *args, **kwargs):
-        self.instance = kwargs.pop('instance')
+        self.executive_view = kwargs.pop('executive_view')
         super().__init__(*args, **kwargs)
 
-        scenarios = self.instance.solution.scenarios
+        scenarios = self.executive_view.solution.scenarios
         self.fields['scenario'] = forms.ModelChoiceField(queryset=scenarios,
                                                          label='Scenario To Modify',
-                                                         initial=scenarios.first().pk)
+                                                         initial=scenarios.first())
 
         widget_ids = []
-        for ids_input in self.instance.ids_inputs:
+        for ids_input in self.executive_view.ids_inputs:
             widget_id = f'input_ids_{ids_input.id}'
             choices = [(choice.ids_id, choice.ids.name) for choice in ids_input.input_choices]
             self.fields[widget_id] = forms.ChoiceField(choices=choices, label=ids_input.name)
             widget_ids.append(widget_id)
 
-        for numeric_input in self.instance.numeric_inputs:
+        for numeric_input in self.executive_view.numeric_inputs:
             widget_id = f'input_numeric_{numeric_input.id}'
             self.fields[widget_id] = forms.FloatField(label=numeric_input.name)
             widget_ids.append(widget_id)
 
-        for slider_input in self.instance.slider_inputs:
+        for slider_input in self.executive_view.slider_inputs:
             widget_id = f'input_slider_{slider_input.id}'
             self.fields[widget_id] = forms.FloatField(
                 widget=forms.NumberInput(attrs={
@@ -86,7 +86,7 @@ class CreateEvalJobForm(forms.Form):
 
         # Create ad hoc scenario
         scenario = Scenario.objects.create(
-            solution=self.instance.solution,
+            solution=self.executive_view.solution,
             name=scenario_name,
             is_adhoc=True,
         )
@@ -116,7 +116,7 @@ class CreateEvalJobForm(forms.Form):
         if seen_input_pages == scenario_input_pages:
             # Create Eval Job
             evaljob = EvalJob.objects.create(
-                solution=self.instance.solution,
+                solution=self.executive_view.solution,
                 date_created=timezone.now(),
                 status='Running...',
                 name=evaljob_name,
