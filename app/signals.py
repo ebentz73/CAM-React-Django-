@@ -39,7 +39,9 @@ def update_model(sender, **kwargs):
                     for node_record in cursor.fetchall():
                         node_id = node_record[2]
                         node_name = node_record[3]
-                        Node.objects.create(name=node_name, model=model, tam_id=node_id)
+                        node_type = node_record[5]
+                        if node_type in ('inputnode', 'constnode', 'inputiteratornode', 'percentAllocationNode'):
+                            Node.objects.create(name=node_name, model=model, tam_id=node_id)
         finally:
             os.remove(filename)
 
