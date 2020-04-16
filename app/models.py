@@ -149,6 +149,7 @@ class EvalJob(models.Model):
     status = models.CharField(max_length=255)
     layer_time_start = models.DateTimeField(null=True)
     layer_time_increment = models.TextField(null=True, choices=TIME_OPTIONS)
+    errors = JSONField(null=True)
 
     def __str__(self):
         return self.name
@@ -156,6 +157,9 @@ class EvalJob(models.Model):
     @property
     def node_results(self) -> ModelType['NodeResult']:
         return self.noderesult_set.all()
+
+    def is_complete(self):
+        return self.status == 'Complete.'
 
 
 class NodeResult(models.Model):
