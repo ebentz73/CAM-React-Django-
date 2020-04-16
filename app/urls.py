@@ -7,8 +7,4 @@ urlpatterns = [
     path('render_executive/<int:executiveview_id>/', views.render_executive, name='render_executive'),
     path('executive-view/', include(views.ExecutiveViewViewSet().urls)),
     path('evaljob/', include(views.EvalJobViewSet().urls)),
-
-    path('load_chart/<int:evaljob_id>/', views.load_chart, name='load_chart'),
-    path('view/', views.search_ds, name='search_ds'),
-    path('load-data-set/', views.load_ds, name='ajax_load_data_set'),
 ]
