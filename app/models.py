@@ -142,11 +142,11 @@ class EvalJob(models.Model):
         ('year', 'Year'),
     )
 
+    name = models.CharField(max_length=255)
     solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
     adhoc_scenario = models.OneToOneField(Scenario, on_delete=models.CASCADE)
     date_created = models.DateTimeField()
     status = models.CharField(max_length=255)
-    name = models.CharField(max_length=255)
     layer_time_start = models.DateTimeField(null=True)
     layer_time_increment = models.TextField(null=True, choices=TIME_OPTIONS)
 
@@ -173,8 +173,8 @@ class NodeResult(models.Model):
 
 
 class ExecutiveView(models.Model):
-    solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
+    solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
