@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.db.models import ManyToManyRel
+from polymorphic.admin import StackedPolymorphicInline, PolymorphicInlineSupportMixin
 
 from app import models
 
@@ -48,57 +49,36 @@ class HideModelAdmin(ModelAdminBase):
         return False
 
 
-@admin.register(models.AnalyticsSolution)
-class AnalyticsSolution(ModelAdminBase, admin.ModelAdmin):
-    change_form_template = 'app/admin/change_form_update.html'
-    exclude = ['file_url']
-
-    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
-        extra_context = {
-            'view_type': 'analyticssolution',
-            'solution_id': object_id,
-        }
-        return super().changeform_view(request, object_id, form_url, extra_context=extra_context)
-
-
-@admin.register(models.ExecutiveView)
-class ExecutiveView(ModelAdminBase, admin.ModelAdmin):
-    change_form_template = 'app/admin/change_form_update.html'
-
-    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
-        extra_context = {
-            'view_type': 'executive',
-            'executive': object_id,
-            'ip_pages': self._get_input_pages(),
-        }
-        return super().changeform_view(request, object_id, form_url, extra_context=extra_context)
-
-    @staticmethod
-    def _get_input_pages():
-        return models.InputPage.objects.all().values_list('id', 'name')
-
-
-@admin.register(models.EvalJob)
-class EvalJob(HideModelAdmin, admin.ModelAdmin):
-    change_form_template = 'app/admin/exec_view.html'
-
-    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
-        extra_context = {
-            'view_type': 'evaljob',
-            'eval_id': object_id,
-        }
-        return super().changeform_view(request, object_id, form_url, extra_context=extra_context)
-
-
 @admin.register(models.Scenario)
-class Scenario(HideModelAdmin, admin.ModelAdmin):
+class Scenario(HideModelAdmin):
     readonly_fields = ['is_adhoc']
 
 
+admin.site.register(models.AnalyticsSolution, ModelAdminBase)
 admin.site.register(models.Model, HideModelAdmin)
 admin.site.register(models.InputPage, HideModelAdmin)
 admin.site.register(models.InputDataSet, HideModelAdmin)
-admin.site.register(models.InputDataSetInput, HideModelAdmin)
 admin.site.register(models.InputDataSetInputChoice, HideModelAdmin)
-admin.site.register(models.NumericInput, HideModelAdmin)
-admin.site.register(models.SliderInput, HideModelAdmin)
+admin.site.register(models.EvalJob, HideModelAdmin)
+
+
+class InputInline(StackedPolymorphicInline):
+    model = models.Input
+
+    @property
+    def child_inlines(self):
+        """Get all input inline classes."""
+        return [self._get_polymorphic_child(relation.related_model)
+                for relation in models.Input._meta.fields_map.values()]
+
+    @staticmethod
+    def _get_polymorphic_child(model_cls):
+        """Create and return the base inline class for a polymorphic child."""
+        return type('PolymorphicChildInline',
+                    (StackedPolymorphicInline.Child,),
+                    {'show_change_link': True, 'model': model_cls})
+
+
+@admin.register(models.ExecutiveView)
+class ExecutiveViewAdmin(PolymorphicInlineSupportMixin, admin.ModelAdmin):
+    inlines = (InputInline,)
