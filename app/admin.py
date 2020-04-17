@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.db.models import ManyToManyRel
-from polymorphic.admin import StackedPolymorphicInline, PolymorphicInlineSupportMixin
+from polymorphic.admin import StackedPolymorphicInline, PolymorphicInlineSupportMixin, PolymorphicParentModelAdmin, \
+    PolymorphicChildModelAdmin
 
 from app import models
 
@@ -62,23 +63,59 @@ admin.site.register(models.InputDataSetInputChoice, HideModelAdmin)
 admin.site.register(models.EvalJob, HideModelAdmin)
 
 
+class ExecutiveViewChildAdmin(PolymorphicChildModelAdmin):
+    base_model = models.ExecutiveView
+
+
+@admin.register(models.InputDataSetInput)
+class InputDataSetInputAdmin(ExecutiveViewChildAdmin):
+    class InputDataSetInputChoiceInline(admin.StackedInline):
+        model = models.InputDataSetInputChoice
+        extra = 0
+
+    base_model = models.InputDataSetInput
+    inlines = (InputDataSetInputChoiceInline,)
+
+
+@admin.register(models.NumericInput)
+class NumericInputAdmin(ExecutiveViewChildAdmin):
+    base_model = models.NumericInput
+
+
+@admin.register(models.SliderInput)
+class SliderInputAdmin(ExecutiveViewChildAdmin):
+    base_model = models.SliderInput
+
+
 class InputInline(StackedPolymorphicInline):
+    class InputDataSetInputInline(StackedPolymorphicInline.Child):
+        model = models.InputDataSetInput
+        show_change_link = True
+
+    class NumericInputInline(StackedPolymorphicInline.Child):
+        model = models.NumericInput
+
+    class SliderInputInline(StackedPolymorphicInline.Child):
+        model = models.SliderInput
+
     model = models.Input
-
-    @property
-    def child_inlines(self):
-        """Get all input inline classes."""
-        return [self._get_polymorphic_child(relation.related_model)
-                for relation in models.Input._meta.fields_map.values()]
-
-    @staticmethod
-    def _get_polymorphic_child(model_cls):
-        """Create and return the base inline class for a polymorphic child."""
-        return type('PolymorphicChildInline',
-                    (StackedPolymorphicInline.Child,),
-                    {'show_change_link': True, 'model': model_cls})
+    child_inlines = (
+        InputDataSetInputInline,
+        NumericInputInline,
+        SliderInputInline,
+    )
 
 
 @admin.register(models.ExecutiveView)
 class ExecutiveViewAdmin(PolymorphicInlineSupportMixin, admin.ModelAdmin):
     inlines = (InputInline,)
+
+
+@admin.register(models.Input)
+class InputAdmin(PolymorphicParentModelAdmin):
+    base_mode = models.Input
+    child_models = (models.InputDataSetInput, models.NumericInput, models.SliderInput)
+
+    def has_module_permission(self, request):
+        # Hide this model from admin index
+        return False
