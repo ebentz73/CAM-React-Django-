@@ -67,7 +67,9 @@ def render_executive(request, executiveview_id):
     form = CreateEvalJobForm(executive_view=executive_view, data=request.POST or None)
 
     if form.is_valid():
-        form.save()
+        evaljob = form.save()
+        if evaljob:
+            return redirect(f'/app/eval-job/{evaljob.pk}/detail/')
 
     return render(request, 'app/executiveview.html', {
         'form': form,

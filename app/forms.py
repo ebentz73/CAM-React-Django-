@@ -126,5 +126,6 @@ class CreateEvalJobForm(forms.Form):
             )
 
             run_eval_engine(evaljob.id)
+            return evaljob
         else:
             self.add_error('The selected scenario and the ad hoc scenario do not have matching input pages.', None)
