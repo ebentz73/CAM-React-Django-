@@ -13,7 +13,7 @@ def update_model(sender, **kwargs):
     if kwargs.get('created', False):
         solution = kwargs.get('instance')
 
-        # Download file from GCS
+        # Download tam model file from GCS and save what we need out of it
         f, filename = tempfile.mkstemp()
         try:
             os.write(f, solution.tam_file.read())

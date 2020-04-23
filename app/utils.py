@@ -1,3 +1,4 @@
+import json
 import sqlite3
 from typing import Union, TypeVar, Generic, Iterator
 
@@ -6,6 +7,8 @@ import environ
 import storages.backends.gcloud
 from django.core.files.storage import default_storage
 from django.db.models import QuerySet
+from grafana_api.grafana_face import GrafanaFace
+
 
 _Z = TypeVar('_Z')
 
@@ -115,3 +118,21 @@ def run_eval_engine(evaljob_id: int):
                                             ]
                                         ))
     client.start(container)
+
+
+def create_dashboard(title: str) -> dict:
+    """Create a new dashboard by duplicating the template dashboard.
+
+    Args:
+        title: Title of the new dashboard.
+
+    Returns:
+        Json response of the created dashboard.
+    """
+    env = environ.Env()
+
+    grafana_api = GrafanaFace(auth=env('GRAFANA_API_KEY'), host=env('GRAFANA_HOST'))
+    with open(env('GRAFANA_TEMPLATE')) as f:
+        dashboard = json.load(f)
+    dashboard['title'] = title
+    return grafana_api.dashboard.update_dashboard({'dashboard': dashboard})

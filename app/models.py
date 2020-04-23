@@ -5,8 +5,7 @@ from django.db import models
 from django.db.models import Q
 from polymorphic.models import PolymorphicModel
 
-from app.utils import ModelType
-
+from app.utils import ModelType, create_dashboard
 
 __all__ = [
     'AnalyticsSolution',
@@ -36,6 +35,8 @@ class AnalyticsSolution(models.Model):
     name = models.CharField(max_length=255)
     upload_date = models.DateTimeField(auto_now=True)
     tam_file = models.FileField(upload_to=_name_tam_file)
+    dashboard_uid = models.CharField(max_length=40, null=True)
+    dashboard_url = models.CharField(max_length=255, null=True)
 
     def __str__(self):
         return f'Analytics Solution ({self.id}) - {self.name}'
@@ -47,6 +48,14 @@ class AnalyticsSolution(models.Model):
     @property
     def scenarios(self) -> ModelType['Scenario']:
         return self.scenario_set.filter(is_adhoc=False)
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        # Create a new grafana dashboard
+        dashboard = create_dashboard(self.name)
+        self.dashboard_uid = dashboard['uid']
+        self.dashboard_url = dashboard['url']
+        super().save(force_insert, force_update, using, update_fields)
 
 
 class Scenario(models.Model):
