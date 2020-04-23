@@ -51,10 +51,11 @@ class AnalyticsSolution(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
-        # Create a new grafana dashboard
-        dashboard = create_dashboard(self.name)
-        self.dashboard_uid = dashboard['uid']
-        self.dashboard_url = dashboard['url']
+        if not self.pk:
+            # Only execute if the object is not in the database yet
+            dashboard = create_dashboard(self.name)
+            self.dashboard_uid = dashboard['uid']
+            self.dashboard_url = dashboard['url']
         super().save(force_insert, force_update, using, update_fields)
 
 
