@@ -5,11 +5,14 @@ from django.db import models
 from django.db.models import Q
 from polymorphic.models import PolymorphicModel
 
+from app.utils import ModelType
+
+
 __all__ = [
     'AnalyticsSolution',
+    'DecimalNodeOverride',
     'EvalJob',
     'ExecutiveView',
-    'IntegerNodeOverride',
     'Input',
     'InputChoice',
     'InputDataSet',
@@ -23,8 +26,6 @@ __all__ = [
     'Scenario',
     'SliderInput',
 ]
-
-from app.utils import ModelType
 
 
 def _name_tam_file(*_):
@@ -243,5 +244,5 @@ class NodeOverride(PolymorphicModel):
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
 
 
-class IntegerNodeOverride(NodeOverride):
-    value = models.IntegerField()
+class DecimalNodeOverride(NodeOverride):
+    value = models.DecimalField(max_digits=15, decimal_places=5)

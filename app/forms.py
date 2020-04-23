@@ -2,7 +2,7 @@ from django import forms
 from django.utils import timezone
 from material import Layout, Fieldset, Row
 
-from app.models import Scenario, EvalJob, InputDataSet, Input, IntegerNodeOverride
+from app.models import Scenario, EvalJob, InputDataSet, Input, DecimalNodeOverride
 from app.utils import run_eval_engine
 
 
@@ -111,7 +111,7 @@ class CreateEvalJobForm(forms.Form):
         # Add node overrides to ad hoc scenario
         for input_id, value in node_choices.items():
             input_ = Input.objects.get(pk=input_id)
-            IntegerNodeOverride.objects.create(node=input_.node, scenario=scenario, value=value)
+            DecimalNodeOverride.objects.create(node=input_.node, scenario=scenario, value=value)
 
         if seen_input_pages == scenario_input_pages:
             # Create Eval Job
