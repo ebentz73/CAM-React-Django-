@@ -15,20 +15,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import RedirectView
 from material.frontend import urls as frontend_urls
 
 from app import views
 
 urlpatterns = [
-    # Default django admin interface
+    path('', include(frontend_urls)),
+    path('', RedirectView.as_view(url='app/')),
+
     path('admin/', admin.site.urls),
 
-    # Index view
-    path('', include(frontend_urls)),
-
-    path('app/', include('app.urls')),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api/evaljob/<int:pk>/', views.EvalJobDefinitionViewSet.as_view({
         'get': 'retrieve', 'patch': 'partial_update'})),
     path('api/results/', views.NodeResultView.as_view()),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]
