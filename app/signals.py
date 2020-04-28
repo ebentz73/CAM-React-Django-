@@ -12,10 +12,6 @@ from app.utils import Sqlite
 def update_model(sender, **kwargs):
     solution = kwargs.get('instance')
 
-    # Reset the models associated with the solution
-    if not kwargs.get('created'):
-        solution.models.delete()
-
     # Download tam model file from GCS and save what we need out of it
     f, filename = tempfile.mkstemp()
     try:
@@ -28,14 +24,14 @@ def update_model(sender, **kwargs):
             for model_record in cursor.fetchall():
                 model_id = model_record[1]
                 model_name = model_record[2]
-                model = Model.objects.create(name=model_name, solution=solution, tam_id=model_id)
+                model, _ = Model.objects.update_or_create(solution=solution, tam_id=model_id, defaults={'name': model_name})
 
                 # Save all input pages
                 cursor.execute('select * from ModelDataPage where ModelId=? and pagetype=0', (model_id,))
                 for data_page_record in cursor.fetchall():
                     input_page_id = data_page_record[2]
                     input_page_name = data_page_record[3]
-                    InputPage.objects.create(name=input_page_name, model=model, tam_id=input_page_id)
+                    InputPage.objects.update_or_create(model=model, tam_id=input_page_id, defaults={'name': input_page_name})
 
                 # Save all nodes
                 cursor.execute('select * from Node where ModelId=?', (model_id,))
@@ -44,7 +40,7 @@ def update_model(sender, **kwargs):
                     node_name = node_record[3]
                     node_type = node_record[5]
                     if node_type in ('inputnode', 'constnode', 'inputiteratornode', 'percentAllocationNode'):
-                        Node.objects.create(name=node_name, model=model, tam_id=node_id)
+                        Node.objects.update_or_create(model=model, tam_id=node_id, defaults={'name': node_name})
     finally:
         os.remove(filename)
 
