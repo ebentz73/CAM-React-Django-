@@ -35,8 +35,8 @@ class AnalyticsSolution(models.Model):
     name = models.CharField(max_length=255)
     upload_date = models.DateTimeField(auto_now=True)
     tam_file = models.FileField(upload_to=_name_tam_file)
-    dashboard_uid = models.CharField(max_length=40, null=True)
-    dashboard_url = models.CharField(max_length=255, null=True)
+    dashboard_uid = models.CharField(max_length=40, editable=False)
+    dashboard_url = models.CharField(max_length=255, editable=False)
 
     def __str__(self):
         return f'Analytics Solution ({self.id}) - {self.name}'
