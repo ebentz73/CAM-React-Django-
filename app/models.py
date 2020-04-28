@@ -6,6 +6,7 @@ from django.db.models import Q
 from polymorphic.models import PolymorphicModel
 
 from app.utils import ModelType, create_dashboard
+from app.mixins import ModelDiffMixin
 
 __all__ = [
     'AnalyticsSolution',
@@ -31,7 +32,7 @@ def _name_tam_file(*_):
     return f'tam_models/{uuid.uuid4().hex}'
 
 
-class AnalyticsSolution(models.Model):
+class AnalyticsSolution(models.Model, ModelDiffMixin):
     name = models.CharField(max_length=255)
     upload_date = models.DateTimeField(auto_now=True)
     tam_file = models.FileField(upload_to=_name_tam_file)
@@ -49,8 +50,7 @@ class AnalyticsSolution(models.Model):
     def scenarios(self) -> ModelType['Scenario']:
         return self.scenario_set.filter(is_adhoc=False)
 
-    def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None):
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if not self.pk:
             # Only execute if the object is not in the database yet
             dashboard = create_dashboard(self.name)
