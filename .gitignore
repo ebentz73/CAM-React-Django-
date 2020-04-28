@@ -5,3 +5,4 @@ venv
 id_rsa
 *.pyc
 node_modules
+.env
