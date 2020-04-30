@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.db.models import ManyToManyRel
+from django.urls import resolve
 from polymorphic.admin import StackedPolymorphicInline, PolymorphicInlineSupportMixin, PolymorphicParentModelAdmin, \
     PolymorphicChildModelAdmin
 
@@ -67,9 +68,29 @@ class InputInline(StackedPolymorphicInline):
     @staticmethod
     def _get_polymorphic_child(model_cls):
         """Create and return the base inline class for a polymorphic child."""
-        return type('PolymorphicChildInline',
-                    (StackedPolymorphicInline.Child,),
-                    {'show_change_link': True, 'model': model_cls})
+        class PolymorphicChildInline(StackedPolymorphicInline.Child):
+            model = model_cls
+            show_change_link = True
+
+            def formfield_for_foreignkey(self, db_field, request, **kwargs):
+                qs = super().formfield_for_foreignkey(db_field, request, **kwargs)
+                if db_field.name == 'node':
+                    solution = self.get_parent_object_from_request(request).solution
+                    qs.queryset = qs.queryset.filter(model__solution=solution)
+                return qs
+
+            def get_parent_object_from_request(self, request):
+                """Returns the parent object from the request or None.
+
+                Note that this only works for Inlines, because the `parent_model`
+                is not available in the regular admin.ModelAdmin as an attribute.
+                """
+                resolved = resolve(request.path_info)
+                if resolved.kwargs:
+                    return self.parent_model.objects.get(pk=resolved.kwargs['object_id'])
+                return None
+
+        return PolymorphicChildInline
 
 
 class InputChildAdmin(PolymorphicChildModelAdmin, ModelAdminBase):
