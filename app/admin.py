@@ -52,7 +52,7 @@ class HideModelAdmin(ModelAdminBase, HideModelBase):
 
 
 @admin.register(models.Scenario)
-class Scenario(HideModelAdmin):
+class ScenarioAdmin(HideModelAdmin):
     readonly_fields = ['is_adhoc']
 
 
