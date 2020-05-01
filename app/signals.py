@@ -25,14 +25,16 @@ def update_model(sender, **kwargs):
                 for model_record in cursor.fetchall():
                     model_id = model_record[1]
                     model_name = model_record[2]
-                    model, _ = Model.objects.update_or_create(solution=solution, tam_id=model_id, defaults={'name': model_name})
+                    model, _ = Model.objects.update_or_create(solution=solution, tam_id=model_id,
+                                                              defaults={'name': model_name})
 
                     # Save all input pages
                     cursor.execute('select * from ModelDataPage where ModelId=? and pagetype=0', (model_id,))
                     for data_page_record in cursor.fetchall():
                         input_page_id = data_page_record[2]
                         input_page_name = data_page_record[3]
-                        InputPage.objects.update_or_create(model=model, tam_id=input_page_id, defaults={'name': input_page_name})
+                        InputPage.objects.update_or_create(model=model, tam_id=input_page_id,
+                                                           defaults={'name': input_page_name})
 
                     # Save all nodes
                     cursor.execute('select * from Node where ModelId=?', (model_id,))

@@ -21,7 +21,9 @@ def validate_api(serializer_cls, many=False):
             if serializer.is_valid():
                 return function(request, serializer)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
         return wrapper
+
     return decorator
 
 
@@ -38,6 +40,8 @@ class NodeResultView(APIView):
     def post(request, serializer):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
 # endregion
 
 
@@ -59,6 +63,8 @@ class EvalJobViewSet(material.ModelViewSet):
 class ExecutiveViewViewSet(material.ModelViewSet):
     model = ExecutiveView
     list_display = ('name',)
+
+
 # endregion
 
 

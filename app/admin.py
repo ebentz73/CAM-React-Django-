@@ -68,6 +68,7 @@ class InputInline(StackedPolymorphicInline):
     @staticmethod
     def _get_polymorphic_child(model_cls):
         """Create and return the base inline class for a polymorphic child."""
+
         class PolymorphicChildInline(StackedPolymorphicInline.Child):
             model = model_cls
             show_change_link = True

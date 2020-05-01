@@ -9,7 +9,6 @@ from django.core.files.storage import default_storage
 from django.db.models import QuerySet
 from grafana_api.grafana_face import GrafanaFace
 
-
 _Z = TypeVar('_Z')
 
 
