@@ -11,6 +11,10 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=cloud_analysis_manager
+  grafana:
+    image: grafana:6.5.0
+    ports:
+      - 3000:3000
   django:
     restart: always
     build:
