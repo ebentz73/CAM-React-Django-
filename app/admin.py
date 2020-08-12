@@ -81,7 +81,7 @@ class InputInline(StackedPolymorphicInline):
                     obj = self.get_parent_object_from_request(request)
                     if obj is not None:
                         solution = obj.solution
-                    qs.queryset = qs.queryset.filter(model__solution=solution)
+                        qs.queryset = qs.queryset.filter(model__solution=solution)
                 return qs
 
             def get_parent_object_from_request(self, request):
