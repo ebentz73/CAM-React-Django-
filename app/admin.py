@@ -74,9 +74,13 @@ class InputInline(StackedPolymorphicInline):
             show_change_link = True
 
             def formfield_for_foreignkey(self, db_field, request, **kwargs):
+                # Limit the nodes shown in dropdown boxes to the
+                # executive view's solution
                 qs = super().formfield_for_foreignkey(db_field, request, **kwargs)
                 if db_field.name == 'node':
-                    solution = self.get_parent_object_from_request(request).solution
+                    obj = self.get_parent_object_from_request(request)
+                    if obj is not None:
+                        solution = obj.solution
                     qs.queryset = qs.queryset.filter(model__solution=solution)
                 return qs
 
