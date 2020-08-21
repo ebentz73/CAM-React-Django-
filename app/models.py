@@ -7,6 +7,7 @@ from polymorphic.models import PolymorphicModel
 
 from app.utils import ModelType, create_dashboard
 from app.mixins import ModelDiffMixin
+from app.validators import validate_input_date_set_file
 
 __all__ = [
     'AnalyticsSolution',
@@ -134,7 +135,7 @@ def _name_ids_file(*_):
 class InputDataSet(models.Model):
     input_page = models.ForeignKey(InputPage, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    file = models.FileField(upload_to=_name_ids_file)
+    file = models.FileField(upload_to=_name_ids_file, validators=[validate_input_date_set_file])
     scenarios = models.ManyToManyField(Scenario, blank=True)
 
     def __str__(self):

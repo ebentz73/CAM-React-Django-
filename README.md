@@ -61,4 +61,31 @@ There are some parts of this project that uses ansible. If ansible is not instal
 
 ```docker push gcr.io/mmars-test/dummy-engine:latest```
 
-Mitchell was here
+## Getting docker up and running
+
+You can install Docker for windows [here](https://hub.docker.com/editions/community/docker-ce-desktop-windows/). Once it is installed, you need to go to the start menu and get it run as an administrator. Right Click on the Docker icon and open settings. We need to change the settings to be able to use Docker on developer machine. Do the following changes
+1. Go to Resources --> File Sharing and add your cloud_analysis_manager folder location here. 
+2. Go to General and make sure that "Expose daemon on tcp://localhost:2375 without TLS" is enabled
+3. Go to power shell and run the following
+
+   ``` $env:DOCKER_HOST="tcp://0.0.0.0:2375" ```
+
+   This step might not be required always. See if you can do away without it. To check you should go the cloud_analysis_manager repository folder through powershell and run docker
+
+4. Navigate to the folder location or use your pycharm terminal (make sure to be in folder cloud_analysis_manager where DockerFile sits) and run 
+
+   ``` docker-compose up ```  
+
+## Grafana configuration
+
+When you run pip install for this project, grafana will be setup. In order for it to run with our project, we need to,
+1. Hit http://127.0.0.1:3000/ on the browser
+2. Login with default username and password 
+   
+   ```Username: admin```
+   ```Password: admin``` 
+   
+   You will then be prompted to change the password. Do so.
+3. Once logged in, go to ```Configuration``` from the left hand side bar and add a new API key. Once a new key is added, you will be given an API key in return. Note this key and add it to your .env file against ```GRAFANA_API_KEY```
+4. Make sure your .env file contains the following value too
+   ```GRAFANA_TEMPLATE=static/dashboard.json``` 
