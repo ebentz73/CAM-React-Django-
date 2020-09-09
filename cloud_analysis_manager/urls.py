@@ -25,6 +25,7 @@ urlpatterns = [
     path('', RedirectView.as_view(url='app/')),
 
     path('admin/', admin.site.urls),
+    path('frontend/', include('frontend.urls')),
 
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('api/evaljob/<int:pk>/', views.EvalJobDefinitionViewSet.as_view({

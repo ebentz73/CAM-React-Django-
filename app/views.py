@@ -41,6 +41,9 @@ class NodeResultView(APIView):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    def get(self, s):
+        return Response([{"id": 2000, "email": "varsha@gmail.com", "name": "Varsha"}], status=status.HTTP_201_CREATED)
+
 
 # endregion
 
