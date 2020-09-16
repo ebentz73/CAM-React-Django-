@@ -12,7 +12,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    fetch("/api/results")
+    fetch("/api/evaljob/1")
       .then(response => {
         if (response.status > 400) {
           return this.setState(() => {
@@ -24,7 +24,7 @@ class App extends Component {
       .then(data => {
         this.setState(() => {
           return {
-            data,
+            data: [data],
             loaded: true
           };
         });
@@ -38,8 +38,8 @@ class App extends Component {
           return (
             <div>
                 <h1> HELLO </h1>
-                <li key={contact.id}>
-                {contact.name} - {contact.email}
+                <li key={contact.analytics_job_id}>
+                {contact.time_start} - {contact.time_increment_unit}
                 </li>
             </div>
           );
