@@ -1,6 +1,6 @@
 import uuid
 
-from django.contrib.postgres.fields import JSONField
+from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
 from django.db.models import Q
 from polymorphic.models import PolymorphicModel
@@ -25,6 +25,8 @@ __all__ = [
     'NumericInput',
     'Scenario',
     'SliderInput',
+    'NodeData',
+    'ScenarioNodeData'
 ]
 
 
@@ -36,8 +38,8 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
     name = models.CharField(max_length=255)
     upload_date = models.DateTimeField(auto_now=True)
     tam_file = models.FileField(upload_to=_name_tam_file)
-    dashboard_uid = models.CharField(max_length=40, editable=False)
-    dashboard_url = models.CharField(max_length=255, editable=False)
+    dashboard_uid = models.CharField(max_length=40, editable=False, default='')
+    dashboard_url = models.CharField(max_length=255, editable=False, default='')
 
     def __str__(self):
         return f'Analytics Solution ({self.id}) - {self.name}'
@@ -74,6 +76,10 @@ class Scenario(models.Model):
     @property
     def node_overrides(self) -> ModelType['NodeOverride']:
         return self.nodeoverride_set.all()
+
+    @property
+    def scenario_node_data(self) -> ModelType['ScenarioNodeData']:
+        return self.scenarionodedata_set.all()
 
 
 class Model(models.Model):
@@ -125,6 +131,14 @@ class Node(models.Model):
     @property
     def slider_inputs(self) -> ModelType['SliderInput']:
         return self.sliderinput_set.all()
+
+    @property
+    def node_data(self) -> ModelType['NodeData']:
+        return self.nodedata_set.all()
+
+    @property
+    def scenario_node_data(self) -> ModelType['ScenarioNodeData']:
+        return self.scenarionodedata_set.all()
 
 
 def _name_ids_file(*_):
@@ -256,3 +270,20 @@ class NodeOverride(PolymorphicModel):
 
 class DecimalNodeOverride(NodeOverride):
     value = models.DecimalField(max_digits=15, decimal_places=5)
+
+
+class NodeData(models.Model):
+    node = models.ForeignKey(Node, on_delete=models.CASCADE, default=None)
+    name = models.CharField(max_length=255)
+    defaults = ArrayField(models.IntegerField())
+
+
+class ScenarioNodeData(models.Model):
+    node = models.ForeignKey(Node, on_delete=models.CASCADE, default=None)
+    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, default=None)
+    name = models.CharField(max_length=255)
+    overrides = ArrayField(models.IntegerField())
+    is_uncertain = models.BooleanField(default=False)
+    is_bounded = models.BooleanField(default=False)
+    is_changes = models.BooleanField(default=False)
+

@@ -3,13 +3,14 @@ from functools import wraps
 import material.frontend.views as material
 from django.shortcuts import render, get_object_or_404, redirect
 from rest_framework import status
+from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from app.forms import CreateEvalJobForm
-from app.models import ExecutiveView, EvalJob
-from app.serializers import EvalJobSerializer, NodeResultSerializer
+from app.models import ExecutiveView, EvalJob, NodeData, ScenarioNodeData
+from app.serializers import EvalJobSerializer, NodeResultSerializer, NodeDataSerializer, ScenarioNodeDataSerializer
 
 
 # region REST Framework Api
@@ -45,6 +46,14 @@ class NodeResultView(APIView):
         return Response([{"id": 2000, "email": "varsha@gmail.com", "name": "Varsha"}], status=status.HTTP_201_CREATED)
 
 
+class NodeDataAPIView(generics.ListCreateAPIView):
+    queryset = NodeData.objects.all()
+    serializer_class = NodeDataSerializer
+
+
+class ScenarioNodeDataAPIView(generics.ListCreateAPIView):
+    queryset = ScenarioNodeData.objects.all()
+    serializer_class = ScenarioNodeDataSerializer
 # endregion
 
 

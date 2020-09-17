@@ -4,8 +4,10 @@ import tempfile
 from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 
-from app.models import InputDataSet, AnalyticsSolution, InputPage, Model, Scenario, Node
+from app.models import InputDataSet, AnalyticsSolution, InputPage, Model, Scenario, Node, NodeData, ScenarioNodeData
 from app.utils import Sqlite
+
+from app.proto_modules import ConstNodeData_pb2, InputNodeData_pb2, NodeTagListBlob_pb2
 
 
 @receiver(post_save, sender=AnalyticsSolution)
@@ -21,6 +23,13 @@ def update_model(sender, **kwargs):
 
             # Open sqlite file
             with Sqlite(filename) as cursor:
+                cursor.execute("select NodeScenarioData.NodeInputData from NodeScenarioData INNER join Node on Node.NodeId = NodeScenarioData.NodeId where NodeType='constnode'")
+                for record in cursor.fetchall():
+                    #
+                    blob_model = ConstNodeData_pb2.ConstNodeData()
+                    blob_model.ParseFromString(record[0])
+                    print(blob_model)
+                    print('---')
                 cursor.execute('select * from TruNavModel')
                 for model_record in cursor.fetchall():
                     model_id = model_record[1]
@@ -43,7 +52,10 @@ def update_model(sender, **kwargs):
                         node_name = node_record[3]
                         node_type = node_record[5]
                         if node_type in ('inputnode', 'constnode', 'inputiteratornode', 'percentAllocationNode'):
-                            Node.objects.update_or_create(model=model, tam_id=node_id, defaults={'name': node_name})
+                            node, _ = Node.objects.update_or_create(model=model, tam_id=node_id, defaults={'name': node_name})
+                            if node_type in ('inputnode', 'constnode'):
+                                cursor.execute("select * from NodeScenarioData where NodeId=?", (node_id,))
+
         finally:
             os.remove(filename)
 

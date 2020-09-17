@@ -18,12 +18,11 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 from material.frontend import urls as frontend_urls
 
-from frontend import views as frontend_views
 from app import views
 
 urlpatterns = [
-    path("", include(frontend_urls)),
-    path("", RedirectView.as_view(url="app/")),
+    path('', include(frontend_urls)),
+    path('', RedirectView.as_view(url='app/')),
     path("admin/", admin.site.urls),
     path("frontend/", include("frontend.urls")),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
@@ -34,7 +33,6 @@ urlpatterns = [
         ),
     ),
     path("api/results/", views.NodeResultView.as_view()),
-    path("api/fe-evaljob/", frontend_views.EvalJobAPIView.as_view()),
-    path("api/fe-node/", frontend_views.NodeDataAPIView.as_view()),
-    path("api/fe-scen-node/", frontend_views.ScenarioNodeDataAPIView.as_view()),
+    path("api/node/", views.NodeDataAPIView.as_view()),
+    path("api/scen-node/", views.ScenarioNodeDataAPIView.as_view()),
 ]

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from app.models import AnalyticsSolution, EvalJob, NodeResult, Scenario
+from app.models import AnalyticsSolution, EvalJob, NodeResult, Scenario, NodeData, ScenarioNodeData
 from app.utils import GoogleCloudStorage
 
 
@@ -60,4 +60,16 @@ class EvalJobSerializer(serializers.ModelSerializer):
 class NodeResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = NodeResult
+        fields = '__all__'
+
+
+class NodeDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NodeData
+        fields = '__all__'
+
+
+class ScenarioNodeDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ScenarioNodeData
         fields = '__all__'

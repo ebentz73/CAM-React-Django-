@@ -13,3 +13,5 @@ google-auth==1.7.1
 psycopg2-binary==2.8.4
 docker==4.2.0
 grafana-api==1.0.1
+black
+protobuf
