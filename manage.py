@@ -5,7 +5,10 @@ import sys
 
 
 def main():
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cloud_analysis_manager.settings')
+    if os.environ.get('DJANGO_ENV') in ('dev', 'prod'):
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cloud_analysis_manager.settings_cloud')
+    else:
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cloud_analysis_manager.settings')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from app.models import AnalyticsSolution, EvalJob, NodeResult, Scenario
-from app.utils import GoogleCloudStorage
+from app.utils import AzureStorage
 
 
 class EvalJobSerializer(serializers.ModelSerializer):
@@ -27,7 +27,7 @@ class EvalJobSerializer(serializers.ModelSerializer):
                 # Get all Input Page Data Sets associated with Model and Scenario
                 for ids in scenario.input_data_sets.filter(input_page__model=model):
                     ids_json.append(
-                        GoogleCloudStorage.get_url(f'{ids.file}'))
+                        AzureStorage.get_url(f'{ids.file}'))
 
                 # Get all Node Overrides associated with Model and Scenario
                 for node_override in scenario.node_overrides.filter(node__model=model):
@@ -49,7 +49,7 @@ class EvalJobSerializer(serializers.ModelSerializer):
             })
         evaljob_json = {
             'analytics_job_id': evaljob_id,
-            'tam_model_url': GoogleCloudStorage.get_url(f'{solution.tam_file}'),
+            'tam_model_url': AzureStorage.get_url(f'{solution.tam_file}'),
             'time_start': evaljob['layer_time_start'],
             'time_increment_unit': evaljob['layer_time_increment'],
             'scenarios': scenario_json

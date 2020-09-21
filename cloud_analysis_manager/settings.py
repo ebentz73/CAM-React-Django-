@@ -10,15 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
-import environ
-
-# Read environment variables
-env = environ.Env()
-env.read_env()
-
-DEFAULT_FILE_STORAGE = env('DEFAULT_FILE_STORAGE')
-GS_BUCKET_NAME = env('GS_BUCKET_NAME')
-
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -34,7 +25,7 @@ SECRET_KEY = 'qn65+4-)g=tu*v8zg_6#4^ma=5ay_6&%)8=4qc^3f&xf7bx9-!'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', 'host.docker.internal', '127.0.0.1']
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -63,6 +54,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.cache.UpdateCacheMiddleware',
+    'django.middleware.cache.FetchFromCacheMiddleware',
 ]
 
 ROOT_URLCONF = 'cloud_analysis_manager.urls'
@@ -78,7 +71,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'app.context_processors.export_vars',
             ],
         },
     },
@@ -94,12 +86,14 @@ LOGIN_REDIRECT_URL = '/'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'cloud_analysis_manager',
-        'USER': env('DB_USER'),
-        'PASSWORD': env('DB_PASSWORD'),
-        'HOST': env('DB_HOST'),
-        'PORT': env('DB_PORT')
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     }
 }
 

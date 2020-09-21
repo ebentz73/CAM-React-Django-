@@ -4,10 +4,10 @@ from typing import Union, TypeVar, Generic, Iterator
 
 import docker
 import environ
-import storages.backends.gcloud
-from django.core.files.storage import default_storage
 from django.db.models import QuerySet
 from grafana_api.grafana_face import GrafanaFace
+
+from cloud_analysis_manager.backend import AzureMediaStorage
 
 _Z = TypeVar('_Z')
 
@@ -40,61 +40,59 @@ class Sqlite:
         self.conn.close()
 
 
-class GoogleCloudStorage:
+class AzureStorage:
+    azure_media_storage = AzureMediaStorage()
 
     @staticmethod
-    def check_file_exists(filename: str,
-                          storage: storages.backends.gcloud.GoogleCloudStorage = default_storage) -> bool:
-        """Check if the given file exists in gcs.
+    def check_file_exists(filename: str, storage=azure_media_storage) -> bool:
+        """Check if the given file exists in Azure Storage Accounts.
 
         Args:
-            filename: Path to the file inside the bucket.
-            storage: Storage backend to use. This sets which bucket is used.
+            filename: Path to the file inside the container.
+            storage: Storage backend to use. This sets which container is used.
         """
         return storage.exists(filename)
 
     @staticmethod
-    def read_file(filename: str, storage: storages.backends.gcloud.GoogleCloudStorage = default_storage) -> bytes:
-        """Read the given file from gcs.
+    def read_file(filename: str, storage=azure_media_storage) -> bytes:
+        """Read the given file from Azure Storage Accounts.
 
         Args:
-            filename: Path to the file inside the bucket.
-            storage: Storage backend to use. This sets which bucket is used.
+            filename: Path to the file inside the container.
+            storage: Storage backend to use. This sets which container is used.
         """
         with storage.open(filename, 'r') as f:
             return f.read()
 
     @staticmethod
-    def upload_file(filename: str,
-                    file_content: Union[bytes, str],
-                    storage: storages.backends.gcloud.GoogleCloudStorage = default_storage):
-        """Upload the given file to gcs.
+    def upload_file(filename: str, file_content: Union[bytes, str], storage=azure_media_storage):
+        """Upload the given file to Azure Storage Accounts.
 
         Args:
-            filename: Path to the file inside the bucket.
+            filename: Path to the file inside the container.
             file_content: The value written to the file.
-            storage: Storage backend to use. This sets which bucket is used.
+            storage: Storage backend to use. This sets which container is used.
         """
         with storage.open(filename, 'w') as f:
             f.write(file_content)
 
     @staticmethod
-    def delete_file(filename: str, storage: storages.backends.gcloud.GoogleCloudStorage = default_storage):
-        """Delete the given file from gcs.
+    def delete_file(filename: str, storage=azure_media_storage):
+        """Delete the given file from Azure Storage Accounts.
 
         Args:
-            filename: Path to the file inside the bucket.
-            storage: Storage backend to use. This sets which bucket is used.
+            filename: Path to the file inside the container.
+            storage: Storage backend to use. This sets which container is used.
         """
         storage.delete(filename)
 
     @staticmethod
-    def get_url(filename: str, storage: storages.backends.gcloud.GoogleCloudStorage = default_storage) -> str:
+    def get_url(filename: str, storage=azure_media_storage) -> str:
         """Return the url for the Blob associated with the given file.
 
         Args:
-            filename: Path to the file inside the bucket.
-            storage: Storage backend to use. This sets which bucket is used.
+            filename: Path to the file inside the container.
+            storage: Storage backend to use. This sets which container is used.
         """
         return storage.url(filename)
 
