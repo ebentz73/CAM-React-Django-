@@ -4,10 +4,9 @@ from typing import Union, TypeVar, Generic, Iterator
 
 import docker
 import environ
+from django.core.files.storage import default_storage
 from django.db.models import QuerySet
 from grafana_api.grafana_face import GrafanaFace
-
-from cloud_analysis_manager.backend import AzureMediaStorage
 
 _Z = TypeVar('_Z')
 
@@ -41,10 +40,8 @@ class Sqlite:
 
 
 class AzureStorage:
-    azure_media_storage = AzureMediaStorage()
-
     @staticmethod
-    def check_file_exists(filename: str, storage=azure_media_storage) -> bool:
+    def check_file_exists(filename: str, storage=default_storage) -> bool:
         """Check if the given file exists in Azure Storage Accounts.
 
         Args:
@@ -54,7 +51,7 @@ class AzureStorage:
         return storage.exists(filename)
 
     @staticmethod
-    def read_file(filename: str, storage=azure_media_storage) -> bytes:
+    def read_file(filename: str, storage=default_storage) -> bytes:
         """Read the given file from Azure Storage Accounts.
 
         Args:
@@ -65,7 +62,7 @@ class AzureStorage:
             return f.read()
 
     @staticmethod
-    def upload_file(filename: str, file_content: Union[bytes, str], storage=azure_media_storage):
+    def upload_file(filename: str, file_content: Union[bytes, str], storage=default_storage):
         """Upload the given file to Azure Storage Accounts.
 
         Args:
@@ -77,7 +74,7 @@ class AzureStorage:
             f.write(file_content)
 
     @staticmethod
-    def delete_file(filename: str, storage=azure_media_storage):
+    def delete_file(filename: str, storage=default_storage):
         """Delete the given file from Azure Storage Accounts.
 
         Args:
@@ -87,7 +84,7 @@ class AzureStorage:
         storage.delete(filename)
 
     @staticmethod
-    def get_url(filename: str, storage=azure_media_storage) -> str:
+    def get_url(filename: str, storage=default_storage) -> str:
         """Return the url for the Blob associated with the given file.
 
         Args:
