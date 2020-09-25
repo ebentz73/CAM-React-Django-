@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf.urls import url
 from django.views.generic import RedirectView
 from material.frontend import urls as frontend_urls
 
@@ -25,6 +26,7 @@ urlpatterns = [
     path('', RedirectView.as_view(url='app/')),
     path("admin/", admin.site.urls),
     path("frontend/", include("frontend.urls")),
+    path("app/", include("app.urls")),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path(
         "api/evaljob/<int:pk>/",
@@ -33,6 +35,14 @@ urlpatterns = [
         ),
     ),
     path("api/results/", views.NodeResultView.as_view()),
-    path("api/node/", views.NodeDataAPIView.as_view()),
+    path("api/model/", views.ModelAPIView.as_view()),
     path("api/scen-node/", views.ScenarioNodeDataAPIView.as_view()),
+    path("api/node-data/", views.NodeDataAPIView.as_view()),
+    path("api/input-node-data/", views.InputNodeDataAPIView.as_view()),
+    path("api/const-node-data/", views.ConstNodeDataAPIView.as_view()),
+    url('^api/const-node-data/(?P<node>.+)/$', views.ConstNodeDataByNodeListAPIView.as_view()),
+    url('^api/input-node-data/(?P<node>.+)/$', views.InputNodeDataByNodeListAPIView.as_view()),
+    url('^api/node/(?P<model>.+)/$', views.NodeByModelListAPIView.as_view()),
+    url('^api/node-data/(?P<model>.+)/$', views.AllNodeDataByModelAPIView.as_view()),
+
 ]

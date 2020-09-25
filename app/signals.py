@@ -4,7 +4,8 @@ import tempfile
 from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 
-from app.models import InputDataSet, AnalyticsSolution, InputPage, Model, Scenario, Node, NodeData, ScenarioNodeData
+from app.models import InputDataSet, AnalyticsSolution, InputPage, Model, Scenario, Node, \
+    InputNodeData, ConstNodeData
 from app.utils import Sqlite
 
 from app.proto_modules import ConstNodeData_pb2, InputNodeData_pb2, NodeTagListBlob_pb2
@@ -23,7 +24,8 @@ def update_model(sender, **kwargs):
 
             # Open sqlite file
             with Sqlite(filename) as cursor:
-                cursor.execute("select NodeScenarioData.NodeInputData from NodeScenarioData INNER join Node on Node.NodeId = NodeScenarioData.NodeId where NodeType='constnode'")
+                cursor.execute("select NodeScenarioData.NodeInputData from NodeScenarioData"
+                               " INNER join Node on Node.NodeId = NodeScenarioData.NodeId where NodeType='constnode'")
                 for record in cursor.fetchall():
                     #
                     blob_model = ConstNodeData_pb2.ConstNodeData()
@@ -51,10 +53,27 @@ def update_model(sender, **kwargs):
                         node_id = node_record[2]
                         node_name = node_record[3]
                         node_type = node_record[5]
+                        blob_model = NodeTagListBlob_pb2.List_String()
+                        blob_model.ParseFromString(node_record[15])
+                        tag_list = blob_model.items._values
                         if node_type in ('inputnode', 'constnode', 'inputiteratornode', 'percentAllocationNode'):
-                            node, _ = Node.objects.update_or_create(model=model, tam_id=node_id, defaults={'name': node_name})
-                            if node_type in ('inputnode', 'constnode'):
-                                cursor.execute("select * from NodeScenarioData where NodeId=?", (node_id,))
+                            node, _ = Node.objects.update_or_create(model=model, tags=tag_list,
+                                                                    tam_id=node_id, defaults={'name': node_name})
+                            if node_type == 'inputnode':
+                                cursor.execute("select NodeInputData from NodeScenarioData"
+                                               " where NodeId=?", (node_id,))
+                                blob_model = InputNodeData_pb2.InputNodeData()
+                                blob_model.ParseFromString(record[0])
+                                node_data = [[val.InputData.LowerBound, val.InputData.Low, val.InputData.Nominal,
+                                              val.InputData.High, val.InputData.UpperBound]
+                                             for val in blob_model.LayerData._values]
+                                InputNodeData.objects.update_or_create(node=node, default_data=node_data)
+                            if node_type == 'constnode':
+                                cursor.execute("select NodeInputData from NodeScenarioData where NodeId=?", (node_id,))
+                                blob_model = ConstNodeData_pb2.ConstNodeData()
+                                blob_model.ParseFromString(record[0])
+                                node_data = [val.ConstData for val in blob_model.AllLayerData._values]
+                                ConstNodeData.objects.update_or_create(node=node, default_data=node_data)
 
         finally:
             os.remove(filename)

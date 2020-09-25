@@ -1,0 +1,64 @@
+.phases {
+    text-align: center;
+}
+
+.phases div {
+    display: inline-block;
+    background-color: palegoldenrod;
+    margin: 0px 50px 0px 50px;
+}
+
+.filters {
+    margin-top: 50px;
+}
+
+.filters div {
+    display: inline-block;
+    background-color: paleturquoise;
+    margin: 0px 50px 0px 50px;
+}
+
+.scenario-info > div {
+    background-color: palegreen;
+    margin: 50px 0px 50px 0px;
+    height: 50px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.other-info > div {
+    background-color: palevioletred;
+    margin: 50px 0px 50px 0px;
+    height: 50px;
+}
+
+.nodes > div {
+    background-color: palevioletred;
+    margin: 50px 0px 50px 0px;
+    height: 100%;
+}
+
+table, th, td {
+  border: 1px solid black;
+}
+
+.label {
+    display: inline-block;
+}
+
+.value {
+    display: inline-block;
+}
+
+.changes-toggle {
+    display: inline-block;
+}
+
+.node-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.node-table {
+
+}

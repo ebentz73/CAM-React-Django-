@@ -9,8 +9,10 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from app.forms import CreateEvalJobForm
-from app.models import ExecutiveView, EvalJob, NodeData, ScenarioNodeData
-from app.serializers import EvalJobSerializer, NodeResultSerializer, NodeDataSerializer, ScenarioNodeDataSerializer
+from app.models import ExecutiveView, EvalJob, NodeData, ScenarioNodeData, Node, Model, InputNodeData, ConstNodeData
+from app.serializers import EvalJobSerializer, NodeResultSerializer, \
+    NodeDataSerializer, ScenarioNodeDataSerializer, NodeSerializer, ModelSerializer, InputNodeDataSerializer, \
+    ConstNodeDataSerializer
 
 
 # region REST Framework Api
@@ -54,6 +56,55 @@ class NodeDataAPIView(generics.ListCreateAPIView):
 class ScenarioNodeDataAPIView(generics.ListCreateAPIView):
     queryset = ScenarioNodeData.objects.all()
     serializer_class = ScenarioNodeDataSerializer
+
+
+class AllNodeDataByModelAPIView(generics.ListAPIView):
+    def get(self, request, format=None, **kwargs):
+        model = Model.objects.get(id=self.kwargs['model'])
+        model_serializer = ModelSerializer(model);
+
+        return Response({
+            'model': model_serializer.data,
+        })
+
+
+class ModelAPIView(generics.ListAPIView):
+    queryset = Model.objects.all()
+    serializer_class = ModelSerializer
+
+
+class InputNodeDataAPIView(generics.ListAPIView):
+    queryset = InputNodeData.objects.all()
+    serializer_class = InputNodeDataSerializer
+
+
+class ConstNodeDataAPIView(generics.ListAPIView):
+    queryset = ConstNodeData.objects.all()
+    serializer_class = ConstNodeDataSerializer
+
+
+class InputNodeDataByNodeListAPIView(generics.ListAPIView):
+    serializer_class = InputNodeDataSerializer
+
+    def get_queryset(self):
+        node = self.kwargs['node']
+        return InputNodeData.objects.filter(node_id=node)
+
+
+class ConstNodeDataByNodeListAPIView(generics.ListAPIView):
+    serializer_class = ConstNodeDataSerializer
+
+    def get_queryset(self):
+        node = self.kwargs['node']
+        return ConstNodeData.objects.filter(node_id=node)
+
+
+class NodeByModelListAPIView(generics.ListAPIView):
+    serializer_class = NodeSerializer
+
+    def get_queryset(self):
+        model = self.kwargs['model']
+        return Node.objects.filter(model_id=model)
 # endregion
 
 

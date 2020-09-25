@@ -123,7 +123,7 @@ admin.site.register(models.InputPage, HideModelAdmin)
 admin.site.register(models.InputDataSet, HideModelAdmin)
 admin.site.register(models.InputDataSetInputChoice, HideModelAdmin)
 admin.site.register(models.EvalJob, HideModelAdmin)
-
+admin.site.register(models.Node, HideModelAdmin)
 admin.site.register(models.InputDataSetInput, InputChildAdmin)
 admin.site.register(models.NumericInput, InputChildAdmin)
 admin.site.register(models.SliderInput, InputChildAdmin)

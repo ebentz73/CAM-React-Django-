@@ -115,6 +115,7 @@ class InputPage(models.Model):
 class Node(models.Model):
     model = models.ForeignKey(Model, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
+    tags = ArrayField(models.CharField(max_length=255), default=list)
     tam_id = models.UUIDField(editable=False)
 
     def __str__(self):
@@ -272,10 +273,16 @@ class DecimalNodeOverride(NodeOverride):
     value = models.DecimalField(max_digits=15, decimal_places=5)
 
 
-class NodeData(models.Model):
+class NodeData(PolymorphicModel):
     node = models.ForeignKey(Node, on_delete=models.CASCADE, default=None)
-    name = models.CharField(max_length=255)
-    defaults = ArrayField(models.IntegerField())
+
+
+class InputNodeData(NodeData):
+    default_data = ArrayField(ArrayField(models.DecimalField(max_digits=15, decimal_places=5)))
+
+
+class ConstNodeData(NodeData):
+    default_data = ArrayField(models.DecimalField(max_digits=15, decimal_places=5))
 
 
 class ScenarioNodeData(models.Model):
@@ -287,3 +294,12 @@ class ScenarioNodeData(models.Model):
     is_bounded = models.BooleanField(default=False)
     is_changes = models.BooleanField(default=False)
 
+
+class FilterCategory(models.Model):
+    solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+
+
+class FilterOption(models.Model):
+    category = models.ForeignKey(FilterCategory, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
