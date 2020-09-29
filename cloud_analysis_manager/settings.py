@@ -51,9 +51,9 @@ INSTALLED_APPS = [
     'polymorphic',
     'flatpickr',
     'material',
-    # 'material.frontend',
+    'material.frontend',
     'app',
-    'frontend',
+    'frontend-app',
 ]
 
 MIDDLEWARE = [
