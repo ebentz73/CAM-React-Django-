@@ -302,4 +302,5 @@ class FilterCategory(models.Model):
 
 class FilterOption(models.Model):
     category = models.ForeignKey(FilterCategory, on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
+    display_name = models.CharField(max_length=255)
+    tag = models.CharField(max_length=255, default='')

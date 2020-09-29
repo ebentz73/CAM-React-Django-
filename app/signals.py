@@ -5,10 +5,10 @@ from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 
 from app.models import InputDataSet, AnalyticsSolution, InputPage, Model, Scenario, Node, \
-    InputNodeData, ConstNodeData
+    InputNodeData, ConstNodeData, FilterCategory, FilterOption
 from app.utils import Sqlite
 
-from app.proto_modules import ConstNodeData_pb2, InputNodeData_pb2, NodeTagListBlob_pb2
+from app.proto_modules import ConstNodeData_pb2, InputNodeData_pb2, NodeTagListBlob_pb2, TagFilterOption_pb2
 
 
 @receiver(post_save, sender=AnalyticsSolution)
@@ -24,14 +24,16 @@ def update_model(sender, **kwargs):
 
             # Open sqlite file
             with Sqlite(filename) as cursor:
-                cursor.execute("select NodeScenarioData.NodeInputData from NodeScenarioData"
-                               " INNER join Node on Node.NodeId = NodeScenarioData.NodeId where NodeType='constnode'")
+                cursor.execute("select * from FilterCategories")
                 for record in cursor.fetchall():
                     #
-                    blob_model = ConstNodeData_pb2.ConstNodeData()
-                    blob_model.ParseFromString(record[0])
-                    print(blob_model)
-                    print('---')
+                    blob_model = TagFilterOption_pb2.List_TagFilterOption()
+                    blob_model.ParseFromString(record[2])
+                    category_name = record[1]
+                    category, _ = FilterCategory.objects.update_or_create(solution=solution, name=category_name)
+                    for option in blob_model.items._values:
+                        option, _ = FilterOption.objects.update_or_create(category=category, tag=option.Tag,
+                                                                          display_name=option.DisplayName)
                 cursor.execute('select * from TruNavModel')
                 for model_record in cursor.fetchall():
                     model_id = model_record[1]
@@ -63,6 +65,7 @@ def update_model(sender, **kwargs):
                                 cursor.execute("select NodeInputData from NodeScenarioData"
                                                " where NodeId=?", (node_id,))
                                 blob_model = InputNodeData_pb2.InputNodeData()
+                                record = cursor.fetchone()
                                 blob_model.ParseFromString(record[0])
                                 node_data = [[val.InputData.LowerBound, val.InputData.Low, val.InputData.Nominal,
                                               val.InputData.High, val.InputData.UpperBound]
@@ -70,6 +73,7 @@ def update_model(sender, **kwargs):
                                 InputNodeData.objects.update_or_create(node=node, default_data=node_data)
                             if node_type == 'constnode':
                                 cursor.execute("select NodeInputData from NodeScenarioData where NodeId=?", (node_id,))
+                                record = cursor.fetchone()
                                 blob_model = ConstNodeData_pb2.ConstNodeData()
                                 blob_model.ParseFromString(record[0])
                                 node_data = [val.ConstData for val in blob_model.AllLayerData._values]

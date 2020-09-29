@@ -9,9 +9,11 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from app.forms import CreateEvalJobForm
-from app.models import ExecutiveView, EvalJob, NodeData, ScenarioNodeData, Node, Model, InputNodeData, ConstNodeData
-from app.serializers import EvalJobSerializer, NodeResultSerializer, \
-    NodeDataSerializer, ScenarioNodeDataSerializer, NodeSerializer, ModelSerializer, InputNodeDataSerializer, \
+from app.models import ExecutiveView, EvalJob, NodeData, ScenarioNodeData, Node, Model, \
+    InputNodeData, ConstNodeData, AnalyticsSolution, FilterOption, FilterCategory
+from app.serializers import EvalJobSerializer, NodeResultSerializer, AnalyticsSolutionSerializer, \
+    NodeDataSerializer, ScenarioNodeDataSerializer, NodeSerializer, ModelSerializer, \
+    FilterCategorySerializer, FilterOptionSerializer, InputNodeDataSerializer, \
     ConstNodeDataSerializer
 
 
@@ -58,14 +60,44 @@ class ScenarioNodeDataAPIView(generics.ListCreateAPIView):
     serializer_class = ScenarioNodeDataSerializer
 
 
+class FilterCategoriesAndOptionsBySolutionAPIView(generics.ListAPIView):
+    def get(self, request, format=None, **kwargs):
+        categories = FilterCategory.objects.filter(solution_id=self.kwargs['solution'])
+        categories_serializer = FilterCategorySerializer(categories, many=True)
+        category_ids = [category.id for category in categories]
+        options = FilterOption.objects.filter(category_id__in=category_ids)
+        options_serializer = FilterOptionSerializer(options, many=True)
+
+        return Response({
+            'categories': categories_serializer.data,
+            'options': options_serializer.data
+        })
+
+
 class AllNodeDataByModelAPIView(generics.ListAPIView):
     def get(self, request, format=None, **kwargs):
         model = Model.objects.get(id=self.kwargs['model'])
-        model_serializer = ModelSerializer(model);
+        model_serializer = ModelSerializer(model)
+        nodes = Node.objects.filter(model_id=self.kwargs['model'])
+        node_ids = [node.id for node in nodes]
+
+        input_nodes = InputNodeData.objects.filter(node_id__in=node_ids)
+        input_serializer = InputNodeDataSerializer(input_nodes, many=True)
+
+        const_nodes = ConstNodeData.objects.filter(node_id__in=node_ids)
+        const_serializer = ConstNodeDataSerializer(const_nodes, many=True)
+
+        nodes_serializer = NodeSerializer(nodes, many=True)
 
         return Response({
-            'model': model_serializer.data,
+            'input_nodes': input_serializer.data,
+            'const_nodes': const_serializer.data
         })
+
+
+class AnalyticsSolutionAPIView(generics.ListAPIView):
+    queryset = AnalyticsSolution.objects.all()
+    serializer_class = AnalyticsSolutionSerializer
 
 
 class ModelAPIView(generics.ListAPIView):

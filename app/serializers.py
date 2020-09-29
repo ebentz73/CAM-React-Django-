@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from app.models import AnalyticsSolution, EvalJob, NodeResult, \
-    Scenario, NodeData, ScenarioNodeData, Node, Model, InputNodeData, ConstNodeData
+    Scenario, NodeData, ScenarioNodeData, Node, Model, InputNodeData, ConstNodeData, FilterOption, FilterCategory
 from app.utils import GoogleCloudStorage
 
 
@@ -58,6 +58,12 @@ class EvalJobSerializer(serializers.ModelSerializer):
         return evaljob_json
 
 
+class AnalyticsSolutionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AnalyticsSolution
+        fields = '__all__'
+
+
 class NodeResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = NodeResult
@@ -91,6 +97,18 @@ class ScenarioNodeDataSerializer(serializers.ModelSerializer):
 class NodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Node
+        fields = '__all__'
+
+
+class FilterCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FilterCategory
+        fields = '__all__'
+
+
+class FilterOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FilterOption
         fields = '__all__'
 
 

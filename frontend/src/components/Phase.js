@@ -5,9 +5,8 @@ class Phase extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            toggleTable: [true, true, true],
-            nodes_test: [],
-            nodes: [
+            nodes: [],
+            nodes_test: [
                 {name: 'IP Forecast', data: [['One', 'Two'], ['Three', 'Four'], ['Five', 'Six', 'Seven']]},
                 {name: 'Pilot Demand', data: [['One', 'Two'], ['Three']]},
                 {name: 'Reservist', data: [['One', 'Two'], ['Three']]}
@@ -18,31 +17,6 @@ class Phase extends Component {
 
         this.toggleTable = this.toggleTable.bind(this);
         this.fetchNodesByModel = this.fetchNodesByModel.bind(this);
-        this.fetchDataByNode = this.fetchDataByNode.bind(this);
-    }
-
-    fetchDataByNode(node_id){
-        fetch('http://' + window.location.host + '/api/input-node-data/' + node_id)
-            .then(response => {
-                return response.json();
-            })
-            .then(response => {
-                console.log(response);//TODO: Remove
-            })
-            .catch(err => {
-                console.log(err);
-            });
-        fetch('http://' + window.location.host + '/api/const-node-data/' + node_id)
-            .then(response => {
-                console.log(response); //TODO: Remove
-                return response.json();
-            })
-            .then(response => {
-                console.log(response);
-            })
-            .catch(err => {
-                console.log(err);
-            });
     }
 
     fetchNodesByModel(model_id){
@@ -51,11 +25,30 @@ class Phase extends Component {
                 return response.json();
             })
             .then(response => {
-                let nodes = [];
+                let nodes = {};
                 response.map(node => {
-                    nodes.push({id: node.id, name: node.name, tags: node.tags});
+                    nodes[node.id] = {name: node.name, tags: node.tags, tableToggle: false};
                 });
-                this.setState({nodes_test: nodes});
+                this.setState({nodes: nodes});
+            })
+            .catch(err => {
+                console.log(err);
+            });
+        fetch('http://' + window.location.host + '/api/node-data/' + model_id)
+            .then(response => {
+                return response.json();
+            })
+            .then(response => {
+                let nodes = {...this.state.nodes};
+                response.input_nodes.map(node => {
+                    nodes[node.node].data = node.default_data;
+                    nodes[node.node].type = 'input';
+                });
+                response.const_nodes.map(node => {
+                    nodes[node.node].data = node.default_data;
+                    nodes[node.node].type = 'const';
+                });
+                this.setState({nodes: nodes});
             })
             .catch(err => {
                 console.log(err);
@@ -63,14 +56,13 @@ class Phase extends Component {
     }
 
     componentDidMount() {
-        this.fetchDataByNode('11717');
-        this.fetchNodesByModel('8');
+        this.fetchNodesByModel('18');
     }
 
-    toggleTable(index) {
-        let newToggleTable = this.state.toggleTable.slice();
-        newToggleTable[index] = !newToggleTable[index];
-        this.setState({toggleTable: newToggleTable});
+    toggleTable(node_id) {
+        let newNodes = {...this.state.nodes};
+        newNodes[node_id].tableToggle = !newNodes[node_id].tableToggle;
+        this.setState({nodes: newNodes});
     }
 
     render() {
@@ -87,26 +79,34 @@ class Phase extends Component {
 
                 {/* Nodes */}
                 <div className="nodes">
-                    {this.state.nodes.map((node, index) => {
+                    {Object.keys(this.state.nodes).map((node_id, index) => {
+                        let node = this.state.nodes[node_id];
                         return (
                             <div key={index}>
-                                <div className="node-header" onClick={() => this.toggleTable(index)}>
+                                <div className="node-header" onClick={() => this.toggleTable(node_id)}>
                                     <div className="label">{node.name}</div>
                                     <div className="changes-toggle">Changes</div>
                                 </div>
-                                {this.state.toggleTable[index] &&
+                                {node.tableToggle &&
                                 <div className="node-table">
                                     <table>
                                         <tbody>
-                                        {this.state.nodes[index].data.map((row, index) => {
+                                        {node.type === 'input' && node.data[0].map((_, colIndex) => {
                                             return (
-                                                <tr key={index}>
-                                                    {row.map((data, index) => {
-                                                        return(<td key={index}>{data}</td>);
+                                                <tr key={colIndex}>
+                                                    {node.data.map((row, index) => {
+                                                        return(<td key={index}>{row[colIndex]}</td>);
                                                     })}
                                                 </tr>
                                             );
                                         })}
+                                        {node.type === 'const' &&
+                                            <tr>
+                                                {node.data.map((val, index) => {
+                                                    return (<td key={{index}}>{val}</td>);
+                                                })}
+                                            </tr>
+                                        }
                                         </tbody>
                                     </table>
                                 </div>

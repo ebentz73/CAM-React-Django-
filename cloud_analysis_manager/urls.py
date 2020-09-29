@@ -36,6 +36,7 @@ urlpatterns = [
     ),
     path("api/results/", views.NodeResultView.as_view()),
     path("api/model/", views.ModelAPIView.as_view()),
+    path("api/solution/", views.AnalyticsSolutionAPIView.as_view()),
     path("api/scen-node/", views.ScenarioNodeDataAPIView.as_view()),
     path("api/node-data/", views.NodeDataAPIView.as_view()),
     path("api/input-node-data/", views.InputNodeDataAPIView.as_view()),
@@ -44,5 +45,6 @@ urlpatterns = [
     url('^api/input-node-data/(?P<node>.+)/$', views.InputNodeDataByNodeListAPIView.as_view()),
     url('^api/node/(?P<model>.+)/$', views.NodeByModelListAPIView.as_view()),
     url('^api/node-data/(?P<model>.+)/$', views.AllNodeDataByModelAPIView.as_view()),
+    url('^api/filters/(?P<solution>.+)/$', views.FilterCategoriesAndOptionsBySolutionAPIView.as_view()),
 
 ]
