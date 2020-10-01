@@ -12,9 +12,8 @@
     margin-top: 50px;
 }
 
-.filters div {
+.filters > div {
     display: inline-block;
-    background-color: paleturquoise;
     margin: 0px 50px 0px 50px;
 }
 

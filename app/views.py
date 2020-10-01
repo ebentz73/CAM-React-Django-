@@ -74,6 +74,27 @@ class FilterCategoriesAndOptionsBySolutionAPIView(generics.ListAPIView):
         })
 
 
+class AllNodeDataBySolutionAPIView(generics.ListAPIView):
+    def get(self, request, format=None, **kwargs):
+        models = Model.objects.filter(solution_id=self.kwargs['solution'])
+        model_ids = [model.id for model in models]
+        nodes = Node.objects.filter(model_id__in=model_ids)
+        node_ids = [node.id for node in nodes]
+
+        input_nodes = InputNodeData.objects.filter(node_id__in=node_ids)
+        input_serializer = InputNodeDataSerializer(input_nodes, many=True)
+
+        const_nodes = ConstNodeData.objects.filter(node_id__in=node_ids)
+        const_serializer = ConstNodeDataSerializer(const_nodes, many=True)
+
+        nodes_serializer = NodeSerializer(nodes, many=True)
+
+        return Response({
+            'input_nodes': input_serializer.data,
+            'const_nodes': const_serializer.data
+        })
+
+
 class AllNodeDataByModelAPIView(generics.ListAPIView):
     def get(self, request, format=None, **kwargs):
         model = Model.objects.get(id=self.kwargs['model'])
@@ -129,6 +150,15 @@ class ConstNodeDataByNodeListAPIView(generics.ListAPIView):
     def get_queryset(self):
         node = self.kwargs['node']
         return ConstNodeData.objects.filter(node_id=node)
+
+
+class NodeBySolutionListAPIView(generics.ListAPIView):
+    serializer_class = NodeSerializer
+
+    def get_queryset(self):
+        solution = self.kwargs['solution']
+        model_ids = [model.id for model in Model.objects.filter(solution_id=solution)]
+        return Node.objects.filter(model_id__in=model_ids)
 
 
 class NodeByModelListAPIView(generics.ListAPIView):

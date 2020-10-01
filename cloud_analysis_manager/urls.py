@@ -41,10 +41,12 @@ urlpatterns = [
     path("api/node-data/", views.NodeDataAPIView.as_view()),
     path("api/input-node-data/", views.InputNodeDataAPIView.as_view()),
     path("api/const-node-data/", views.ConstNodeDataAPIView.as_view()),
-    url('^api/const-node-data/(?P<node>.+)/$', views.ConstNodeDataByNodeListAPIView.as_view()),
-    url('^api/input-node-data/(?P<node>.+)/$', views.InputNodeDataByNodeListAPIView.as_view()),
-    url('^api/node/(?P<model>.+)/$', views.NodeByModelListAPIView.as_view()),
-    url('^api/node-data/(?P<model>.+)/$', views.AllNodeDataByModelAPIView.as_view()),
-    url('^api/filters/(?P<solution>.+)/$', views.FilterCategoriesAndOptionsBySolutionAPIView.as_view()),
+    url('^api/const-node-data/node=(?P<node>.+)/$', views.ConstNodeDataByNodeListAPIView.as_view()),
+    url('^api/input-node-data/node=(?P<node>.+)/$', views.InputNodeDataByNodeListAPIView.as_view()),
+    url('^api/node/model=(?P<model>.+)/$', views.NodeByModelListAPIView.as_view()),
+    url('^api/node/solution=(?P<solution>.+)/$', views.NodeBySolutionListAPIView.as_view()),
+    url('^api/node-data/model=(?P<model>.+)/$', views.AllNodeDataByModelAPIView.as_view()),
+    url('^api/node-data/solution=(?P<solution>.+)/$', views.AllNodeDataBySolutionAPIView.as_view()),
+    url('^api/filters/solution=(?P<solution>.+)/$', views.FilterCategoriesAndOptionsBySolutionAPIView.as_view()),
 
 ]
