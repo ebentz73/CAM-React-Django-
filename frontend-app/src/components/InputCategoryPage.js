@@ -1,86 +1,67 @@
 import React, {Component} from "react";
 import {FormControl, MenuItem, Select, InputLabel} from "@material-ui/core";
+import {ComboBox} from '@fluentui/react';
+import Node from "./Node";
 
 class InputCategoryPage extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            nodes: {},
-            filters: props.filters
+            nodes: props.nodes,
+            filters: props.filters,
+            categoryNodes: []
         }
 
-        this.toggleTable = this.toggleTable.bind(this);
-        this.fetchNodesBySolution = this.fetchNodesBySolution.bind(this);
         this.changeFilterOption = this.changeFilterOption.bind(this);
+        this.filterNodesByInputCategory = this.filterNodesByInputCategory.bind(this);
     }
 
-    fetchNodesBySolution(solution_id){
-        fetch('http://' + window.location.host + '/api/node/solution=' + solution_id)
-            .then(response => {
-                return response.json();
-            })
-            .then(response => {
-                let nodes = {};
-                response.map(node => {
-                    if (node.tags.length > 0)
-                        nodes[node.id] = {name: node.name, tags: node.tags, tableToggle: false, visible: true};
-                });
-                this.setState({nodes: nodes});
-            })
-            .catch(err => {
-                console.log(err);
-            });
-        fetch('http://' + window.location.host + '/api/node-data/solution=' + solution_id)
-            .then(response => {
-                return response.json();
-            })
-            .then(response => {
-                let nodes = {...this.state.nodes};
-                response.input_nodes.map(node => {
-                    if (nodes[node.node] !== undefined) {
-                        nodes[node.node].data = node.default_data;
-                        nodes[node.node].type = 'input';
-                    }
-                });
-                response.const_nodes.map(node => {
-                    if (nodes[node.node] !== undefined) {
-                        nodes[node.node].data = node.default_data;
-                        nodes[node.node].type = 'const';
-                    }
-                });
-                this.setState({nodes: nodes});
-            })
-            .catch(err => {
-                console.log(err);
-            });
+    filterNodesByInputCategory(categoryNodes){
+        this.setState({categoryNodes: categoryNodes.map(a => a.toString())});
+    }
+
+    componentWillReceiveProps(nextProps, nextContext) {
+        if (nextProps.category !== this.props.category) {
+            this.filterNodesByInputCategory(nextProps.category);
+        }
     }
 
     componentDidMount() {
-        this.fetchNodesBySolution('31');
+        this.filterNodesByInputCategory(this.props.category);
     }
 
-    toggleTable(node_id) {
-        let newNodes = {...this.state.nodes};
-        newNodes[node_id].tableToggle = !newNodes[node_id].tableToggle;
-        this.setState({nodes: newNodes});
+    isNodeVisible(node){
+        let visible = true;
+        Object.keys(node.selectedCategories).map(cat_id => {
+            visible &= node.selectedCategories[cat_id];
+        })
+        return visible;
     }
 
-    changeFilterOption(event, cat_id) {
+    changeFilterOption(event, value, cat_id) {
         let newFilters = {...this.state.filters};
-        newFilters[cat_id].selected = event.target.value;
+        let selectedKey = parseInt(value.key);
+        newFilters[cat_id].selected = selectedKey;
 
         // Filter nodes
         let newNodes = {...this.state.nodes};
-        console.log(newFilters);
         Object.keys(newNodes).map(node_id => {
             let node = newNodes[node_id];
-            let newVisible = false;
-            for (let i = 0; i < node.tags.length; i++){
-                if (newFilters[cat_id].options[Object.keys(newFilters[cat_id].options)[newFilters[cat_id].selected]].tag.includes(node.tags[i])){
-                    newVisible = true;
+            if (selectedKey === -1) {
+                node.selectedCategories[cat_id] = true;
+            } else {
+                let selectedOptionMatchTag = false;
+                for (let i = 0; i < node.tags.length; i++) {
+                    let a = newFilters[cat_id].selected;
+                    let b = newFilters[cat_id].options;
+                    if (newFilters[cat_id].options[a].tag.includes(node.tags[i])){
+                        selectedOptionMatchTag = true;
+                    }
                 }
+                node.selectedCategories[cat_id] = selectedOptionMatchTag;
             }
-            node.visible = newVisible;
+
+            node.visible = this.isNodeVisible(node);
         });
         this.setState({filters: newFilters, nodes: newNodes});
     }
@@ -92,21 +73,17 @@ class InputCategoryPage extends Component {
                 <div className="filters">
                     {Object.keys(this.state.filters).map((cat_id, index) => {
                         let category = this.state.filters[cat_id];
+                        let options = [];
+                        Object.keys(category.options).map((opt_id, index) => {
+                            let option = category.options[opt_id];
+                            options.push({key: opt_id, text: option.display_name});
+                        });
+                        options.push({key: '-1', text: 'All'});
                         return (
                             <div key={index}>
-                                <FormControl>
-                                    <InputLabel id={"filters-label-" + index}>{category.name}</InputLabel>
-                                    <Select labelId={"filters-label-" + index} value={category.selected}
-                                            onChange={(e) => this.changeFilterOption(e, cat_id)}>
-                                        {Object.keys(category.options).map((option_id, index) => {
-                                            let option = category.options[option_id];
-                                            return(
-                                                <MenuItem key={index} value={index}>{option.display_name}</MenuItem>
-                                            );
-                                        })}
-                                        <MenuItem key={index} value={-1}>All</MenuItem>
-                                    </Select>
-                                </FormControl>
+                                <ComboBox options={options} autoComplete="on" label={category.name} selectedKey={category.selected.toString()}
+                                          onChange={(e, val) =>
+                                              this.changeFilterOption(e, val, cat_id)}  />
 
                             </div>
                         );
@@ -115,40 +92,11 @@ class InputCategoryPage extends Component {
 
                 {/* Nodes */}
                 <div className="nodes">
-                    {Object.keys(this.state.nodes).map((node_id, index) => {
+                    {this.state.categoryNodes.map((node_id, index) => {
                         let node = this.state.nodes[node_id];
                         if (!node.visible) return;
                         return (
-                            <div key={index}>
-                                <div className="node-header" onClick={() => this.toggleTable(node_id)}>
-                                    <div className="label">{node.name}</div>
-                                    <div className="changes-toggle">Changes</div>
-                                </div>
-                                {node.tableToggle &&
-                                <div className="node-table">
-                                    <table>
-                                        <tbody>
-                                        {node.type === 'input' && node.data[0].map((_, colIndex) => {
-                                            return (
-                                                <tr key={colIndex}>
-                                                    {node.data.map((row, index) => {
-                                                        return(<td key={index}>{row[colIndex]}</td>);
-                                                    })}
-                                                </tr>
-                                            );
-                                        })}
-                                        {node.type === 'const' &&
-                                            <tr>
-                                                {node.data.map((val, index) => {
-                                                    return (<td key={{index}}>{val}</td>);
-                                                })}
-                                            </tr>
-                                        }
-                                        </tbody>
-                                    </table>
-                                </div>
-                                }
-                            </div>
+                            <Node key={index} node={node} />
                         );
                     })}
                 </div>

@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {render} from "react-dom";
+import {TextField, DatePicker, PrimaryButton} from '@fluentui/react';
 
 class Setup extends Component {
     constructor(props) {
@@ -18,25 +18,10 @@ class Setup extends Component {
             <div>
                 {/* Scenario Info */}
                 <div className="scenario-info">
-                    <div className="node-header">
-                        <div className="label">Scenario Name</div>
-                        <div className="value">NAMENAME</div>
-                    </div>
-                    <div>
-                        <div className="label">Description</div>
-                        <div className="value">NAMENAME</div>
-                    </div>
-                    <div>
-                        <div className="label">Start Date</div>
-                        <div className="value">NAMENAME</div>
-                    </div>
-                </div>
-
-                {/* Other Info */}
-                <div className="other-info">
-                    <div>Initial IP Count</div>
-                    <div>Attrition Rate</div>
-                    <div>Growth Rate</div>
+                    <TextField label="Scenario Name" />
+                    <TextField label="Description (Optional)" multiline rows={4} />
+                    <DatePicker label="Model Start" placeholder="Select a date..." />
+                    <div className="next-button"><PrimaryButton text="Next" /></div>
                 </div>
             </div>
         )
