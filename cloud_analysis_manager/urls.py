@@ -25,7 +25,7 @@ urlpatterns = [
     path('', include(frontend_urls)),
     path('', RedirectView.as_view(url='app/')),
     path("admin/", admin.site.urls),
-    path("frontend-app/", include("frontend-app.urls")),
+    url("^frontend-app/.*$", include("frontend-app.urls")),
     path("app/", include("app.urls")),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
     path(

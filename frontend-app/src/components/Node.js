@@ -19,8 +19,7 @@ class Node extends Component {
         return (
             <div>
                 <div className="node-header" onClick={this.tableToggle}>
-                    <div className="label">{this.props.node.name}</div>
-                    <div className="changes-toggle">Changes</div>
+                    <div className="label"><Text>{this.props.node.name}</Text></div>
                 </div>
                 {this.state.tableToggle &&
                 <div className="node-table">

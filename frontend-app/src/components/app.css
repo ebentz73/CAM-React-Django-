@@ -43,6 +43,7 @@ table, th, td {
 }
 
 .node-header {
+    padding: 5px;
     display: flex;
     justify-content: space-between;
 }
@@ -50,4 +51,9 @@ table, th, td {
 .next-button {
     text-align: right;
     margin-right: 50px;
+}
+
+.navigation-buttons {
+    margin-right: 50px;
+    margin-left: 50px;
 }
