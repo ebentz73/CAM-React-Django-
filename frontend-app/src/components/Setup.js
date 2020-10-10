@@ -1,5 +1,9 @@
 import React, {Component} from "react";
 import {TextField, DatePicker, PrimaryButton} from '@fluentui/react';
+import { initializeIcons } from '@fluentui/react';
+
+initializeIcons();
+
 
 class Setup extends Component {
     constructor(props) {

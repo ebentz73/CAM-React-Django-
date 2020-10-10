@@ -24,10 +24,11 @@
     background-color: palevioletred;
     margin: 50px 0px 50px 0px;
     height: 100%;
+    padding-bottom: 10px;
 }
 
 table, th, td {
-  border: 1px solid black;
+  /*border: 1px solid black;*/
 }
 
 .label {
@@ -56,4 +57,19 @@ table, th, td {
 .navigation-buttons {
     margin-right: 50px;
     margin-left: 50px;
+}
+
+.node-table {
+    margin: 10px;
+    width: inherit;
+    height: 270px;
+    position: relative;
+}
+
+.table-input {
+    width: 100px;
+}
+
+.scroll-pane {
+    width: 100%;
 }

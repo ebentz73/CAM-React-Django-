@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import {PrimaryButton} from "@fluentui/react";
 import Setup from "./Setup";
 import InputCategoryPage from "./InputCategoryPage";
+import NodesContext from "./NodesContext";
 
 class ScenarioDefinitionPage extends Component {
     constructor(props) {
@@ -19,7 +20,37 @@ class ScenarioDefinitionPage extends Component {
         this.filtersBySolution = this.filtersBySolution.bind(this);
         this.fetchNodesBySolution = this.fetchNodesBySolution.bind(this);
 
-        this.solution_id = 34;
+
+        this.updateConstNodeData = this.updateConstNodeData.bind(this);
+        this.updateInputNodeData = this.updateInputNodeData.bind(this);
+        this.copyToAllLayers = this.copyToAllLayers.bind(this);
+
+        this.solution_id = 36;
+    }
+
+    updateInputNodeData(node_id, layer_idx, nom_idx, val) {
+        let newNodes = {...this.state.nodes};
+        newNodes[node_id].data[layer_idx][nom_idx] = val;
+        this.setState({nodes: newNodes});
+        console.log(`node_id: ${node_id}, layer: ${layer_idx}, nom: ${nom_idx}, val: ${val}`);
+    }
+
+    updateConstNodeData(node_id, layer_idx, val){
+        let newNodes = {...this.state.nodes};
+        newNodes[node_id].data[layer_idx] = val;
+        this.setState({nodes: newNodes});
+        console.log(`node_id: ${node_id}, layer: ${layer_idx}, val: ${val}`);
+    }
+
+    copyToAllLayers(node_id, layer_idx) {
+        let newNodes = {...this.state.nodes};
+        let numLayers = newNodes[node_id].data.length;
+        for (let layer = 0; layer < numLayers; layer++){
+            for (let nom = 0; nom < 5; nom ++) {
+                newNodes[node_id].data[layer][nom] = newNodes[node_id].data[layer_idx][nom];
+            }
+        }
+        this.setState({nodes: newNodes});
     }
 
     fetchNodesBySolution(solution_id){
@@ -125,8 +156,12 @@ class ScenarioDefinitionPage extends Component {
     }
 
     render() {
+        let nodesContext = {nodes: this.state.nodes,
+            updateConstNodeData: this.updateConstNodeData,
+            updateInputNodeData: this.updateInputNodeData,
+            copyToAllLayers: this.copyToAllLayers}
         return (
-            <div>
+            <NodesContext.Provider value={nodesContext}>
                 {/* Input Category Pages */}
                 <div className="tabs">
                     <PrimaryButton text="Setup" onClick={this.onClickSetup} />
@@ -139,10 +174,11 @@ class ScenarioDefinitionPage extends Component {
                 </div>
 
                 {this.state.tab === 'setup' && <Setup /> }
-                {this.state.tab === 'category' && <InputCategoryPage filters={this.state.filters}
-                                                                     nodes={this.state.nodes}
-                                                                     category={this.state.inputCategories[this.state.category]}/> }
-            </div>
+                {this.state.tab === 'category' &&
+                    <InputCategoryPage filters={this.state.filters} nodes={this.state.nodes}
+                                       category={this.state.inputCategories[this.state.category]}/>
+                }
+            </NodesContext.Provider>
         );
     }
 }

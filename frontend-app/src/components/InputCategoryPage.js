@@ -1,7 +1,7 @@
 import React, {Component} from "react";
-import {FormControl, MenuItem, Select, InputLabel} from "@material-ui/core";
 import {ComboBox} from '@fluentui/react';
 import Node from "./Node";
+import OtherNodes from "./OtherNodes";
 
 class InputCategoryPage extends Component {
     constructor(props) {
@@ -92,13 +92,17 @@ class InputCategoryPage extends Component {
 
                 {/* Nodes */}
                 <div className="nodes">
+                    {/* Input Nodes */}
                     {this.state.categoryNodes.map((node_id, index) => {
                         let node = this.state.nodes[node_id];
-                        if (!node.visible) return;
+                        if (!node.visible || node.type === 'const') return;
                         return (
-                            <Node key={index} node={node} />
+                            <Node key={node_id} nodeId={node_id} node={node} />
                         );
                     })}
+
+                    {/* Other Nodes */}
+                    <OtherNodes nodes={this.props.nodes} />
                 </div>
             </div>
         )
