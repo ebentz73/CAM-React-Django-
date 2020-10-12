@@ -57,3 +57,7 @@ table, th, td {
     margin-right: 50px;
     margin-left: 50px;
 }
+
+.report-style-class {
+    height:100vh;
+}

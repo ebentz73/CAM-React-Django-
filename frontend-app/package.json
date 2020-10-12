@@ -26,6 +26,7 @@
   "dependencies": {
     "@fluentui/react": "^7.144.2",
     "@material-ui/core": "^4.11.0",
+    "powerbi-client-react": "^1.1.0",
     "react-router-dom": "^5.2.0"
   }
 }

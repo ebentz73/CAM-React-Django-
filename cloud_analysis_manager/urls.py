@@ -48,5 +48,6 @@ urlpatterns = [
     url('^api/node-data/model=(?P<model>.+)/$', views.AllNodeDataByModelAPIView.as_view()),
     url('^api/node-data/solution=(?P<solution>.+)/$', views.AllNodeDataBySolutionAPIView.as_view()),
     url('^api/filters/solution=(?P<solution>.+)/$', views.FilterCategoriesAndOptionsBySolutionAPIView.as_view()),
+    url('^api/powerbi', views.PowerBIAPIView.as_view())
 
 ]

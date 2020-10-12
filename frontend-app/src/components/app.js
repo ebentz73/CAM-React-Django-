@@ -5,6 +5,7 @@ import InputCategoryPage from "./InputCategoryPage";
 import {PrimaryButton, Stack} from '@fluentui/react';
 import {BrowserRouter, Route, Switch} from "react-router-dom";
 import ScenarioDefinitionPage from "./ScenarioDefinitionPage";
+import PowerBIReport from './PowerBIReport';
 
 class App extends Component {
     constructor(props) {
@@ -14,6 +15,9 @@ class App extends Component {
     render() {
         return (
             <BrowserRouter>
+                <Switch>
+                    <Route exact path='/frontend-app/powerbi-report' component={PowerBIReport}/>
+                </Switch>
                 <Switch>
                     <Route exact path='/frontend-app' component={ScenarioDefinitionPage}/>
                 </Switch>

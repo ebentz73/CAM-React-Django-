@@ -1,4 +1,6 @@
 import json
+import msal
+import requests
 import sqlite3
 from typing import Union, TypeVar, Generic, Iterator
 
@@ -10,6 +12,7 @@ from django.db.models import QuerySet
 from grafana_api.grafana_face import GrafanaFace
 
 _Z = TypeVar('_Z')
+env = environ.Env()
 
 
 class ModelType(Generic[_Z], QuerySet):
@@ -136,3 +139,120 @@ def create_dashboard(title: str) -> dict:
         dashboard = json.load(f)
     dashboard['title'] = title
     return grafana_api.dashboard.update_dashboard({'dashboard': dashboard})
+
+
+class PowerBI:
+    SCOPE = ['https://analysis.windows.net/powerbi/api/.default']
+    AUTHORITY = 'https://login.microsoftonline.com/organizations'
+
+    def get_workspace_id(self):
+        return '626f076c-41cb-4d5e-b2d7-49e624a9a441'
+
+    def get_report_id(self):
+        return 'd9b46095-a797-438f-814d-4880eedbb0f0'
+
+    def get_roles(self):
+        return ['T', 'V']
+
+    def get_username(self):
+        return "PIYU"
+
+    def get_client_secret(self):
+        return env('POWERBI_CLIENT_SECRET')
+
+    def get_client_id(self):
+        return env('POWERBI_CLIENT_ID')
+
+    def get_tenant_id(self):
+        return env('POWERBI_TENANT_ID')
+
+    def get_access_token(self):
+        """Returns AAD token using MSAL"""
+
+        try:
+            authority = self.AUTHORITY.replace('organizations', self.get_tenant_id())
+            clientapp = msal.ConfidentialClientApplication(self.get_client_id(),
+                                                           client_credential=self.get_client_secret(),
+                                                           authority=authority)
+
+            # Retrieve Access token from cache if available
+            response = clientapp.acquire_token_silent(scopes=self.SCOPE, account=None)
+            if not response:
+                # Make a client call if Access token is not available in cache
+                response = clientapp.acquire_token_for_client(scopes=self.SCOPE)
+            try:
+                return response['access_token']
+            except KeyError:
+                raise Exception(response['error_description'])
+
+        except Exception as ex:
+            raise Exception('Error retrieving Access token\n' + str(ex))
+
+    def get_embed_token(self, access_token):
+        """Returns Embed token and Embed URL"""
+
+        try:
+            headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + access_token}
+            reporturl = 'https://api.powerbi.com/v1.0/myorg/groups/' + self.get_workspace_id() + '/reports/' + self.get_report_id()
+
+            try:
+                apiresponse = requests.get(reporturl, headers=headers)
+            except Exception as ex:
+                raise Exception('Error while retrieving report Embed URL\n')
+
+            if not apiresponse:
+                raise Exception(
+                    'Error while retrieving report Embed URL\n' + apiresponse.reason + '\nRequestId: ' + apiresponse.headers.get(
+                        'RequestId'))
+
+            try:
+                apiresponse = json.loads(apiresponse.text)
+                embedurl = apiresponse['embedUrl']
+                datasetId = apiresponse['datasetId']
+            except Exception as ex:
+                raise Exception('Error while extracting Embed URL from API response\n' + apiresponse.text)
+
+            # Get embed token
+            embedtokenurl = 'https://api.powerbi.com/v1.0/myorg/GenerateToken'
+            body = {'datasets': [], 'identities': []}
+            if datasetId != '':
+                body['datasets'].append({'id': datasetId})
+                body['identities'].append(
+                    {'username': self.get_username(), "roles": self.get_roles(), "datasets": [datasetId]})
+
+            if self.get_report_id() != '':
+                body['reports'] = []
+                body['reports'].append({'id': self.get_report_id()})
+
+            if self.get_workspace_id() != '':
+                body['targetWorkspaces'] = []
+                body['targetWorkspaces'].append({'id': self.get_workspace_id()})
+
+            try:
+
+                # Generate Embed token for multiple workspaces, datasets, and reports. Refer https://aka.ms/MultiResourceEmbedToken
+                apiresponse = requests.post(embedtokenurl, data=json.dumps(body), headers=headers)
+            except:
+                raise Exception('Error while invoking Embed token REST API endpoint\n')
+
+            if not apiresponse:
+                raise Exception(
+                    'Error while retrieving report Embed URL\n' + apiresponse.reason + '\nRequestId: ' + apiresponse.headers.get(
+                        'RequestId'))
+
+            try:
+                apiresponse = json.loads(apiresponse.text)
+                embedtoken = apiresponse['token']
+                embedtokenid = apiresponse['tokenId']
+                tokenexpiry = apiresponse['expiration']
+            except Exception as ex:
+                raise Exception('Error while extracting Embed token from API response\n' + apiresponse.reason)
+
+            response = {'embedToken': embedtoken, 'embedUrl': embedurl, 'tokenExpiry': tokenexpiry, 'reportId': self.get_report_id()}
+            return response
+        except Exception as ex:
+            return {'errorMsg': str(ex)}, 500
+
+    def run(self):
+        access_token = self.get_access_token()
+        return self.get_embed_token(access_token)
