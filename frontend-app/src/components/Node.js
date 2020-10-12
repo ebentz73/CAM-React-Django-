@@ -1,5 +1,8 @@
 import React, {Component} from "react";
 import {Text} from '@fluentui/react';
+import {TextField} from '@fluentui/react';
+import InputNodeTable from "./InputNodeTable";
+import ConstNodeTable from "./ConstNodeTable";
 
 class Node extends Component {
     constructor(props) {
@@ -19,31 +22,10 @@ class Node extends Component {
         return (
             <div>
                 <div className="node-header" onClick={this.tableToggle}>
-                    <div className="label"><Text>{this.props.node.name}</Text></div>
+                    <div className="label"><Text variant="mediumPlus">{this.props.node.name}</Text></div>
                 </div>
-                {this.state.tableToggle &&
-                <div className="node-table">
-                    <table>
-                        <tbody>
-                        {this.props.node.type === 'input' && this.props.node.data[0].map((_, colIndex) => {
-                            return (
-                                <tr key={colIndex}>
-                                    {this.props.node.data.map((row, index) => {
-                                        return(<td key={index}>{row[colIndex]}</td>);
-                                    })}
-                                </tr>
-                            );
-                        })}
-                        {this.props.node.type === 'const' &&
-                            <tr>
-                                {this.props.node.data.map((val, index) => {
-                                    return (<td key={{index}}>{val}</td>);
-                                })}
-                            </tr>
-                        }
-                        </tbody>
-                    </table>
-                </div>
+                {this.state.tableToggle && this.props.node.type === 'input' &&
+                    <InputNodeTable nodeId={this.props.nodeId} data={this.props.node.data} />
                 }
             </div>
         )
