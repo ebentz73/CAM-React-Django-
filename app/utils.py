@@ -144,18 +144,19 @@ def create_dashboard(title: str) -> dict:
 class PowerBI:
     SCOPE = ['https://analysis.windows.net/powerbi/api/.default']
     AUTHORITY = 'https://login.microsoftonline.com/organizations'
+    solution = None
 
     def get_workspace_id(self):
-        return '626f076c-41cb-4d5e-b2d7-49e624a9a441'
+        return self.solution.workspace_id
 
     def get_report_id(self):
-        return 'd9b46095-a797-438f-814d-4880eedbb0f0'
+        return self.solution.report_id
 
     def get_roles(self):
         return ['T', 'V']
 
     def get_username(self):
-        return "PIYU"
+        return ""
 
     def get_client_secret(self):
         return env('POWERBI_CLIENT_SECRET')
@@ -253,6 +254,7 @@ class PowerBI:
         except Exception as ex:
             return {'errorMsg': str(ex)}, 500
 
-    def run(self):
+    def run(self, solution):
+        self.solution = solution
         access_token = self.get_access_token()
         return self.get_embed_token(access_token)

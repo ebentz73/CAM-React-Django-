@@ -75,10 +75,13 @@ class FilterCategoriesAndOptionsBySolutionAPIView(generics.ListAPIView):
         })
 
 
-class PowerBIAPIView(generics.ListAPIView):
-    def get(self, request, **kwargs):
+class PowerBIAPIView(APIView):
+    queryset = AnalyticsSolution.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        solution = AnalyticsSolution.objects.get(**kwargs)
         powerbi = PowerBI()
-        return Response(powerbi.run())
+        return Response(powerbi.run(solution))
 
 
 class AllNodeDataBySolutionAPIView(generics.ListAPIView):

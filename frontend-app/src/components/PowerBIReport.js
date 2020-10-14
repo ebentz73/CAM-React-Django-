@@ -14,7 +14,7 @@ class PowerBIReport extends Component {
     }
 
     fetchReportEmbedData(solution_id) {
-        fetch("http://" + window.location.host + "/api/powerbi")
+        fetch("http://" + window.location.host + "/api/solution/" + this.props.match.params['id'] +"/report")
             .then(response => {
                 return response.json()
             })

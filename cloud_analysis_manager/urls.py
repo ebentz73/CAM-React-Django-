@@ -36,6 +36,7 @@ urlpatterns = [
     ),
     path("api/results/", views.NodeResultView.as_view()),
     path("api/model/", views.ModelAPIView.as_view()),
+    path('api/solution/<pk>/report/', views.PowerBIAPIView.as_view()),
     path("api/solution/", views.AnalyticsSolutionAPIView.as_view()),
     path("api/scen-node/", views.ScenarioNodeDataAPIView.as_view()),
     path("api/node-data/", views.NodeDataAPIView.as_view()),
@@ -48,6 +49,6 @@ urlpatterns = [
     url('^api/node-data/model=(?P<model>.+)/$', views.AllNodeDataByModelAPIView.as_view()),
     url('^api/node-data/solution=(?P<solution>.+)/$', views.AllNodeDataBySolutionAPIView.as_view()),
     url('^api/filters/solution=(?P<solution>.+)/$', views.FilterCategoriesAndOptionsBySolutionAPIView.as_view()),
-    url('^api/powerbi', views.PowerBIAPIView.as_view())
+
 
 ]

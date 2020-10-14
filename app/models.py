@@ -40,6 +40,8 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
     tam_file = models.FileField(upload_to=_name_tam_file)
     dashboard_uid = models.CharField(max_length=40, editable=False, default='')
     dashboard_url = models.CharField(max_length=255, editable=False, default='')
+    report_id = models.CharField(max_length=128, null=True, blank=True)
+    workspace_id = models.CharField(max_length=128, null=True, blank=True)
 
     def __str__(self):
         return f'Analytics Solution ({self.id}) - {self.name}'

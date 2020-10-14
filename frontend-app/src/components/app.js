@@ -16,7 +16,7 @@ class App extends Component {
         return (
             <BrowserRouter>
                 <Switch>
-                    <Route exact path='/frontend-app/powerbi-report' component={PowerBIReport}/>
+                    <Route exact path='/frontend-app/solution/:id/report' component={PowerBIReport}/>
                 </Switch>
                 <Switch>
                     <Route exact path='/frontend-app' component={ScenarioDefinitionPage}/>
