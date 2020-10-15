@@ -10,20 +10,33 @@ class OtherNodes extends Component {
         super(props);
         this.state = {
             tableToggle: false,
-            constNodes: []
+            constNodes: [],
+            numVisible: 0
         }
 
         this.tableToggle = this.tableToggle.bind(this);
     }
 
-    componentDidMount() {
+    componentWillReceiveProps(nextProps, nextContext) {
+        if (this.props.nodes != nextProps.nodes){
+            this.filterConstNodes(nextProps.nodes);
+        }
+    }
+
+    filterConstNodes(nodes){
+        let numVisible = 0;
         let constNodes = [];
-        Object.keys(this.props.nodes).map(node_id => {
-            if(this.props.nodes[node_id].type === 'const') {
-                constNodes.push({...this.props.nodes[node_id], id: node_id});
+        Object.keys(nodes).map(node_id => {
+            if(nodes[node_id].type === 'const') {
+                constNodes.push({...nodes[node_id], id: node_id});
+                if (nodes[node_id].visible) numVisible++;
             }
         });
-        this.setState({constNodes: constNodes});
+        this.setState({constNodes: constNodes, numVisible: numVisible});
+    }
+
+    componentDidMount() {
+        this.filterConstNodes(this.props.nodes);
     }
 
     tableToggle() {
@@ -32,6 +45,7 @@ class OtherNodes extends Component {
 
     render() {
         return (
+            (this.state.numVisible > 0) &&
             <div>
                 <div className="node-header" onClick={this.tableToggle}>
                     <div className="label"><Text variant="mediumPlus">Other</Text></div>

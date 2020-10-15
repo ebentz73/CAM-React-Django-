@@ -1,8 +1,5 @@
 import React, {Component} from "react";
 import {render} from "react-dom";
-import Setup from "./Setup";
-import InputCategoryPage from "./InputCategoryPage";
-import {PrimaryButton, Stack} from '@fluentui/react';
 import {BrowserRouter, Route, Switch} from "react-router-dom";
 import ScenarioDefinitionPage from "./ScenarioDefinitionPage";
 
