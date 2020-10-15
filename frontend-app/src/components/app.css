@@ -89,3 +89,21 @@ table, th, td {
 .line-chart-container canvas {
     margin-bottom: 50px;
 }
+
+.nav-bar {
+    height: 75px;
+    background-color: palegoldenrod;
+}
+
+.nav-bar img {
+    height: 75%;
+    margin: auto 0;
+}
+
+.nav-bar-logo {
+    float: left;
+}
+
+.nav-bar-user {
+    float:right;
+}

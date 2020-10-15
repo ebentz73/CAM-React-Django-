@@ -41,7 +41,7 @@ class NodeDataChart extends Component {
     render() {
         return (
             <div className="line-chart-container">
-                <Line data={this.state.chartData}/>
+                <Line data={this.state.chartData} options={{layout: {padding: {left: 0, right: 0, top: 0, bottom: 50}}}}/>
             </div>
         );
     }

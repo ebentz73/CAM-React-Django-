@@ -4,6 +4,7 @@ import SetupPage from "./SetupPage";
 import InputCategoryPage from "./InputCategoryPage";
 import NodesContext from "./NodesContext";
 import ReviewPage from "./ReviewPage";
+import NavBar from "./NavBar";
 
 function getCookie(name) {
   return (name = (document.cookie + ';').match(new RegExp(name + '=.*;'))) && name[0].split(/=|;/)[1];
@@ -245,30 +246,33 @@ class ScenarioDefinitionPage extends Component {
             copyToAllLayers: this.copyToAllLayers};
         let pagesContext = {};
         return (
-            <NodesContext.Provider value={nodesContext}>
-                {/* Input Category Pages */}
-                <div className="tabs">
-                    <PrimaryButton text="Setup" onClick={this.onClickSetup} />
-                    {this.state.inputCategoryOrder.map((cat_name, index) => {
-                        return (
-                            <PrimaryButton key={index} text={cat_name.substring(cat_name.indexOf('.')+1, cat_name.length)}
-                                           onClick={(e, val) => this.onClickCategory(e, index)}/>
-                        );
-                    })}
-                    <PrimaryButton text="Review" onClick={() => this.setState({tab: 'review'})} />
-                </div>
+            <React.Fragment>
+                <NavBar />
+                <NodesContext.Provider value={nodesContext}>
+                    {/* Input Category Pages */}
+                    <div className="tabs">
+                        <PrimaryButton text="Setup" onClick={this.onClickSetup} />
+                        {this.state.inputCategoryOrder.map((cat_name, index) => {
+                            return (
+                                <PrimaryButton key={index} text={cat_name.substring(cat_name.indexOf('.')+1, cat_name.length)}
+                                               onClick={(e, val) => this.onClickCategory(e, index)}/>
+                            );
+                        })}
+                        <PrimaryButton text="Review" onClick={() => this.setState({tab: 'review'})} />
+                    </div>
 
-                {this.state.tab === 'setup' && <SetupPage index={0} changeScenarioName={this.changeScenarioName}
-                                                          changeTab={this.changeTab}/> }
-                {this.state.tab === 'category' &&
-                    <InputCategoryPage filters={this.state.filters} nodes={this.state.nodes}
-                                       index={this.state.category_idx} changeTab={this.changeTab}
-                                       categoryNodes={this.state.inputCategories[this.state.category]} />
-                }
-                {this.state.tab === 'review' && <ReviewPage index={this.state.inputCategoryOrder.length}
-                                                            postScenario={this.postScenario}
-                                                            changeTab={this.changeTab} />}
-            </NodesContext.Provider>
+                    {this.state.tab === 'setup' && <SetupPage index={0} changeScenarioName={this.changeScenarioName}
+                                                              changeTab={this.changeTab}/> }
+                    {this.state.tab === 'category' &&
+                        <InputCategoryPage filters={this.state.filters} nodes={this.state.nodes}
+                                           index={this.state.category_idx} changeTab={this.changeTab}
+                                           categoryNodes={this.state.inputCategories[this.state.category]} />
+                    }
+                    {this.state.tab === 'review' && <ReviewPage index={this.state.inputCategoryOrder.length}
+                                                                postScenario={this.postScenario}
+                                                                changeTab={this.changeTab} />}
+                </NodesContext.Provider>
+            </React.Fragment>
         );
     }
 }
