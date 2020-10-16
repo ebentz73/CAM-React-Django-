@@ -277,6 +277,7 @@ class DecimalNodeOverride(NodeOverride):
 
 class NodeData(PolymorphicModel):
     node = models.ForeignKey(Node, on_delete=models.CASCADE, default=None)
+    is_model = models.BooleanField(default=True)
 
 
 class InputNodeData(NodeData):
@@ -289,9 +290,8 @@ class ConstNodeData(NodeData):
 
 class ScenarioNodeData(models.Model):
     node = models.ForeignKey(Node, on_delete=models.CASCADE, default=None)
+    node_data = models.ForeignKey(NodeData, on_delete=models.CASCADE, default=None)
     scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, default=None)
-    name = models.CharField(max_length=255)
-    overrides = ArrayField(models.IntegerField())
     is_uncertain = models.BooleanField(default=False)
     is_bounded = models.BooleanField(default=False)
     is_changes = models.BooleanField(default=False)

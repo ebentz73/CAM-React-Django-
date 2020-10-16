@@ -1,7 +1,9 @@
 import React, {Component} from "react";
-import {ComboBox} from '@fluentui/react';
+import {ComboBox, Stack, PrimaryButton, Text} from '@fluentui/react';
 import Node from "./Node";
 import OtherNodes from "./OtherNodes";
+import {Line} from "react-chartjs-2";
+import NodeDataChart from './NodeDataChart';
 
 class InputCategoryPage extends Component {
     constructor(props) {
@@ -9,28 +11,33 @@ class InputCategoryPage extends Component {
         this.state = {
             nodes: props.nodes,
             filters: props.filters,
-            categoryNodes: []
+            categoryNodes: [],
+            chartData: {}
         }
 
         this.changeFilterOption = this.changeFilterOption.bind(this);
         this.filterNodesByInputCategory = this.filterNodesByInputCategory.bind(this);
     }
 
-    filterNodesByInputCategory(categoryNodes){
+    filterNodesByInputCategory(categoryNodes) {
         this.setState({categoryNodes: categoryNodes.map(a => a.toString())});
     }
 
     componentWillReceiveProps(nextProps, nextContext) {
-        if (nextProps.category !== this.props.category) {
-            this.filterNodesByInputCategory(nextProps.category);
+        if (nextProps.categoryNodes !== this.props.categoryNodes) {
+            this.filterNodesByInputCategory(nextProps.categoryNodes);
+        }
+
+        if(nextProps.nodes !== this.props.nodes) {
+            this.setState({nodes: nextProps.nodes});
         }
     }
 
     componentDidMount() {
-        this.filterNodesByInputCategory(this.props.category);
+        this.filterNodesByInputCategory(this.props.categoryNodes);
     }
 
-    isNodeVisible(node){
+    isNodeVisible(node) {
         let visible = true;
         Object.keys(node.selectedCategories).map(cat_id => {
             visible &= node.selectedCategories[cat_id];
@@ -54,7 +61,7 @@ class InputCategoryPage extends Component {
                 for (let i = 0; i < node.tags.length; i++) {
                     let a = newFilters[cat_id].selected;
                     let b = newFilters[cat_id].options;
-                    if (newFilters[cat_id].options[a].tag.includes(node.tags[i])){
+                    if (newFilters[cat_id].options[a].tag.includes(node.tags[i])) {
                         selectedOptionMatchTag = true;
                     }
                 }
@@ -81,14 +88,18 @@ class InputCategoryPage extends Component {
                         options.push({key: '-1', text: 'All'});
                         return (
                             <div key={index}>
-                                <ComboBox options={options} autoComplete="on" label={category.name} selectedKey={category.selected.toString()}
+                                <ComboBox options={options} autoComplete="on" label={category.name}
+                                          selectedKey={category.selected.toString()}
                                           onChange={(e, val) =>
-                                              this.changeFilterOption(e, val, cat_id)}  />
+                                              this.changeFilterOption(e, val, cat_id)}/>
 
                             </div>
                         );
                     })}
                 </div>
+
+                {/* Chart */}
+                <NodeDataChart node={this.state.nodes[parseInt(this.state.categoryNodes[0])]} />
 
                 {/* Nodes */}
                 <div className="nodes">
@@ -97,12 +108,23 @@ class InputCategoryPage extends Component {
                         let node = this.state.nodes[node_id];
                         if (!node.visible || node.type === 'const') return;
                         return (
-                            <Node key={node_id} nodeId={node_id} node={node} />
+                            <Node key={node_id} nodeId={node_id} node={node}/>
                         );
                     })}
 
                     {/* Other Nodes */}
-                    <OtherNodes nodes={this.props.nodes} />
+                    <OtherNodes nodes={this.state.nodes}/>
+                </div>
+                {/*Navigation Buttons*/}
+                <div className="navigation-buttons">
+                    <Stack horizontal horizontalAlign="space-between">
+                        <Stack.Item align="start">
+                            <PrimaryButton text="Previous" onClick={() => this.props.changeTab(this.props.index - 1)}/>
+                        </Stack.Item>
+                        <Stack.Item align="end">
+                            <PrimaryButton text="Next" onClick={() => this.props.changeTab(this.props.index + 1)}/>
+                        </Stack.Item>
+                    </Stack>
                 </div>
             </div>
         )

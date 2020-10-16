@@ -70,14 +70,14 @@ def update_model(sender, **kwargs):
                                 node_data = [[val.InputData.LowerBound, val.InputData.Low, val.InputData.Nominal,
                                               val.InputData.High, val.InputData.UpperBound]
                                              for val in blob_model.LayerData._values]
-                                InputNodeData.objects.update_or_create(node=node, default_data=node_data)
+                                InputNodeData.objects.update_or_create(node=node, default_data=node_data, is_model=True)
                             if node_type == 'constnode':
                                 cursor.execute("select NodeInputData from NodeScenarioData where NodeId=?", (node_id,))
                                 record = cursor.fetchone()
                                 blob_model = ConstNodeData_pb2.ConstNodeData()
                                 blob_model.ParseFromString(record[0])
                                 node_data = [val.ConstData for val in blob_model.AllLayerData._values]
-                                ConstNodeData.objects.update_or_create(node=node, default_data=node_data)
+                                ConstNodeData.objects.update_or_create(node=node, default_data=node_data, is_model=True)
 
         finally:
             os.remove(filename)

@@ -2,6 +2,8 @@ from functools import wraps
 
 import material.frontend.views as material
 from django.shortcuts import render, get_object_or_404, redirect
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework import generics
 from rest_framework.response import Response
@@ -10,11 +12,11 @@ from rest_framework.viewsets import ModelViewSet
 
 from app.forms import CreateEvalJobForm
 from app.models import ExecutiveView, EvalJob, NodeData, ScenarioNodeData, Node, Model, \
-    InputNodeData, ConstNodeData, AnalyticsSolution, FilterOption, FilterCategory
+    InputNodeData, ConstNodeData, AnalyticsSolution, FilterOption, FilterCategory, Scenario
 from app.serializers import EvalJobSerializer, NodeResultSerializer, AnalyticsSolutionSerializer, \
     NodeDataSerializer, ScenarioNodeDataSerializer, NodeSerializer, ModelSerializer, \
     FilterCategorySerializer, FilterOptionSerializer, InputNodeDataSerializer, \
-    ConstNodeDataSerializer
+    ConstNodeDataSerializer, ScenarioSerializer
 from app.utils import PowerBI
 
 
@@ -51,11 +53,27 @@ class NodeResultView(APIView):
         return Response([{"id": 2000, "email": "varsha@gmail.com", "name": "Varsha"}], status=status.HTTP_201_CREATED)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
+class ScenarioAPIView(generics.ListCreateAPIView):
+    queryset = Scenario.objects.all()
+    serializer_class = ScenarioSerializer
+
+
 class NodeDataAPIView(generics.ListCreateAPIView):
     queryset = NodeData.objects.all()
     serializer_class = NodeDataSerializer
 
 
+class ScenarioNodeDataBySolutionAPIView(generics.ListCreateAPIView):
+    serializer_class = ScenarioNodeDataSerializer
+
+    def get_queryset(self):
+        solution = self.kwargs['solution']
+        scenario_ids = [scenario.id for scenario in Scenario.objects.filter(solution=solution)]
+        return ScenarioNodeData.objects.filter(scenario__in=scenario_ids)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
 class ScenarioNodeDataAPIView(generics.ListCreateAPIView):
     queryset = ScenarioNodeData.objects.all()
     serializer_class = ScenarioNodeDataSerializer
@@ -72,6 +90,27 @@ class FilterCategoriesAndOptionsBySolutionAPIView(generics.ListAPIView):
         return Response({
             'categories': categories_serializer.data,
             'options': options_serializer.data
+        })
+
+
+class ModelNodeDataBySolutionAPIView(generics.ListAPIView):
+    def get(self, request, format=None, **kwargs):
+        models = Model.objects.filter(solution_id=self.kwargs['solution'])
+        model_ids = [model.id for model in models]
+        nodes = Node.objects.filter(model_id__in=model_ids)
+        node_ids = [node.id for node in nodes]
+
+        input_nodes = InputNodeData.objects.filter(node_id__in=node_ids, is_model=True)
+        input_serializer = InputNodeDataSerializer(input_nodes, many=True)
+
+        const_nodes = ConstNodeData.objects.filter(node_id__in=node_ids, is_model=True)
+        const_serializer = ConstNodeDataSerializer(const_nodes, many=True)
+
+        nodes_serializer = NodeSerializer(nodes, many=True)
+
+        return Response({
+            'input_nodes': input_serializer.data,
+            'const_nodes': const_serializer.data
         })
 
 
@@ -136,17 +175,19 @@ class ModelAPIView(generics.ListAPIView):
     serializer_class = ModelSerializer
 
 
-class InputNodeDataAPIView(generics.ListAPIView):
+@method_decorator(csrf_exempt, name='dispatch')
+class InputNodeDataAPIView(generics.ListCreateAPIView):
     queryset = InputNodeData.objects.all()
     serializer_class = InputNodeDataSerializer
 
 
-class ConstNodeDataAPIView(generics.ListAPIView):
+@method_decorator(csrf_exempt, name='dispatch')
+class ConstNodeDataAPIView(generics.ListCreateAPIView):
     queryset = ConstNodeData.objects.all()
     serializer_class = ConstNodeDataSerializer
 
 
-class InputNodeDataByNodeListAPIView(generics.ListAPIView):
+class InputNodeDataByNodeListAPIView(generics.ListCreateAPIView):
     serializer_class = InputNodeDataSerializer
 
     def get_queryset(self):

@@ -94,6 +94,12 @@ class ScenarioNodeDataSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ScenarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Scenario
+        fields = '__all__'
+
+
 class NodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Node
