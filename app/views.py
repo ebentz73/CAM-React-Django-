@@ -17,6 +17,7 @@ from app.serializers import EvalJobSerializer, NodeResultSerializer, AnalyticsSo
     NodeDataSerializer, ScenarioNodeDataSerializer, NodeSerializer, ModelSerializer, \
     FilterCategorySerializer, FilterOptionSerializer, InputNodeDataSerializer, \
     ConstNodeDataSerializer, ScenarioSerializer
+from app.utils import PowerBI
 
 
 # region REST Framework Api
@@ -111,6 +112,15 @@ class ModelNodeDataBySolutionAPIView(generics.ListAPIView):
             'input_nodes': input_serializer.data,
             'const_nodes': const_serializer.data
         })
+
+
+class PowerBIAPIView(APIView):
+    queryset = AnalyticsSolution.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        solution = AnalyticsSolution.objects.get(**kwargs)
+        powerbi = PowerBI()
+        return Response(powerbi.run(solution))
 
 
 class AllNodeDataBySolutionAPIView(generics.ListAPIView):

@@ -107,3 +107,7 @@ table, th, td {
 .nav-bar-user {
     float:right;
 }
+
+.report-style-class {
+    height:100vh;
+}
