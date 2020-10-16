@@ -111,3 +111,7 @@ table, th, td {
 .report-style-class {
     height:100vh;
 }
+
+.m-t-100 {
+    margin-top:100px;
+}
