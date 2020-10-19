@@ -31,11 +31,13 @@ class NodeDataChart extends Component {
     }
 
     componentWillReceiveProps(nextProps, nextContext) {
-        this.setupChartData(nextProps.node);
+        if (nextProps.node !== 'none') {
+            this.setupChartData(nextProps.node);
+        }
     }
 
     componentDidMount() {
-        this.setupChartData(this.props.node);
+        //this.setupChartData(this.props.node);
     }
 
     render() {

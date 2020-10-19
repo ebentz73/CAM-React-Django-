@@ -1,3 +1,5 @@
+
+/* Tabs */
 .tabs {
     text-align: center;
 }
@@ -6,6 +8,8 @@
     display: inline-block;
     margin: 20px 20px 0px 20px;
 }
+
+/* Filters */
 
 .filters {
     margin-top: 50px;
@@ -16,35 +20,22 @@
     margin: 0px 50px 0px 50px;
 }
 
+/* Scenario Info */
+
 .scenario-info > div {
     margin: 50px 50px 50px 50px;
 }
 
+/* Nodes */
 .nodes {
     margin-top: 50px;
 }
 
 .nodes > div {
-    background-color: palevioletred;
+    background-color: rgb(238, 238, 238);
     margin: 50px 50px 50px 50px;
     height: 100%;
     padding-bottom: 10px;
-}
-
-table, th, td {
-  /*border: 1px solid black;*/
-}
-
-.label {
-    display: inline-block;
-}
-
-.value {
-    display: inline-block;
-}
-
-.changes-toggle {
-    display: inline-block;
 }
 
 .node-header {
@@ -53,15 +44,19 @@ table, th, td {
     justify-content: space-between;
 }
 
-.next-button {
-    text-align: right;
-    margin-right: 50px;
+.node-header-chevron {
+    float: right;
+    color: rgb(141, 141, 141);
+    margin: 8px;
 }
 
-.navigation-buttons {
-    margin-right: 50px;
-    margin-left: 50px;
+.node-header-label {
+    font-family: "Segoe UI";
+    display: inline-block;
+    color: rgb(141, 141, 141);
 }
+
+/* Node Tables */
 
 .node-table {
     margin: 10px;
@@ -78,6 +73,20 @@ table, th, td {
     width: 100%;
 }
 
+/* Navigation Buttons */
+
+.next-button {
+    text-align: right;
+    margin-right: 50px;
+}
+
+.navigation-buttons {
+    margin-right: 50px;
+    margin-left: 50px;
+}
+
+/* Chart */
+
 .line-chart-container {
     width: 50%;
     height: 300px;
@@ -86,28 +95,43 @@ table, th, td {
     padding-bottom: 20px;
 }
 
-.line-chart-container canvas {
-    margin-bottom: 50px;
-}
+/* Nav Bar */
 
 .nav-bar {
+    margin: -8px;
     height: 75px;
     background-color: palegoldenrod;
 }
 
 .nav-bar img {
     height: 75%;
-    margin: auto 0;
 }
 
 .nav-bar-logo {
     float: left;
+    margin: 10px;
 }
 
 .nav-bar-user {
-    float:right;
+    float: right;
+    margin: 10px;
 }
+
+/* PowerBI Report */
 
 .report-style-class {
     height:100vh;
+}
+
+/* Scenario Definition Page Layout */
+.scenario-page {
+    display: flex;
+}
+
+.scenario-main {
+    flex: 1 0 auto;
+}
+
+.progress-sidebar {
+    background-color: red;
 }

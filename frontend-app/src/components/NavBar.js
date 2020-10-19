@@ -9,7 +9,7 @@ class NavBar extends Component {
         return(
             <div className="nav-bar">
                 <img className="nav-bar-logo" src="../static/frontend-app/lone-star-flag.jpg"/>
-                <img className="nav-bar-user" src="../static/frontend-app/default-user.png"/>
+                <img className="nav-bar-user" src="../static/frontend-app/transparent-user.jpg"/>
             </div>
         );
     }

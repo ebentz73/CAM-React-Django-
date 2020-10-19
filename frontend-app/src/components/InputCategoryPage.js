@@ -12,11 +12,18 @@ class InputCategoryPage extends Component {
             nodes: props.nodes,
             filters: props.filters,
             categoryNodes: [],
-            chartData: {}
+            chartData: {},
+            nodeOnChart: 'none'
         }
 
         this.changeFilterOption = this.changeFilterOption.bind(this);
         this.filterNodesByInputCategory = this.filterNodesByInputCategory.bind(this);
+        this.changeNodeShownOnChart = this.changeNodeShownOnChart.bind(this);
+    }
+
+    changeNodeShownOnChart(e, node_id){
+        e.stopPropagation();
+        this.setState({nodeOnChart: this.state.nodes[node_id]});
     }
 
     filterNodesByInputCategory(categoryNodes) {
@@ -99,7 +106,7 @@ class InputCategoryPage extends Component {
                 </div>
 
                 {/* Chart */}
-                <NodeDataChart node={this.state.nodes[parseInt(this.state.categoryNodes[0])]} />
+                <NodeDataChart node={this.state.nodeOnChart} />
 
                 {/* Nodes */}
                 <div className="nodes">
@@ -108,7 +115,7 @@ class InputCategoryPage extends Component {
                         let node = this.state.nodes[node_id];
                         if (!node.visible || node.type === 'const') return;
                         return (
-                            <Node key={node_id} nodeId={node_id} node={node}/>
+                            <Node key={node_id} nodeId={node_id} node={node} changeChartData={this.changeNodeShownOnChart} />
                         );
                     })}
 

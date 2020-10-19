@@ -249,28 +249,35 @@ class ScenarioDefinitionPage extends Component {
             <React.Fragment>
                 <NavBar />
                 <NodesContext.Provider value={nodesContext}>
-                    {/* Input Category Pages */}
-                    <div className="tabs">
-                        <PrimaryButton text="Setup" onClick={this.onClickSetup} />
-                        {this.state.inputCategoryOrder.map((cat_name, index) => {
-                            return (
-                                <PrimaryButton key={index} text={cat_name.substring(cat_name.indexOf('.')+1, cat_name.length)}
-                                               onClick={(e, val) => this.onClickCategory(e, index)}/>
-                            );
-                        })}
-                        <PrimaryButton text="Review" onClick={() => this.setState({tab: 'review'})} />
-                    </div>
+                    <div className="ms-Grid m-t-100">
+                        <div className="ms-Grid-row">
+                            <div className="ms-Grid-col ms-md2 progress-sidebar"></div>
+                            <div className="ms-Grid-col ms-md8">
+                                {/* Input Category Pages */}
+                                <div className="tabs">
+                                    <PrimaryButton text="Setup" onClick={this.onClickSetup} />
+                                    {this.state.inputCategoryOrder.map((cat_name, index) => {
+                                        return (
+                                            <PrimaryButton key={index} text={cat_name.substring(cat_name.indexOf('.')+1, cat_name.length)}
+                                                           onClick={(e, val) => this.onClickCategory(e, index)}/>
+                                        );
+                                    })}
+                                    <PrimaryButton text="Review" onClick={() => this.setState({tab: 'review'})} />
+                                </div>
 
-                    {this.state.tab === 'setup' && <SetupPage index={0} changeScenarioName={this.changeScenarioName}
-                                                              changeTab={this.changeTab}/> }
-                    {this.state.tab === 'category' &&
-                        <InputCategoryPage filters={this.state.filters} nodes={this.state.nodes}
-                                           index={this.state.category_idx} changeTab={this.changeTab}
-                                           categoryNodes={this.state.inputCategories[this.state.category]} />
-                    }
-                    {this.state.tab === 'review' && <ReviewPage index={this.state.inputCategoryOrder.length}
-                                                                postScenario={this.postScenario}
-                                                                changeTab={this.changeTab} />}
+                                {this.state.tab === 'setup' && <SetupPage index={0} changeScenarioName={this.changeScenarioName}
+                                                                          changeTab={this.changeTab}/> }
+                                {this.state.tab === 'category' &&
+                                    <InputCategoryPage filters={this.state.filters} nodes={this.state.nodes}
+                                                       index={this.state.category_idx} changeTab={this.changeTab}
+                                                       categoryNodes={this.state.inputCategories[this.state.category]} />
+                                }
+                                {this.state.tab === 'review' && <ReviewPage index={this.state.inputCategoryOrder.length}
+                                                                            postScenario={this.postScenario}
+                                                                            changeTab={this.changeTab} />}
+                            </div>
+                        </div>
+                    </div>
                 </NodesContext.Provider>
             </React.Fragment>
         );

@@ -48,7 +48,7 @@ class OtherNodes extends Component {
             (this.state.numVisible > 0) &&
             <div>
                 <div className="node-header" onClick={this.tableToggle}>
-                    <div className="label"><Text variant="mediumPlus">Other</Text></div>
+                    <div className="node-header-label"><Text variant="mediumPlus">Other</Text></div>
                 </div>
                 {this.state.tableToggle && <OtherNodesTable constNodes={this.state.constNodes} /> }
             </div>
