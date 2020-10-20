@@ -1,10 +1,11 @@
 import React, {Component} from "react";
-import {PrimaryButton} from "@fluentui/react";
+import {PrimaryButton, Text} from "@fluentui/react";
 import SetupPage from "./SetupPage";
 import InputCategoryPage from "./InputCategoryPage";
 import NodesContext from "./NodesContext";
 import ReviewPage from "./ReviewPage";
 import NavBar from "./NavBar";
+import ScenarioProgressStep from "./ScenarioProgressStep";
 
 function getCookie(name) {
   return (name = (document.cookie + ';').match(new RegExp(name + '=.*;'))) && name[0].split(/=|;/)[1];
@@ -22,8 +23,11 @@ class ScenarioDefinitionPage extends Component {
             inputCategories: {},
             inputCategoryOrder: [],
             category: '',
-            category_idx: 0,
-            scenario_name: ''
+            category_idx: -1,
+            scenario_name: '',
+            model_date: '',
+            description: '',
+            nodes_changed: 0
         };
 
         this.onClickCategory = this.onClickCategory.bind(this);
@@ -38,25 +42,41 @@ class ScenarioDefinitionPage extends Component {
         this.updateConstNodeData = this.updateConstNodeData.bind(this);
         this.updateInputNodeData = this.updateInputNodeData.bind(this);
         this.copyToAllLayers = this.copyToAllLayers.bind(this);
+
         this.changeScenarioName = this.changeScenarioName.bind(this);
+        this.changeScenarioDesc = this.changeScenarioDesc.bind(this);
+        this.changeModelDate = this.changeModelDate.bind(this);
+
+        this.setupProps = {
+            updateName: this.changeScenarioName,
+            updateDesc: this.changeScenarioDesc,
+            updateDate: this.changeModelDate
+        }
 
         this.solution_id = 39;
     }
 
+    changeScenarioName(val) {
+        this.setState({scenario_name: val});
+    }
+
+    changeScenarioDesc(val) {
+        this.setState({description: val});
+    }
+
+    changeModelDate(val) {
+        this.setState({model_date: val});
+    }
+
     changeTab(val){
         if (val <= -1) {
-            this.setState({tab: 'setup'});
+            this.setState({tab: 'setup', category_idx: -1});
         } else if (val >= Object.keys(this.state.inputCategories).length) {
-            this.setState({tab: 'review'})
+            this.setState({tab: 'review', category_idx: Object.keys(this.state.inputCategories).length})
         } else {
             this.setState({tab: 'category', category_idx: val, category: this.state.inputCategoryOrder[val]});
         }
     }
-
-    changeScenarioName(name) {
-        this.setState({scenario_name: name});
-    }
-
 
     postScenario(){
         return fetch('http://'+ window.location.host + '/api/scenario/', {
@@ -112,28 +132,34 @@ class ScenarioDefinitionPage extends Component {
 
     updateInputNodeData(node_id, layer_idx, nom_idx, val) {
         let newNodes = {...this.state.nodes};
+        let newNumDirty = this.state.nodes_changed;
         newNodes[node_id].data[layer_idx][nom_idx] = val;
+        if (!newNodes[node_id].dirty) newNumDirty++;
         newNodes[node_id].dirty = true;
-        this.setState({nodes: newNodes});
+        this.setState({nodes: newNodes, nodes_changed: newNumDirty});
     }
 
     updateConstNodeData(node_id, layer_idx, val){
         let newNodes = {...this.state.nodes};
+        let newNumDirty = this.state.nodes_changed;
         newNodes[node_id].data[layer_idx] = val;
+        if (!newNodes[node_id].dirty) newNumDirty++;
         newNodes[node_id].dirty = true;
-        this.setState({nodes: newNodes});
+        this.setState({nodes: newNodes, nodes_changed: newNumDirty});
     }
 
      copyToAllLayers(node_id, layer_idx) {
         let newNodes = {...this.state.nodes};
+        let newNumDirty = this.state.nodes_changed;
         let numLayers = newNodes[node_id].data.length;
         for (let layer = 0; layer < numLayers; layer++){
             for (let nom = 0; nom < 5; nom ++) {
                 newNodes[node_id].data[layer][nom] = newNodes[node_id].data[layer_idx][nom];
             }
         }
+        if (!newNodes[node_id].dirty) newNumDirty++;
         newNodes[node_id].dirty = true;
-        this.setState({nodes: newNodes});
+        this.setState({nodes: newNodes, nodes_changed: newNumDirty});
     }
 
     fetchNodesBySolution(solution_id){
@@ -144,7 +170,7 @@ class ScenarioDefinitionPage extends Component {
             })
             .then(response => {
                 let nodes = {};
-                let newInputCatgeoryOrder = [];
+                let newInputCategoryOrder = [];
                 let newInputCategories = {...this.state.inputCategories};
                 response.map(node => {
                     // Only include nodes with tags
@@ -165,14 +191,14 @@ class ScenarioDefinitionPage extends Component {
                                     newInputCategories[input_category].push(node.id);
                                 } else {
                                     newInputCategories[input_category] = [node.id];
-                                    newInputCatgeoryOrder.push(input_category);
+                                    newInputCategoryOrder.push(input_category);
                                 }
                             }
                         });
                     }
                 });
-                newInputCatgeoryOrder.sort();
-                this.setState({nodes: nodes, inputCategories: newInputCategories, inputCategoryOrder: newInputCatgeoryOrder});
+                newInputCategoryOrder.sort();
+                this.setState({nodes: nodes, inputCategories: newInputCategories, inputCategoryOrder: newInputCategoryOrder});
             })
             .catch(err => {
                 console.log(err);
@@ -249,32 +275,42 @@ class ScenarioDefinitionPage extends Component {
             <React.Fragment>
                 <NavBar />
                 <NodesContext.Provider value={nodesContext}>
-                    <div className="ms-Grid m-t-100">
+                    <div className="ms-Grid m-t-100" dir="ltr">
                         <div className="ms-Grid-row">
-                            <div className="ms-Grid-col ms-md2 progress-sidebar"></div>
-                            <div className="ms-Grid-col ms-md8">
-                                {/* Input Category Pages */}
-                                <div className="tabs">
-                                    <PrimaryButton text="Setup" onClick={this.onClickSetup} />
+                            <div className="ms-Grid-col ms-md2">
+                                <div className="progress-sidebar">
+                                    <ScenarioProgressStep index={-1} includeStem={false} changeTab={this.changeTab}
+                                                          step={'Setup'} activeStep={this.state.category_idx} />
                                     {this.state.inputCategoryOrder.map((cat_name, index) => {
                                         return (
-                                            <PrimaryButton key={index} text={cat_name.substring(cat_name.indexOf('.')+1, cat_name.length)}
-                                                           onClick={(e, val) => this.onClickCategory(e, index)}/>
+                                            <ScenarioProgressStep key={`step_${index}`} index={index} includeStem={true} activeStep={this.state.category_idx}
+                                                                  changeTab={this.changeTab} step={cat_name.substring(cat_name.indexOf('.')+1, cat_name.length)} />
                                         );
                                     })}
-                                    <PrimaryButton text="Review" onClick={() => this.setState({tab: 'review'})} />
+                                    <ScenarioProgressStep index={Object.keys(this.state.inputCategories).length} includeStem={true}
+                                                          changeTab={this.changeTab} step={'Review'} activeStep={this.state.category_idx} />
                                 </div>
-
+                            </div>
+                            <div className="ms-Grid-col ms-md8">
+                                {/* Input Category Pages */}
                                 {this.state.tab === 'setup' && <SetupPage index={0} changeScenarioName={this.changeScenarioName}
-                                                                          changeTab={this.changeTab}/> }
+                                                                          changeTab={this.changeTab} {...this.setupProps}
+                                                                          name={this.state.scenario_name}
+                                                                          desc={this.state.description}
+                                                                          date={this.state.model_date} /> }
                                 {this.state.tab === 'category' &&
                                     <InputCategoryPage filters={this.state.filters} nodes={this.state.nodes}
+                                                       name={this.state.category.substring(this.state.category.indexOf('.')+1, this.state.category.length)}
                                                        index={this.state.category_idx} changeTab={this.changeTab}
                                                        categoryNodes={this.state.inputCategories[this.state.category]} />
                                 }
                                 {this.state.tab === 'review' && <ReviewPage index={this.state.inputCategoryOrder.length}
                                                                             postScenario={this.postScenario}
-                                                                            changeTab={this.changeTab} />}
+                                                                            changeTab={this.changeTab}
+                                                                            name={this.state.scenario_name}
+                                                                            desc={this.state.description}
+                                                                            date={this.state.model_date}
+                                                                            nodesChanged={this.state.nodes_changed} />}
                             </div>
                         </div>
                     </div>

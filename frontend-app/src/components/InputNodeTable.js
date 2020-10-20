@@ -8,6 +8,7 @@ class InputNodeTable extends Component {
         super(props);
 
         this.nomLabels = ['Lower Bound', 'Low', 'Nominal', 'High', 'Upper Bound'];
+        this.months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     }
 
     render() {
@@ -18,6 +19,16 @@ class InputNodeTable extends Component {
                         <ScrollablePane className="scroll-pane">
                             <table>
                                 <tbody>
+                                    <tr>
+                                        <td></td>
+                                        {this.props.data.map((_, index) => {
+                                            return (
+                                                <td key={`header_${index}`}>
+                                                    <Text>{this.months[index % 12]}</Text>
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
                                     {this.props.data[0].map((_, nomIdx) => {
                                         return (
                                             <tr key={nomIdx}>
@@ -32,15 +43,17 @@ class InputNodeTable extends Component {
                                         );
                                     })}
                                     <tr>
-                                        <td />
-                                    {this.props.data.map((_, index) => {
-                                        return (
-                                            <td key={index}>
-                                                <PrimaryButton className="table-input"
-                                                               onClick={() => {context.copyToAllLayers(this.props.nodeId, index)}} text="Copy to All" />
-                                            </td>
-                                        );
-                                    })}</tr>
+                                        <td></td>
+                                        {this.props.data.map((_, index) => {
+                                            return (
+                                                <td key={`copy_${index}`}>
+                                                    <PrimaryButton className="table-input"
+                                                                   onClick={() => {context.copyToAllLayers(this.props.nodeId, index)}}
+                                                                   text="Copy to All" />
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
                                 </tbody>
                             </table>
                         </ScrollablePane>

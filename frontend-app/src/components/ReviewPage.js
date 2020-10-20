@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {TextField, DatePicker, PrimaryButton, Stack} from '@fluentui/react';
+import {TextField, DatePicker, PrimaryButton, Stack, Text} from '@fluentui/react';
 import { initializeIcons } from '@fluentui/react';
 
 initializeIcons();
@@ -19,12 +19,14 @@ class ReviewPage extends Component {
 
     render(){
         return (
-            <div>
+            <React.Fragment>
+                <Text variant='xLarge'>Review</Text>
                 {/* Scenario Info */}
                 <div className="scenario-info">
-                    <TextField label="Scenario Name" placeholder="Placeholder" disabled />
-                    <TextField label="Description (Optional)" multiline rows={4} />
-                    <DatePicker label="Model Start" placeholder="Select a date..." />
+                    <TextField label="Scenario Name" placeholder={this.props.name} disabled />
+                    <TextField label="Description (Optional)" placeholder={this.props.desc} disabled multiline rows={4} />
+                    <DatePicker label="Model Start" placeholder={this.props.date} disabled />
+                    <TextField label="Nodes Changed: " placeholder={this.props.nodesChanged} disabled />
                     <Stack horizontal horizontalAlign="space-between">
                         <Stack.Item align="start" >
                             <PrimaryButton text="Previous" onClick={() => this.props.changeTab(this.props.index - 1)} />
@@ -32,7 +34,7 @@ class ReviewPage extends Component {
                         <Stack.Item align="end"><PrimaryButton text="Submit" onClick={this.props.postScenario} /></Stack.Item>
                     </Stack>
                 </div>
-            </div>
+            </React.Fragment>
         )
     }
 }

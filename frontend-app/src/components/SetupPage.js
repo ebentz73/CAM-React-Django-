@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {TextField, DatePicker, PrimaryButton} from '@fluentui/react';
+import {TextField, DatePicker, PrimaryButton, Text} from '@fluentui/react';
 import { initializeIcons } from '@fluentui/react';
 
 initializeIcons();
@@ -19,15 +19,19 @@ class SetupPage extends Component {
 
     render(){
         return (
-            <div>
+            <React.Fragment>
+                <Text variant='xLarge'>Setup</Text>
                 {/* Scenario Info */}
                 <div className="scenario-info">
-                    <TextField label="Scenario Name" onBlur={(e) => this.props.changeScenarioName(e.target.value)} />
-                    <TextField label="Description (Optional)" multiline rows={4} />
-                    <DatePicker label="Model Start" placeholder="Select a date..." />
+                    <TextField label="Scenario Name" defaultValue={this.props.name}
+                               onBlur={(e) => this.props.updateName(e.target.value)} />
+                    <TextField label="Description (Optional)" defaultValue={this.props.desc} multiline rows={4}
+                               onBlur={(e) => this.props.updateDesc(e.target.value)} />
+                    <DatePicker label="Model Start" defaultValue={this.props.date}
+                                onBlur={(e) => this.props.updateDate(e.target.value)} />
                     <div className="next-button"><PrimaryButton text="Next" onClick={() => this.props.changeTab(0)} /></div>
                 </div>
-            </div>
+            </React.Fragment>
         )
     }
 }

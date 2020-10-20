@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import {Text, ITextProps, Icon} from '@fluentui/react';
 import {ChevronUpIcon, ChevronDownIcon} from '@fluentui/react-icons'
-import {PrimaryButton} from '@fluentui/react';
+import {PrimaryButton, IconButton} from '@fluentui/react';
 import InputNodeTable from "./InputNodeTable";
 import ConstNodeTable from "./ConstNodeTable";
 
@@ -24,8 +24,8 @@ class Node extends Component {
             <div>
                 <div className="node-header" onClick={this.tableToggle}>
                     <div className="node-header-label">{this.props.node.name}</div>
-                    <PrimaryButton text="Show on chart" style={{float: 'right'}}
-                                   onClick={(e) => this.props.changeChartData(e, this.props.nodeId)} />
+                    <IconButton className="node-header-chart-button" iconProps={{iconName: 'LineChart'}}
+                                onClick={(e) => this.props.changeChartData(e, this.props.nodeId)} />
                     {this.state.tableToggle ?
                         <ChevronUpIcon className="node-header-chevron" /> :
                         <ChevronDownIcon className="node-header-chevron" />}

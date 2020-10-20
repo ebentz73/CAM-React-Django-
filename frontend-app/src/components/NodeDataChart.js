@@ -11,13 +11,15 @@ class NodeDataChart extends Component {
                 datasets: []
             }
         }
+
+        this.months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     }
 
     setupChartData(node){
         if (node !== undefined && node.data !== undefined) {
             let labels = [];
             for (let i = 0; i < node.data.length; i++) {
-                labels.push(i);
+                labels.push(this.months[i % 12]);
             }
             let datasets = [{
                 label: node.name,

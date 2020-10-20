@@ -4,7 +4,7 @@
     text-align: center;
 }
 
-.tabs > * {
+.tab-button {
     display: inline-block;
     margin: 20px 20px 0px 20px;
 }
@@ -15,7 +15,7 @@
     margin-top: 50px;
 }
 
-.filters > div {
+.filter-dropdown {
     display: inline-block;
     margin: 0px 50px 0px 50px;
 }
@@ -41,11 +41,10 @@
 .node-header {
     padding: 5px;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
 }
 
 .node-header-chevron {
-    float: right;
     color: rgb(141, 141, 141);
     margin: 8px;
 }
@@ -54,6 +53,9 @@
     font-family: "Segoe UI";
     display: inline-block;
     color: rgb(141, 141, 141);
+    margin-top: 5px;
+    margin-left: 5px;
+    margin-right: auto;
 }
 
 /* Node Tables */
@@ -88,11 +90,10 @@
 /* Chart */
 
 .line-chart-container {
-    width: 50%;
-    height: 300px;
+    width: 100%;
     text-align: center;
-    margin: 50px auto;
-    padding-bottom: 20px;
+    margin: 0 auto;
+    margin-top: 100px;
 }
 
 /* Nav Bar */
@@ -132,9 +133,60 @@
     flex: 1 0 auto;
 }
 
+/* Progress Sidebar */
+
 .progress-sidebar {
-    background-color: red;
+    margin: 0px 0px 50px 10px;
 }
+
+.progress-circle {
+    background-color: rgb(0,120,212);
+    border-radius: 50%;
+    flex: 0 0 34px;
+    height: 34px;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.progress-circle-container {
+    display: flex;
+    align-items: center;
+}
+
+.progress-circle-text {
+    font-family: "Segoe UI";
+    display: inline-block;
+    font-size: 1em;
+    vertical-align: middle;
+    margin-left: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.active-step {
+    font-weight: bold;
+}
+
+.progress-stem {
+    background-color: rgb(0,120,212);
+    width: 6px;
+    height: 36px;
+    margin-left: 14px;
+    margin-top: -3px;
+}
+
+.incomplete-step {
+    background-color: rgb(211, 229, 243);
+}
+
+/*  Misc. */
+
 .m-t-100 {
     margin-top:100px;
+}
+
+.tab-title {
+    margin-bottom: 50px;
 }

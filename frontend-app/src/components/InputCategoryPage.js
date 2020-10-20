@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import {ComboBox, Stack, PrimaryButton, Text} from '@fluentui/react';
 import Node from "./Node";
-import OtherNodes from "./OtherNodes";
+import ConstantNodes from "./ConstantNodes";
 import {Line} from "react-chartjs-2";
 import NodeDataChart from './NodeDataChart';
 
@@ -82,8 +82,10 @@ class InputCategoryPage extends Component {
 
     render() {
         return (
-            <div>
+            <React.Fragment>
+                <div className='tab-title'><Text variant='xLarge'>{this.props.name}</Text></div>
                 {/* Filters */}
+                <Text variant='large'>Filters</Text>
                 <div className="filters">
                     {Object.keys(this.state.filters).map((cat_id, index) => {
                         let category = this.state.filters[cat_id];
@@ -94,7 +96,7 @@ class InputCategoryPage extends Component {
                         });
                         options.push({key: '-1', text: 'All'});
                         return (
-                            <div key={index}>
+                            <div key={index} className="filter-dropdown">
                                 <ComboBox options={options} autoComplete="on" label={category.name}
                                           selectedKey={category.selected.toString()}
                                           onChange={(e, val) =>
@@ -120,7 +122,7 @@ class InputCategoryPage extends Component {
                     })}
 
                     {/* Other Nodes */}
-                    <OtherNodes nodes={this.state.nodes}/>
+                    <ConstantNodes nodes={this.state.nodes}/>
                 </div>
                 {/*Navigation Buttons*/}
                 <div className="navigation-buttons">
@@ -133,7 +135,7 @@ class InputCategoryPage extends Component {
                         </Stack.Item>
                     </Stack>
                 </div>
-            </div>
+            </React.Fragment>
         )
     }
 }
