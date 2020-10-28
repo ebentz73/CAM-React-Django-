@@ -1,4 +1,34 @@
 
+/* Common */
+.truncate {
+  max-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ms-List {
+    padding: 0;
+    list-style-type: none;
+}
+.ms-ListItem {
+    padding: 0;
+    *zoom: 1;
+    padding: 9px 28px 3px;
+    position: relative;
+    display: block;
+}
+.is-unread{
+border-left: '3px solid blue' !important;
+}
+.blue {
+    color: blue;
+}
+
+.truncate:hover {
+  overflow: visible;
+  word-wrap: break-word;
+}
 /* Tabs */
 .tabs {
     text-align: center;

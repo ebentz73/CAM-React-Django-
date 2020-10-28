@@ -29,7 +29,6 @@ class App extends Component {
                         <Route exact path='/frontend-app' component={ScenarioDefinitionPage}/>
                     </Switch>
                 </BrowserRouter>
-
             </div>
             </React.Fragment>
         );

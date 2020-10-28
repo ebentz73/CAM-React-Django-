@@ -7,10 +7,9 @@ class HomePageSideBar extends Component {
 
     render() {
         return (
-            <div className="ms-Grid-col ms-md2">
                 <ul className="ms-List">
                     <li className={"ms-ListItem"} tabIndex="0">
-                        <span className="ms-ListItem-secondaryText">Analytics Solution</span>
+                        <span className="ms-ListItem-secondaryText ms-fontWeight-bold">Analytics Solution</span>
                     </li>
                     <li className={"ms-ListItem"}>
                         <ul className="ms-List">
@@ -23,7 +22,7 @@ class HomePageSideBar extends Component {
                         </ul>
                     </li>
                 </ul>
-            </div>
+
         );
     }
 }
