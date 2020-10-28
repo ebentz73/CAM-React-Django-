@@ -20,6 +20,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='inputdataset',
             name='file',
-            field=models.FileField(upload_to=app.models._name_ids_file, validators=[app.validators.validate_input_date_set_file]),
+            field=models.FileField(upload_to='inputdatasets/', validators=[app.validators.validate_input_date_set_file]),
         ),
     ]
