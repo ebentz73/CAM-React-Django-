@@ -1,4 +1,5 @@
 import React, {Component} from "react";
+import UserIcon from './UserIcon'
 
 class NavBar extends Component {
     constructor(props) {
@@ -8,8 +9,8 @@ class NavBar extends Component {
     render(){
         return(
             <div className="nav-bar">
-                <img className="nav-bar-logo" src="../static/frontend-app/flag-transparent.png"/>
-                <img className="nav-bar-user" src="../static/frontend-app/transparent-user.jpg"/>
+                <img className="nav-bar-logo" src="../static/frontend-app/lone-star-logo.png"/>
+                <UserIcon />
                 <div style={{clear: 'both'}} />
             </div>
         );

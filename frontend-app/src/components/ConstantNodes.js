@@ -1,8 +1,5 @@
 import React, {Component} from "react";
 import {Text} from '@fluentui/react';
-import {TextField} from '@fluentui/react';
-import InputNodeTable from "./InputNodeTable";
-import ConstNodeTable from "./ConstNodeTable";
 import ConstantNodesTable from "./ConstantNodesTable";
 
 class ConstantNodes extends Component {

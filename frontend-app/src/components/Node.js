@@ -1,9 +1,4 @@
 import React, {Component} from "react";
-import {Text, ITextProps, Icon} from '@fluentui/react';
-import {ChevronUpIcon, ChevronDownIcon} from '@fluentui/react-icons'
-import {PrimaryButton, IconButton} from '@fluentui/react';
-import InputNodeTable from "./InputNodeTable";
-import ConstNodeTable from "./ConstNodeTable";
 
 class Node extends Component {
     constructor(props) {
@@ -11,28 +6,14 @@ class Node extends Component {
         this.state = {
             tableToggle: false
         }
-
-        this.tableToggle = this.tableToggle.bind(this);
-    }
-
-    tableToggle() {
-        this.setState({tableToggle: !this.state.tableToggle});
     }
 
     render() {
         return (
-            <div>
-                <div className="node-header" onClick={this.tableToggle}>
+            <div className="node" onClick={this.props.onClick}>
+                <div className="node-header">
                     <div className="node-header-label">{this.props.node.name}</div>
-                    <IconButton className="node-header-chart-button" iconProps={{iconName: 'LineChart'}}
-                                onClick={(e) => this.props.changeChartData(e, this.props.nodeId)} />
-                    {this.state.tableToggle ?
-                        <ChevronUpIcon className="node-header-chevron" /> :
-                        <ChevronDownIcon className="node-header-chevron" />}
                 </div>
-                {this.state.tableToggle && this.props.node.type === 'input' &&
-                    <InputNodeTable nodeId={this.props.nodeId} data={this.props.node.data} />
-                }
             </div>
         )
     }

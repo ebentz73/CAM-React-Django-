@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {PrimaryButton, Text} from "@fluentui/react";
+import {PrimaryButton, Text, Pivot, PivotItem, ComboBox} from "@fluentui/react";
 import SetupPage from "./SetupPage";
 import InputCategoryPage from "./InputCategoryPage";
 import NodesContext from "./NodesContext";
@@ -8,7 +8,7 @@ import NavBar from "./NavBar";
 import ScenarioProgressStep from "./ScenarioProgressStep";
 
 function getCookie(name) {
-  return (name = (document.cookie + ';').match(new RegExp(name + '=.*;'))) && name[0].split(/=|;/)[1];
+    return (name = (document.cookie + ';').match(new RegExp(name + '=.*;'))) && name[0].split(/=|;/)[1];
 }
 
 const csrf_token = getCookie('csrftoken');
@@ -27,15 +27,19 @@ class ScenarioDefinitionPage extends Component {
             scenario_name: '',
             model_date: '',
             description: '',
-            nodes_changed: 0
+            nodes_changed: 0,
+            roles: {},
+            activeRole: 'All'
         };
 
         this.onClickCategory = this.onClickCategory.bind(this);
         this.onClickSetup = this.onClickSetup.bind(this);
         this.filtersBySolution = this.filtersBySolution.bind(this);
         this.fetchNodesBySolution = this.fetchNodesBySolution.bind(this);
-        this.postScenario = this.postScenario.bind(this);
-        this.postScenNodeDatas = this.postScenNodeDatas.bind(this);
+        this.fetchNodeDataByScenario = this.fetchNodeDataByScenario.bind(this);
+
+        this.createOrUpdateScenario = this.createOrUpdateScenario.bind(this);
+        this.createOrUpdateScenNodeDatas = this.createOrUpdateScenNodeDatas.bind(this);
         this.changeTab = this.changeTab.bind(this);
 
 
@@ -46,6 +50,7 @@ class ScenarioDefinitionPage extends Component {
         this.changeScenarioName = this.changeScenarioName.bind(this);
         this.changeScenarioDesc = this.changeScenarioDesc.bind(this);
         this.changeModelDate = this.changeModelDate.bind(this);
+        this.changeRole = this.changeRole.bind(this);
 
         this.setupProps = {
             updateName: this.changeScenarioName,
@@ -53,7 +58,8 @@ class ScenarioDefinitionPage extends Component {
             updateDate: this.changeModelDate
         }
 
-        this.solution_id = 39;
+        this.solution_id = 42;
+        this.scenario_id = 23;
     }
 
     changeScenarioName(val) {
@@ -68,7 +74,11 @@ class ScenarioDefinitionPage extends Component {
         this.setState({model_date: val});
     }
 
-    changeTab(val){
+    changeRole(e, role) {
+        this.setState({activeRole: role.text});
+    }
+
+    changeTab(val) {
         if (val <= -1) {
             this.setState({tab: 'setup', category_idx: -1});
         } else if (val >= Object.keys(this.state.inputCategories).length) {
@@ -78,54 +88,43 @@ class ScenarioDefinitionPage extends Component {
         }
     }
 
-    postScenario(){
-        return fetch('http://'+ window.location.host + '/api/scenario/', {
+    createOrUpdateScenario() {
+        return fetch('http://' + window.location.host + '/api/post-scenario', {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrf_token
             },
-            body: JSON.stringify({name: "Testing", is_adhoc: true, solution: this.solution_id})
+            body: JSON.stringify({scenario_id: this.scenario_id, name: this.state.scenario_name,
+                is_adhoc: true, solution: this.solution_id})
         }).then(resp => {
             return resp.json();
         }).then(resp => {
-            this.scenario_id = resp.id;
-            this.postScenNodeDatas();
+            console.log(resp);
+            //this.scenario_id = resp.id;
+            this.createOrUpdateScenNodeDatas();
         }).catch(err => {
-                console.log(err);
+            console.log(err);
         });
     }
 
-    postScenNodeDatas(){
+    createOrUpdateScenNodeDatas() {
         // Only post data for nodes with changed values
         Object.keys(this.state.nodes).filter(node_id => this.state.nodes[node_id].dirty).map(node_id => {
             let node = this.state.nodes[node_id];
             let node_data_id;
-            fetch(`http://${window.location.host}/api/${node.type}-node-data/`, {
+            fetch(`http://${window.location.host}/api/node-data/scenario`, {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrf_token
                 },
-                body: JSON.stringify({node: node_id, default_data: this.state.nodes[node_id].data, is_model: false})
-            }).then(resp => {
-                return resp.json();
-            }).then(resp => {
-                node_data_id = resp.id;
-                return fetch(`http://${window.location.host}/api/scen-node/`, {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrf_token
-                    },
-                    body: JSON.stringify({node: node_id, node_data: node_data_id, scenario: this.scenario_id,
-                        is_uncertain: false, is_changes: false, is_bounded: false})
-                })
+                body: JSON.stringify({node: node_id, default_data: this.state.nodes[node_id].data,
+                    scenario_id: this.scenario_id, is_model: false, type: node.type})
             }).catch(err => {
-                    console.log(err);
+                console.log(err);
             });
         });
     }
@@ -139,7 +138,7 @@ class ScenarioDefinitionPage extends Component {
         this.setState({nodes: newNodes, nodes_changed: newNumDirty});
     }
 
-    updateConstNodeData(node_id, layer_idx, val){
+    updateConstNodeData(node_id, layer_idx, val) {
         let newNodes = {...this.state.nodes};
         let newNumDirty = this.state.nodes_changed;
         newNodes[node_id].data[layer_idx] = val;
@@ -148,12 +147,12 @@ class ScenarioDefinitionPage extends Component {
         this.setState({nodes: newNodes, nodes_changed: newNumDirty});
     }
 
-     copyToAllLayers(node_id, layer_idx) {
+    copyToAllLayers(node_id, layer_idx) {
         let newNodes = {...this.state.nodes};
         let newNumDirty = this.state.nodes_changed;
         let numLayers = newNodes[node_id].data.length;
-        for (let layer = 0; layer < numLayers; layer++){
-            for (let nom = 0; nom < 5; nom ++) {
+        for (let layer = 0; layer < numLayers; layer++) {
+            for (let nom = 0; nom < 5; nom++) {
                 newNodes[node_id].data[layer][nom] = newNodes[node_id].data[layer_idx][nom];
             }
         }
@@ -162,7 +161,31 @@ class ScenarioDefinitionPage extends Component {
         this.setState({nodes: newNodes, nodes_changed: newNumDirty});
     }
 
-    fetchNodesBySolution(solution_id){
+    fetchNodeDataByScenario(scenario_id) {
+        fetch('http://' + window.location.host + '/api/node-data/scenario=' + scenario_id)
+            .then(response => {
+                return response.json();
+            })
+            .then(response => {
+                let nodes = {...this.state.nodes};
+                // Retrieve Input Nodes
+                response.input_nodes.map(node => {
+                    if (nodes[node.node] !== undefined) {
+                        console.log(node.default_data); //TODO: Remove
+                        nodes[node.node].data = node.default_data;
+                    }
+                });
+                // Retrieve Const Nodes
+                response.const_nodes.map(node => {
+                    if (nodes[node.node] !== undefined) {
+                        nodes[node.node].data = node.default_data;
+                    }
+                });
+                this.setState({nodes: nodes});
+            })
+    }
+
+    fetchNodesBySolution(solution_id) {
         // Fetching Nodes
         fetch('http://' + window.location.host + '/api/node/solution=' + solution_id)
             .then(response => {
@@ -172,12 +195,15 @@ class ScenarioDefinitionPage extends Component {
                 let nodes = {};
                 let newInputCategoryOrder = [];
                 let newInputCategories = {...this.state.inputCategories};
+                let roles = {};
                 response.map(node => {
                     // Only include nodes with tags
-                    if (node.tags.length > 0) {
+                    if (node.tags.length > 0) { //  && node.tags.includes('ROLE==' + this.role)
                         // Add initial node data to component state
-                        let node_obj = {name: node.name, tags: node.tags,
-                            visible: true, selectedCategories: {}, dirty: false};
+                        let node_obj = {
+                            name: node.name, tags: node.tags,
+                            visible: true, selectedCategories: {}, dirty: false
+                        };
                         Object.keys(this.state.filters).map(cat_id => {
                             node_obj.selectedCategories[cat_id] = true;
                         })
@@ -186,7 +212,7 @@ class ScenarioDefinitionPage extends Component {
                         // Retrieve input category from node if any
                         node.tags.map(tag => {
                             if (tag.includes('CAM_INPUT_CATEGORY==')) {
-                                let input_category = tag.substring(tag.lastIndexOf('=')+1, tag.length);
+                                let input_category = tag.substring(tag.lastIndexOf('=') + 1, tag.length);
                                 if (newInputCategories.hasOwnProperty(input_category)) {
                                     newInputCategories[input_category].push(node.id);
                                 } else {
@@ -194,11 +220,21 @@ class ScenarioDefinitionPage extends Component {
                                     newInputCategoryOrder.push(input_category);
                                 }
                             }
+                            if (tag.includes('ROLE==')) {
+                                let role = tag.substring(tag.lastIndexOf('=') + 1, tag.length);
+                                roles[role] = role;
+                            }
                         });
                     }
                 });
+                roles['All'] = 'All';
                 newInputCategoryOrder.sort();
-                this.setState({nodes: nodes, inputCategories: newInputCategories, inputCategoryOrder: newInputCategoryOrder});
+                this.setState({
+                    nodes: nodes,
+                    inputCategories: newInputCategories,
+                    inputCategoryOrder: newInputCategoryOrder,
+                    roles: roles
+                });
             })
             .catch(err => {
                 console.log(err);
@@ -226,6 +262,7 @@ class ScenarioDefinitionPage extends Component {
                     }
                 });
                 this.setState({nodes: nodes});
+                if (this.scenario_id >= 0) this.fetchNodeDataByScenario(this.scenario_id);
             })
             .catch(err => {
                 console.log(err);
@@ -266,55 +303,99 @@ class ScenarioDefinitionPage extends Component {
     }
 
     render() {
-        let nodesContext = {nodes: this.state.nodes,
+        let nodesContext = {
+            nodes: this.state.nodes,
             updateConstNodeData: this.updateConstNodeData,
             updateInputNodeData: this.updateInputNodeData,
-            copyToAllLayers: this.copyToAllLayers};
-        let pagesContext = {};
+            copyToAllLayers: this.copyToAllLayers
+        };
+        let pivotStyles = {
+            root: {
+                backgroundColor: 'rgb(0, 99, 177)',
+                marginLeft: '-20px',
+                paddingLeft: '60px',
+                marginRight: '-20px',
+                paddingRight: '20px',
+                boxShadow: '0px 1px 4px 1px rgb(194, 194, 194)',
+                selectors: {
+                    '.ms-Pivot-link:hover': {
+                        backgroundColor: 'green'
+                    },
+                    '.linkIsSelected-48::before': {
+                        backgroundColor: 'white'
+                    }
+                }
+            },
+            text: {
+                color: 'white'
+            }
+        };
         return (
             <React.Fragment>
-                <NavBar />
-                <NodesContext.Provider value={nodesContext}>
-                    <div className="ms-Grid m-t-100" dir="ltr">
-                        <div className="ms-Grid-row">
-                            <div className="ms-Grid-col ms-md2">
-                                <div className="progress-sidebar">
-                                    <ScenarioProgressStep index={-1} includeStem={false} changeTab={this.changeTab}
-                                                          step={'Setup'} activeStep={this.state.category_idx} />
-                                    {this.state.inputCategoryOrder.map((cat_name, index) => {
-                                        return (
-                                            <ScenarioProgressStep key={`step_${index}`} index={index} includeStem={true} activeStep={this.state.category_idx}
-                                                                  changeTab={this.changeTab} step={cat_name.substring(cat_name.indexOf('.')+1, cat_name.length)} />
-                                        );
-                                    })}
-                                    <ScenarioProgressStep index={Object.keys(this.state.inputCategories).length} includeStem={true}
-                                                          changeTab={this.changeTab} step={'Review'} activeStep={this.state.category_idx} />
+                <NavBar/>
+                <div className="ms-Grid grid-margin" dir="ltr">
+                    <Pivot styles={pivotStyles} className="pivot-margin">
+                        <PivotItem headerText="Input">
+                            <NodesContext.Provider value={nodesContext}>
+                                <div className="ms-Grid-row">
+                                    <div className="ms-Grid-col ms-md2">
+                                        <div className="progress-sidebar">
+                                            <ScenarioProgressStep index={-1} includeStem={false}
+                                                                  changeTab={this.changeTab}
+                                                                  step={'Setup'}
+                                                                  activeStep={this.state.category_idx}/>
+                                            {this.state.inputCategoryOrder.map((cat_name, index) => {
+                                                return (
+                                                    <ScenarioProgressStep key={`step_${index}`} index={index}
+                                                                          includeStem={true}
+                                                                          activeStep={this.state.category_idx}
+                                                                          changeTab={this.changeTab}
+                                                                          step={cat_name.substring(cat_name.indexOf('.') + 1, cat_name.length)}/>
+                                                );
+                                            })}
+                                            <ScenarioProgressStep
+                                                index={Object.keys(this.state.inputCategories).length}
+                                                includeStem={true}
+                                                changeTab={this.changeTab} step={'Review'}
+                                                activeStep={this.state.category_idx}/>
+                                        </div>
+                                    </div>
+                                    <div className="ms-Grid-col ms-md8">
+                                        <ComboBox options={Object.keys(this.state.roles).map(role => {return {key: role, text: role}})}
+                                                  autoComplete="on" label='Roles'
+                                                  styles={{root: {marginBottom: '20px'}}}
+                                                  selectedKey={this.state.activeRole}
+                                                  onChange={(e, val) =>
+                                                      this.changeRole(e, val)}/>
+                                        {/* Input Category Pages */}
+                                        {this.state.tab === 'setup' &&
+                                        <SetupPage index={0} changeScenarioName={this.changeScenarioName}
+                                                   changeTab={this.changeTab} {...this.setupProps}
+                                                   name={this.state.scenario_name}
+                                                   desc={this.state.description}
+                                                   date={this.state.model_date}/>}
+                                        {this.state.tab === 'category' &&
+                                        <InputCategoryPage filters={this.state.filters} nodes={this.state.nodes}
+                                                           name={this.state.category.substring(this.state.category.indexOf('.') + 1, this.state.category.length)}
+                                                           index={this.state.category_idx} role={this.state.activeRole}
+                                                           changeTab={this.changeTab}
+                                                           categoryNodes={this.state.inputCategories[this.state.category]}/>
+                                        }
+                                        {this.state.tab === 'review' &&
+                                        <ReviewPage index={this.state.inputCategoryOrder.length}
+                                                    postScenario={this.createOrUpdateScenario}
+                                                    changeTab={this.changeTab}
+                                                    name={this.state.scenario_name}
+                                                    desc={this.state.description}
+                                                    date={this.state.model_date}
+                                                    nodesChanged={this.state.nodes_changed}/>}
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="ms-Grid-col ms-md8">
-                                {/* Input Category Pages */}
-                                {this.state.tab === 'setup' && <SetupPage index={0} changeScenarioName={this.changeScenarioName}
-                                                                          changeTab={this.changeTab} {...this.setupProps}
-                                                                          name={this.state.scenario_name}
-                                                                          desc={this.state.description}
-                                                                          date={this.state.model_date} /> }
-                                {this.state.tab === 'category' &&
-                                    <InputCategoryPage filters={this.state.filters} nodes={this.state.nodes}
-                                                       name={this.state.category.substring(this.state.category.indexOf('.')+1, this.state.category.length)}
-                                                       index={this.state.category_idx} changeTab={this.changeTab}
-                                                       categoryNodes={this.state.inputCategories[this.state.category]} />
-                                }
-                                {this.state.tab === 'review' && <ReviewPage index={this.state.inputCategoryOrder.length}
-                                                                            postScenario={this.postScenario}
-                                                                            changeTab={this.changeTab}
-                                                                            name={this.state.scenario_name}
-                                                                            desc={this.state.description}
-                                                                            date={this.state.model_date}
-                                                                            nodesChanged={this.state.nodes_changed} />}
-                            </div>
-                        </div>
-                    </div>
-                </NodesContext.Provider>
+                            </NodesContext.Provider>
+                        </PivotItem>
+                        <PivotItem headerText="Results"></PivotItem>
+                    </Pivot>
+                </div>
             </React.Fragment>
         );
     }

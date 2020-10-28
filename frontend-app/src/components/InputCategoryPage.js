@@ -1,9 +1,13 @@
 import React, {Component} from "react";
-import {ComboBox, Stack, PrimaryButton, Text} from '@fluentui/react';
+import {ComboBox, Stack, PrimaryButton, Text, ScrollablePane} from '@fluentui/react';
 import Node from "./Node";
 import ConstantNodes from "./ConstantNodes";
 import {Line} from "react-chartjs-2";
 import NodeDataChart from './NodeDataChart';
+import {ChevronDownIcon, ChevronUpIcon} from "@fluentui/react-icons";
+import InputNodeTable from "./InputNodeTable";
+import ConstNodeTable from "./ConstNodeTable";
+import NodeTable from "./NodeTable";
 
 class InputCategoryPage extends Component {
     constructor(props) {
@@ -13,15 +17,31 @@ class InputCategoryPage extends Component {
             filters: props.filters,
             categoryNodes: [],
             chartData: {},
-            nodeOnChart: 'none'
+            nodeOnChart: 'none',
+            toggleFiltersBox: false,
+            currentNodeID: '',
+            currentNodeData: {},
+            currentNodeType: ''
         }
 
         this.changeFilterOption = this.changeFilterOption.bind(this);
         this.filterNodesByInputCategory = this.filterNodesByInputCategory.bind(this);
         this.changeNodeShownOnChart = this.changeNodeShownOnChart.bind(this);
+        this.toggleFiltersBox = this.toggleFiltersBox.bind(this);
+        this.setCurrentNode = this.setCurrentNode.bind(this);
     }
 
-    changeNodeShownOnChart(e, node_id){
+    setCurrentNode(nodeId) {
+        console.log(this.state.nodes[nodeId]);
+        this.setState({
+            currentNodeID: nodeId,
+            currentNodeData: this.state.nodes[nodeId].data,
+            currentNodeType: this.state.nodes[nodeId].type,
+            nodeOnChart: this.state.nodes[nodeId]
+        });
+    }
+
+    changeNodeShownOnChart(e, node_id) {
         e.stopPropagation();
         this.setState({nodeOnChart: this.state.nodes[node_id]});
     }
@@ -35,7 +55,7 @@ class InputCategoryPage extends Component {
             this.filterNodesByInputCategory(nextProps.categoryNodes);
         }
 
-        if(nextProps.nodes !== this.props.nodes) {
+        if (nextProps.nodes !== this.props.nodes) {
             this.setState({nodes: nextProps.nodes});
         }
     }
@@ -50,6 +70,10 @@ class InputCategoryPage extends Component {
             visible &= node.selectedCategories[cat_id];
         })
         return visible;
+    }
+
+    toggleFiltersBox() {
+        this.setState({toggleFiltersBox: !this.state.toggleFiltersBox});
     }
 
     changeFilterOption(event, value, cat_id) {
@@ -83,57 +107,96 @@ class InputCategoryPage extends Component {
     render() {
         return (
             <React.Fragment>
-                <div className='tab-title'><Text variant='xLarge'>{this.props.name}</Text></div>
-                {/* Filters */}
-                <Text variant='large'>Filters</Text>
-                <div className="filters">
-                    {Object.keys(this.state.filters).map((cat_id, index) => {
-                        let category = this.state.filters[cat_id];
-                        let options = [];
-                        Object.keys(category.options).map((opt_id, index) => {
-                            let option = category.options[opt_id];
-                            options.push({key: opt_id, text: option.display_name});
-                        });
-                        options.push({key: '-1', text: 'All'});
-                        return (
-                            <div key={index} className="filter-dropdown">
-                                <ComboBox options={options} autoComplete="on" label={category.name}
-                                          selectedKey={category.selected.toString()}
-                                          onChange={(e, val) =>
-                                              this.changeFilterOption(e, val, cat_id)}/>
+                <div className="ms-Grid-row">
+                    <div className='tab-title'><Text variant='xLarge'>{this.props.name}</Text></div>
+                    {/* Filters */}
+                    <div className="filters-label-box">
+                        <div className="filters-box-header" onClick={this.toggleFiltersBox}>
+                            <Text className="filters-label">Filters</Text>
+                            {this.state.toggleFiltersBox ?
+                                <ChevronUpIcon className="filters-label-chevron"/> :
+                                <ChevronDownIcon className="filters-label-chevron"/>
+                            }
+                        </div>
 
-                            </div>
-                        );
-                    })}
+                        {this.state.toggleFiltersBox &&
+                        <div className="filters">
+                            {Object.keys(this.state.filters).map((cat_id, index) => {
+                                let category = this.state.filters[cat_id];
+                                let options = [];
+                                Object.keys(category.options).map((opt_id, index) => {
+                                    let option = category.options[opt_id];
+                                    options.push({key: opt_id, text: option.display_name});
+                                });
+                                options.push({key: '-1', text: 'All'});
+                                return (
+                                    <div key={index} className="filter-dropdown">
+                                        <ComboBox options={options} autoComplete="on" label={category.name}
+                                                  selectedKey={category.selected.toString()}
+                                                  onChange={(e, val) =>
+                                                      this.changeFilterOption(e, val, cat_id)}/>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        }
+                    </div>
                 </div>
 
-                {/* Chart */}
-                <NodeDataChart node={this.state.nodeOnChart} />
+                {/* Chart */
+                }
+                <div className="ms-Grid-row">
+                    <div className="ms-Grid-col ms-md12">
+                        <NodeDataChart node={this.state.nodeOnChart}/>
+                    </div>
+                </div>
 
-                {/* Nodes */}
-                <div className="nodes">
-                    {/* Input Nodes */}
-                    {this.state.categoryNodes.map((node_id, index) => {
-                        let node = this.state.nodes[node_id];
-                        if (!node.visible || node.type === 'const') return;
-                        return (
-                            <Node key={node_id} nodeId={node_id} node={node} changeChartData={this.changeNodeShownOnChart} />
-                        );
-                    })}
+                {/* Nodes */
+                }
+                <div className="ms-Grid-row">
+                    <div className="ms-Grid-col ms-md4 node-scroll-pane">
+                        <div className="">
+                            <div className="nodes">
+                                {/* Input Nodes */}
+                                {this.state.categoryNodes.map((node_id, index) => {
+                                    let node = this.state.nodes[node_id];
+                                    let inRole = this.props.role === 'All';
+                                    if (!inRole) {
+                                        for (let i = 0; i < node.tags.length; i++) {
+                                            inRole |= node.tags[i].includes('ROLE==' + this.props.role);
+                                        }
+                                    }
+                                    if (!node.visible | !inRole) return;
+                                    return (
+                                        <Node key={node_id} nodeId={node_id} node={node} onClick={() => this.setCurrentNode(node_id)}
+                                              changeChartData={this.changeNodeShownOnChart}/>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="ms-Grid-col ms-md8 node-scroll-pane">
+                        <NodeTable type={this.state.currentNodeType} nodeId={this.state.currentNodeID}
+                                   data={this.state.currentNodeData} />
 
-                    {/* Other Nodes */}
-                    <ConstantNodes nodes={this.state.nodes}/>
+                    </div>
                 </div>
                 {/*Navigation Buttons*/}
-                <div className="navigation-buttons">
-                    <Stack horizontal horizontalAlign="space-between">
-                        <Stack.Item align="start">
-                            <PrimaryButton text="Previous" onClick={() => this.props.changeTab(this.props.index - 1)}/>
-                        </Stack.Item>
-                        <Stack.Item align="end">
-                            <PrimaryButton text="Next" onClick={() => this.props.changeTab(this.props.index + 1)}/>
-                        </Stack.Item>
-                    </Stack>
+                <div className="ms-Grid-row">
+                    <div className="ms-Grid-col ms-md12">
+                        <div className="navigation-buttons">
+                            <Stack horizontal horizontalAlign="space-between">
+                                <Stack.Item align="start">
+                                    <PrimaryButton text="Previous"
+                                                   onClick={() => this.props.changeTab(this.props.index - 1)}/>
+                                </Stack.Item>
+                                <Stack.Item align="end">
+                                    <PrimaryButton text="Next"
+                                                   onClick={() => this.props.changeTab(this.props.index + 1)}/>
+                                </Stack.Item>
+                            </Stack>
+                        </div>
+                    </div>
                 </div>
             </React.Fragment>
         )

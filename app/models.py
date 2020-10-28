@@ -26,8 +26,7 @@ __all__ = [
     'NumericInput',
     'Scenario',
     'SliderInput',
-    'NodeData',
-    'ScenarioNodeData'
+    'NodeData'
 ]
 
 
@@ -68,6 +67,7 @@ class Scenario(models.Model):
     solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     is_adhoc = models.BooleanField(default=False)
+    is_in_progress = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -279,6 +279,7 @@ class DecimalNodeOverride(NodeOverride):
 class NodeData(PolymorphicModel):
     node = models.ForeignKey(Node, on_delete=models.CASCADE, default=None)
     is_model = models.BooleanField(default=True)
+    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, default=None, null=True)
 
 
 class InputNodeData(NodeData):
@@ -287,15 +288,6 @@ class InputNodeData(NodeData):
 
 class ConstNodeData(NodeData):
     default_data = ArrayField(models.DecimalField(max_digits=15, decimal_places=5))
-
-
-class ScenarioNodeData(models.Model):
-    node = models.ForeignKey(Node, on_delete=models.CASCADE, default=None)
-    node_data = models.ForeignKey(NodeData, on_delete=models.CASCADE, default=None)
-    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, default=None)
-    is_uncertain = models.BooleanField(default=False)
-    is_bounded = models.BooleanField(default=False)
-    is_changes = models.BooleanField(default=False)
 
 
 class FilterCategory(models.Model):

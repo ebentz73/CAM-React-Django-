@@ -11,8 +11,27 @@
 
 /* Filters */
 
+.filters-label-box {
+    border: 1px solid black;
+    margin: 0px 30px 0px 35px;
+}
+
+.filters-box-header {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.filters-label {
+    margin: 20px auto 20px 20px;
+}
+
+.filters-label-chevron {
+    margin: 25px 20px 8px 8px;
+}
+
 .filters {
     margin-top: 50px;
+    margin-bottom: 20px;
 }
 
 .filter-dropdown {
@@ -28,14 +47,18 @@
 
 /* Nodes */
 .nodes {
-    margin-top: 50px;
+    height: 500px;
+    width: 100%;
 }
 
-.nodes > div {
+.node {
     background-color: rgb(238, 238, 238);
-    margin: 50px 50px 50px 50px;
-    height: 100%;
-    padding-bottom: 10px;
+    margin: 5px 5px 5px 5px;
+    height: 60px;
+    padding: 10px;
+    border-radius: 5px;
+
+
 }
 
 .node-header {
@@ -53,18 +76,20 @@
     font-family: "Segoe UI";
     display: inline-block;
     color: rgb(141, 141, 141);
-    margin-top: 5px;
-    margin-left: 5px;
-    margin-right: auto;
+    margin: 5px auto 5px 5px;
+    padding-bottom: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Node Tables */
 
 .node-table {
-    margin: 10px;
-    width: inherit;
+    margin: 40px 20px 10px 10px;
+    width: 100%;
     height: 270px;
-    position: relative;
+    padding-right: 20px;
+    display: inline-block;
 }
 
 .table-input {
@@ -73,6 +98,10 @@
 
 .scroll-pane {
     width: 100%;
+}
+
+.table-in-scroll-pane {
+    margin: 50px 20px 20px 20px;
 }
 
 /* Navigation Buttons */
@@ -85,6 +114,7 @@
 .navigation-buttons {
     margin-right: 50px;
     margin-left: 50px;
+    margin-top: 50px;
 }
 
 /* Chart */
@@ -101,21 +131,28 @@
 .nav-bar {
     margin: -8px;
     height: 75px;
-    background-color: palegoldenrod;
+    position: relative;
 }
 
 .nav-bar img {
-    height: 75%;
 }
 
 .nav-bar-logo {
     float: left;
-    margin: 10px;
+    top: 0;
+    bottom: 0;
+    margin: auto auto auto 40px;
+    height: 50%;
+    vertical-align: middle;
+    position: absolute;
+
 }
 
 .nav-bar-user {
     float: right;
-    margin: 10px;
+    margin: 10px 40px 10px 10px;
+    border-radius: 50%;
+    height: 75%;
 }
 
 /* PowerBI Report */
@@ -175,6 +212,7 @@
     height: 36px;
     margin-left: 14px;
     margin-top: -3px;
+    margin-bottom: -3px;
 }
 
 .incomplete-step {
@@ -189,4 +227,23 @@
 
 .tab-title {
     margin-bottom: 50px;
+}
+
+.grid-margin {
+    margin-top: 10px;
+}
+
+.ms-Pivot {
+    margin-bottom: 40px;
+}
+
+.node-scroll-pane {
+    width: 100%;
+    height: fit-content;
+    overflow-y: auto;
+}
+
+.table-scroll-pane {
+    height: 100%;
+    overflow-x: auto;
 }
