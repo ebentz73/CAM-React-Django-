@@ -16,7 +16,7 @@ module.exports = {
         exclude: /node_modules\/(?!(@fluentui|office-ui-fabric-react)\/).*/,
         use: [
           'style-loader',
-          'css-loader'
+          'css-loader',
         ]
       }
     ]
