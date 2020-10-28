@@ -7,7 +7,6 @@ import sqlite3
 from typing import TypeVar, Generic, Iterator, IO, AnyStr
 
 import docker
-import environ
 import requests
 from django.conf import settings
 from django.core.files.storage import default_storage
@@ -15,7 +14,7 @@ from django.db.models import QuerySet
 from grafana_api.grafana_face import GrafanaFace
 
 _Z = TypeVar('_Z')
-env = environ.Env()
+env = os.environ.Env()
 
 
 class ModelType(Generic[_Z], QuerySet):
@@ -171,7 +170,7 @@ def create_dashboard(title: str) -> dict:
     Returns:
         Json response of the created dashboard.
     """
-    env = environ.Env()
+    env = os.environ.Env()
 
     grafana_api = GrafanaFace(auth=env('GRAFANA_API_KEY'), host=env('GRAFANA_HOST'))
     with open(env('GRAFANA_TEMPLATE')) as f:
