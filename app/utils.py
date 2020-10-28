@@ -7,6 +7,7 @@ import sqlite3
 from typing import TypeVar, Generic, Iterator, IO, AnyStr
 
 import docker
+import environ
 import requests
 from django.conf import settings
 from django.core.files.storage import default_storage
