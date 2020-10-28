@@ -14,7 +14,6 @@ from django.db.models import QuerySet
 from grafana_api.grafana_face import GrafanaFace
 
 _Z = TypeVar('_Z')
-env = os.environ.Env()
 
 
 class ModelType(Generic[_Z], QuerySet):
@@ -170,10 +169,9 @@ def create_dashboard(title: str) -> dict:
     Returns:
         Json response of the created dashboard.
     """
-    env = os.environ.Env()
 
-    grafana_api = GrafanaFace(auth=env('GRAFANA_API_KEY'), host=env('GRAFANA_HOST'))
-    with open(env('GRAFANA_TEMPLATE')) as f:
+    grafana_api = GrafanaFace(auth=os.environ.get('GRAFANA_API_KEY'), host=os.environ.get('GRAFANA_HOST'))
+    with open(os.environ.get('GRAFANA_TEMPLATE')) as f:
         dashboard = json.load(f)
     dashboard['title'] = title
     return grafana_api.dashboard.update_dashboard({'dashboard': dashboard})
@@ -197,13 +195,13 @@ class PowerBI:
         return ""
 
     def get_client_secret(self):
-        return env('POWERBI_CLIENT_SECRET')
+        return os.environ.get('POWERBI_CLIENT_SECRET')
 
     def get_client_id(self):
-        return env('POWERBI_CLIENT_ID')
+        return os.environ.get('POWERBI_CLIENT_ID')
 
     def get_tenant_id(self):
-        return env('POWERBI_TENANT_ID')
+        return os.environ.get('POWERBI_TENANT_ID')
 
     def get_access_token(self):
         """Returns AAD token using MSAL"""
