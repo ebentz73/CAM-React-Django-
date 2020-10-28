@@ -3,6 +3,8 @@ source /antenv/bin/activate
 
 python manage.py migrate
 
+python manage.py createcachetable
+
 python manage.py collectstatic --no-input
 
 gunicorn --workers 8 --threads 4 --timeout 60 --access-logfile \

@@ -1,12 +1,10 @@
-import uuid
-
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db.models import Q
 from polymorphic.models import PolymorphicModel
 
-from app.utils import ModelType, create_dashboard
 from app.mixins import ModelDiffMixin
+from app.utils import ModelType
 
 __all__ = [
     'AnalyticsSolution',
@@ -28,16 +26,10 @@ __all__ = [
 ]
 
 
-def _name_tam_file(*_):
-    return f'tam_models/{uuid.uuid4().hex}'
-
-
 class AnalyticsSolution(models.Model, ModelDiffMixin):
     name = models.CharField(max_length=255)
     upload_date = models.DateTimeField(auto_now=True)
-    tam_file = models.FileField(upload_to=_name_tam_file)
-    dashboard_uid = models.CharField(max_length=40, editable=False)
-    dashboard_url = models.CharField(max_length=255, editable=False)
+    tam_file = models.FileField(upload_to='tam_models/')
 
     def __str__(self):
         return f'Analytics Solution ({self.id}) - {self.name}'
@@ -51,11 +43,6 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
         return self.scenario_set.filter(is_adhoc=False)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        if not self.pk:
-            # Only execute if the object is not in the database yet
-            dashboard = create_dashboard(self.name)
-            self.dashboard_uid = dashboard['uid']
-            self.dashboard_url = dashboard['url']
         super().save(force_insert, force_update, using, update_fields)
 
 
@@ -127,14 +114,10 @@ class Node(models.Model):
         return self.sliderinput_set.all()
 
 
-def _name_ids_file(*_):
-    return f'inputdatasets/{uuid.uuid4().hex}'
-
-
 class InputDataSet(models.Model):
     input_page = models.ForeignKey(InputPage, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    file = models.FileField(upload_to=_name_ids_file)
+    file = models.FileField(upload_to='inputdatasets/')
     scenarios = models.ManyToManyField(Scenario, blank=True)
 
     def __str__(self):

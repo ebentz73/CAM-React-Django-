@@ -28,10 +28,3 @@
     </table>
   </animated-ellipsis>
 {% endblock %}
-
-{% block actions_row %}
-  {% if object.is_complete %}
-    <a href="http://{{ GRAFANA_HOST }}{{ object.solution.dashboard_url }}?var-evaljob={{ object.pk }}"
-       class="btn">{% trans 'View Results' %}</a>
-  {% endif %}
-{% endblock %}
