@@ -32,7 +32,10 @@ class ScenarioHomePage extends Component {
                   { key: 'status', name: 'Status', fieldName: 'status', minWidth: 100, maxWidth: 200, isResizable: true },
                   { key: 'shared', name: 'Shared', fieldName: 'shared', minWidth: 100, maxWidth: 200, isResizable: true },
                 ];
-                response[0]['shared'] = ['VT', 'PM', 'SP', 'MV', 'CP', 'CB', 'XY', 'zA']
+                for(var r in response){
+                    response[r]['shared'] = ['VT', 'PM', 'SP', 'MV', 'CP', 'CB', 'XY', 'zA']
+                }
+
                 this.setState({scenarios: response, columns: _columns})
             })
             .catch(err => {
