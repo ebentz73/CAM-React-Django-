@@ -1,4 +1,5 @@
 import uuid
+import datetime
 
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
@@ -37,6 +38,7 @@ def _name_tam_file(*_):
 
 class AnalyticsSolution(models.Model, ModelDiffMixin):
     name = models.CharField(max_length=255)
+    description = models.CharField(max_length=2048, null=True, blank=True)
     upload_date = models.DateTimeField(auto_now=True)
     tam_file = models.FileField(upload_to=_name_tam_file)
     dashboard_uid = models.CharField(max_length=40, editable=False, default='')
@@ -68,6 +70,8 @@ class Scenario(models.Model):
     solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     is_adhoc = models.BooleanField(default=False)
+    date = models.DateField(default=datetime.date.today())
+    status = models.CharField(max_length=256, null=True, blank=True)
 
     def __str__(self):
         return self.name

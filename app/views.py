@@ -49,10 +49,6 @@ class NodeResultView(APIView):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def get(self, s):
-        return Response([{"id": 2000, "email": "varsha@gmail.com", "name": "Varsha"}], status=status.HTTP_201_CREATED)
-
-
 @method_decorator(csrf_exempt, name='dispatch')
 class ScenarioAPIView(generics.ListCreateAPIView):
     queryset = Scenario.objects.all()
@@ -121,6 +117,16 @@ class PowerBIAPIView(APIView):
         solution = AnalyticsSolution.objects.get(**kwargs)
         powerbi = PowerBI()
         return Response(powerbi.run(solution))
+
+
+class AnalyticsSolutionScenarios(generics.ListAPIView):
+    queryset = Scenario.objects.all()
+    serializer_class = ScenarioSerializer
+
+    def get_queryset(self):
+        solution_id = self.kwargs.get('pk')
+        print(solution_id, '------------------------')
+        return self.queryset.filter(solution=solution_id)
 
 
 class AllNodeDataBySolutionAPIView(generics.ListAPIView):
