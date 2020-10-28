@@ -11,8 +11,9 @@ class FixedVariableToggle extends Component {
         this.toggleVariable = this.toggleVariable.bind(this);
     }
 
-    toggleVariable() {
-        this.setState({variable: !this.state.variable});
+    toggleVariable(val) {
+        this.setState({variable: val});
+        this.props.toggleFixed(!val);
     }
 
     render() {
@@ -69,8 +70,8 @@ class FixedVariableToggle extends Component {
         }
         return(
             <div style={containerStyle}>
-                <div style={leftSideStyle} onClick={this.toggleVariable}><span style={leftSpanStyle}>Fixed</span></div>
-                <div style={rightSideStyle} onClick={this.toggleVariable}><span style={rightSpanStyle}>Variable</span></div>
+                <div style={leftSideStyle} onClick={() => this.toggleVariable(false)}><span style={leftSpanStyle}>Fixed</span></div>
+                <div style={rightSideStyle} onClick={() => this.toggleVariable(true)}><span style={rightSpanStyle}>Variable</span></div>
             </div>
         );
     }
