@@ -24,4 +24,14 @@ class Migration(migrations.Migration):
             name='node_data',
             field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, to='app.NodeData'),
         ),
+        migrations.AddField(
+            model_name='analyticssolution',
+            name='report_id',
+            field=models.CharField(blank=True, max_length=128, null=True),
+        ),
+        migrations.AddField(
+            model_name='analyticssolution',
+            name='workspace_id',
+            field=models.CharField(blank=True, max_length=128, null=True),
+        ),
     ]
