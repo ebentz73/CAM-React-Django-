@@ -1,8 +1,8 @@
 import React, {Component} from "react";
 import NavBar from "./NavBar";
 import HomePageSideBar from "./HomePageSideBar";
-import { DetailsList, DetailsListLayoutMode, Selection } from 'office-ui-fabric-react/lib/DetailsList';
-import { ActionButton, IIconProps } from 'office-ui-fabric-react';
+import { DetailsList, DetailsListLayoutMode, Selection } from '@fluentui/react/lib/DetailsList';
+import { ActionButton, IIconProps } from '@fluentui/react';
 
 class AnalyticsSolutionPage extends Component {
     constructor(props) {

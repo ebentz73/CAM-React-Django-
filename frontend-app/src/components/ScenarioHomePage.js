@@ -1,9 +1,9 @@
 import React, {Component} from "react";
 import NavBar from "./NavBar";
 import HomePageSideBar from "./HomePageSideBar";
-import { DetailsList, DetailsListLayoutMode, Selection } from 'office-ui-fabric-react/lib/DetailsList';
-import { Facepile, OverflowButtonType } from 'office-ui-fabric-react/lib/Facepile';
-import {PersonaSize} from 'office-ui-fabric-react/lib/Persona';
+import { DetailsList, DetailsListLayoutMode, Selection } from '@fluentui/react/lib/DetailsList';
+import { Facepile, OverflowButtonType } from '@fluentui/react/lib/Facepile';
+import {PersonaSize} from '@fluentui/react/lib/Persona';
 
 const overflowButtonProps = {
     ariaLabel: 'More users',
