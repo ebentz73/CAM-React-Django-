@@ -10,7 +10,7 @@ AZ_FUNC_CREATE_ACI_KEY = os.environ.get('AZ_FUNC_CREATE_ACI_KEY')
 
 # Debug mode should *never* be on in production
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', SECRET_KEY)
-DEBUG = os.environ.get('DJANGO_DEBUG', False)
+DEBUG = os.environ.get('DJANGO_DEBUG', '').capitalize() == 'True'
 
 # Configure default domain name
 AZ_CUSTOM_DOMAIN = next(
