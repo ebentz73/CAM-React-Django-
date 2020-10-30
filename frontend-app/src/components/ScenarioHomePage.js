@@ -4,6 +4,7 @@ import HomePageSideBar from "./HomePageSideBar";
 import { DetailsList, DetailsListLayoutMode, Selection } from '@fluentui/react/lib/DetailsList';
 import { Facepile, OverflowButtonType } from '@fluentui/react/lib/Facepile';
 import {PersonaSize} from '@fluentui/react/lib/Persona';
+import { ActionButton, IIconProps } from '@fluentui/react';
 
 const overflowButtonProps = {
     ariaLabel: 'More users',
@@ -81,6 +82,11 @@ class ScenarioHomePage extends Component {
                         <HomePageSideBar active="overview"/>
                     </div>
                     <div className="ms-Grid-col ms-md6">
+                        <div align="right">
+                            <ActionButton iconProps={{ iconName: 'Add' }} onClick={() => {window.location="/frontend-app"}}>
+                              Scenario
+                            </ActionButton>
+                        </div>
                         <DetailsList
                             items={this.state.scenarios}
                             columns={this.state.columns}

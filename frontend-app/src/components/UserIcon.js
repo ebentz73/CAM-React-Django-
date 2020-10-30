@@ -7,7 +7,7 @@ class UserIcon extends Component {
 
     render() {
         return(
-            <img className="nav-bar-user" src="../static/frontend-app/transparent-user.jpg"/>
+            <img className="nav-bar-user" src="/static/frontend-app/transparent-user.jpg"/>
         );
     }
 }
