@@ -2,7 +2,6 @@ import React, {Component} from "react";
 import NavBar from "./NavBar";
 import HomePageSideBar from "./HomePageSideBar";
 import { DetailsList, DetailsListLayoutMode, Selection } from '@fluentui/react/lib/DetailsList';
-import { ActionButton, IIconProps } from '@fluentui/react';
 
 class AnalyticsSolutionPage extends Component {
     constructor(props) {
@@ -53,11 +52,6 @@ class AnalyticsSolutionPage extends Component {
                         <HomePageSideBar active="overview"/>
                     </div>
                     <div className="ms-Grid-col ms-md6">
-                        <div align="right">
-                            <ActionButton iconProps={{ iconName: 'Add' }} onClick={() => {window.location="/frontend-app"}}>
-                              Scenario
-                            </ActionButton>
-                        </div>
                         <DetailsList
                             items={this.state.solutions}
                             columns={this.state.columns}
