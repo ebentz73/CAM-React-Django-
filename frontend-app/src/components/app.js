@@ -17,6 +17,12 @@ class App extends Component {
             <div>
                 <BrowserRouter>
                     <Switch>
+                        <Route exact path='/frontend-app/solution/:id/new-scenario' component={ScenarioDefinitionPage}/>
+                    </Switch>
+                    <Switch>
+                        <Route exact path='/frontend-app/solution/:id/scenario/:scenario-id' component={ScenarioDefinitionPage}/>
+                    </Switch>
+                    <Switch>
                         <Route exact path='/frontend-app/solution/:id/scenario' component={ScenarioHomePage}/>
                     </Switch>
                     <Switch>
