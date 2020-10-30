@@ -9,7 +9,7 @@ class NavBar extends Component {
     render(){
         return(
             <div className="nav-bar">
-                <img className="nav-bar-logo" src="../static/frontend-app/lone-star-logo.png"/>
+                <img className="nav-bar-logo" src="/static/frontend-app/lone-star-logo.png"/>
                 <UserIcon />
                 <div style={{clear: 'both'}} />
             </div>
