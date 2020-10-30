@@ -52,9 +52,6 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
     def scenarios(self) -> ModelType['Scenario']:
         return self.scenario_set.filter(is_adhoc=False)
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        super().save(force_insert, force_update, using, update_fields)
-
 
 class Scenario(models.Model):
     solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
