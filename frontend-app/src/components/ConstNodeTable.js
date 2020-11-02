@@ -11,10 +11,10 @@ class ConstNodeTable extends Component {
 
     render() {
         return (
-            this.props.data &&
             <NodesContext.Consumer>
-                    {(context) =>
-                        <tbody>
+                {(context) =>
+                    <tbody>
+                        {!this.props.fixed &&
                             <tr>
                                 {this.props.data.map((_, index) => {
                                     return (
@@ -24,14 +24,22 @@ class ConstNodeTable extends Component {
                                     );
                                 })}
                             </tr>
-                            <tr>
-                                {this.props.data.map((row, layerIdx) => {
-                                    return(<td key={layerIdx}><NodeTableTextField data={row} nodeId={this.props.nodeId}
-                                                                               layerIdx={layerIdx}
-                                                                               type={'input'}
-                                                                               updateData={context.updateInputNodeData}/></td>);
-                                })}
-                            </tr>
+                        }
+                        <tr>
+                            {this.props.fixed &&
+                                <td key={0}><NodeTableTextField data={this.props.data[0]} nodeId={this.props.nodeId}
+                                                                           layerIdx={0}
+                                                                           type={'const'}
+                                                                           updateData={context.updateConstNodeData}/></td>
+                            }
+                            {!this.props.fixed && this.props.data.map((row, layerIdx) => {
+                                return(<td key={layerIdx}><NodeTableTextField data={row} nodeId={this.props.nodeId}
+                                                                           layerIdx={layerIdx}
+                                                                           type={'const'}
+                                                                           updateData={context.updateConstNodeData}/></td>);
+                            })}
+                        </tr>
+                        {!this.props.fixed &&
                             <tr>
                                 {this.props.data.map((_, index) => {
                                     return (
@@ -43,9 +51,10 @@ class ConstNodeTable extends Component {
                                     );
                                 })}
                             </tr>
-                        </tbody>
-                    }
-                </NodesContext.Consumer>
+                        }
+                    </tbody>
+                }
+            </NodesContext.Consumer>
         );
     }
 }

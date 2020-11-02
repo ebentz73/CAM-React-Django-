@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {ComboBox, Stack, PrimaryButton, Text, ScrollablePane} from '@fluentui/react';
+import {ComboBox, Stack, PrimaryButton, Text, ScrollablePane, DefaultButton} from '@fluentui/react';
 import Node from "./Node";
 import ConstantNodes from "./ConstantNodes";
 import {Line} from "react-chartjs-2";
@@ -32,7 +32,6 @@ class InputCategoryPage extends Component {
     }
 
     setCurrentNode(nodeId) {
-        console.log(this.state.nodes[nodeId]);
         this.setState({
             currentNodeID: nodeId,
             currentNodeData: this.state.nodes[nodeId].data,
@@ -52,7 +51,15 @@ class InputCategoryPage extends Component {
 
     componentWillReceiveProps(nextProps, nextContext) {
         if (nextProps.categoryNodes !== this.props.categoryNodes) {
+            console.log('will-receieve'); //TODO: Remove
+            // Change of Input Category Page
             this.filterNodesByInputCategory(nextProps.categoryNodes);
+            this.setState({
+            currentNodeID: '',
+            currentNodeData: {},
+            currentNodeType: '',
+            nodeOnChart: 'none'
+        });
         }
 
         if (nextProps.nodes !== this.props.nodes) {
@@ -160,11 +167,15 @@ class InputCategoryPage extends Component {
                                 {/* Input Nodes */}
                                 {this.state.categoryNodes.map((node_id, index) => {
                                     let node = this.state.nodes[node_id];
-                                    let inRole = this.props.role === 'All';
+
+                                    // Filter by role
+                                    let inRole = false;
                                     if (!inRole) {
-                                        for (let i = 0; i < node.tags.length; i++) {
-                                            inRole |= node.tags[i].includes('ROLE==' + this.props.role);
-                                        }
+                                        node.tags.forEach(tag => {
+                                            this.props.roles.forEach(role => {
+                                                inRole |= tag.includes('ROLE==' + role)
+                                            });
+                                        });
                                     }
                                     if (!node.visible | !inRole) return;
                                     return (
@@ -189,6 +200,9 @@ class InputCategoryPage extends Component {
                                 <Stack.Item align="start">
                                     <PrimaryButton text="Previous"
                                                    onClick={() => this.props.changeTab(this.props.index - 1)}/>
+                                </Stack.Item>
+                                <Stack.Item align="end">
+                                    <DefaultButton text="Save & exit" onClick={this.props.postScenario} />
                                 </Stack.Item>
                                 <Stack.Item align="end">
                                     <PrimaryButton text="Next"

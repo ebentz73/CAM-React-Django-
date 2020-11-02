@@ -13,6 +13,8 @@ class NodeTable extends Component {
         this.state = {
             fixed: false
         }
+
+        this.toggleFixedTableView = this.toggleFixedTableView.bind(this);
     }
 
     toggleFixedTableView(val) {

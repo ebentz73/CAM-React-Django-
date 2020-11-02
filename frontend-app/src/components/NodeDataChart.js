@@ -23,18 +23,21 @@ class NodeDataChart extends Component {
             }
             let datasets = [{
                 label: node.name,
-                data: node.data.map(layer => layer[2]),
+                data: node.type === 'input' ? node.data.map(layer => layer[2]) : node.data.map(data => data),
                 fill: false,
                 borderColor: "#742774",
                 lineTension: 0
             }];
-            this.setState({chartData: {labels: labels, datasets: datasets}});
+            let newChartData = {labels: labels, datasets: datasets};
+            this.setState({chartData: newChartData});
         }
     }
 
     componentWillReceiveProps(nextProps, nextContext) {
         if (nextProps.node !== 'none') {
             this.setupChartData(nextProps.node);
+        } else {
+            this.setState({chartData: {labels: [], datasets: []}});
         }
     }
 
