@@ -7,6 +7,10 @@
   text-overflow: ellipsis;
 }
 
+.trunav-main {
+    font-family: "Segoe UI";
+}
+
 .ms-List {
     padding: 0;
     list-style-type: none;
@@ -276,4 +280,13 @@ border-left: '3px solid blue' !important;
 .table-scroll-pane {
     height: 100%;
     overflow-x: auto;
+}
+
+/* Login Page */
+.width-450 {
+    width:450 px !important;
+}
+
+.ms-Dialog-title {
+ text-align: center;
 }
