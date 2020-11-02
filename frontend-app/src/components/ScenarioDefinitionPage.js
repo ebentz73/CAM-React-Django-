@@ -59,7 +59,7 @@ class ScenarioDefinitionPage extends Component {
         }
 
         this.solution_id = this.props.match.params['id'] || 42;
-        this.scenario_id = this.props.match.params['scenario-id'] || 23;
+        this.scenario_id = this.props.match.params['scenarioId'] || 23;
     }
 
     changeScenarioName(val) {

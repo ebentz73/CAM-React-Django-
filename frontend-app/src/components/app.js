@@ -20,7 +20,7 @@ class App extends Component {
                         <Route exact path='/frontend-app/solution/:id/new-scenario' component={ScenarioDefinitionPage}/>
                     </Switch>
                     <Switch>
-                        <Route exact path='/frontend-app/solution/:id/scenario/:scenario-id' component={ScenarioDefinitionPage}/>
+                        <Route exact path='/frontend-app/solution/:id/scenario/:scenarioId' component={ScenarioDefinitionPage}/>
                     </Switch>
                     <Switch>
                         <Route exact path='/frontend-app/solution/:id/scenario' component={ScenarioHomePage}/>

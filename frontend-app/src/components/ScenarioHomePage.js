@@ -15,8 +15,12 @@ class ScenarioHomePage extends Component {
         super(props);
         this.state = {
             scenarios: [],
-            columns: []
+            columns: [],
+            solution_id: null
         };
+        this._selection = new Selection({
+          onSelectionChanged: (v) => this.selectScenario(),
+        });
         this.fetchScenariosData = this.fetchScenariosData.bind(this);
         this._renderItemColumn = this._renderItemColumn.bind(this);
     }
@@ -37,11 +41,15 @@ class ScenarioHomePage extends Component {
                     response[r]['shared'] = ['VT', 'PM', 'SP', 'MV', 'CP', 'CB', 'XY', 'zA']
                 }
 
-                this.setState({scenarios: response, columns: _columns})
+                this.setState({scenarios: response, columns: _columns, solution_id: this.props.match.params['id']})
             })
             .catch(err => {
                 console.log(err);
             })
+    }
+
+    selectScenario() {
+     this.props.history.push('/frontend-app/solution/' + this.state.solution_id.toString() + '/scenario/' + this._selection.getSelection()[0]['id'].toString())
     }
 
     _renderItemColumn(item, index, column) {
@@ -93,6 +101,7 @@ class ScenarioHomePage extends Component {
                             setKey="set"
                             layoutMode={DetailsListLayoutMode.justified}
                             checkButtonAriaLabel="Row checkbox"
+                            selection={this._selection}
                             onRenderItemColumn={this._renderItemColumn}
                           />
                     </div>
