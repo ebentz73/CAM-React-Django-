@@ -6,8 +6,8 @@ from django.dispatch import receiver
 
 from app.models import (AnalyticsSolution, FilterCategory,
                         FilterOption, InputDataSet, InputPage,
-                        Model, Scenario)
-from app.proto_modules import TagFilterOption_pb2
+                        Model, Scenario, Node, InputNodeData, ConstNodeData)
+from app.proto_modules import TagFilterOption_pb2, InputNodeData_pb2, NodeTagListBlob_pb2, ConstNodeData_pb2
 from app.utils import Sqlite
 
 
@@ -50,34 +50,46 @@ def update_model(sender, **kwargs):
                                                            defaults={'name': input_page_name})
 
                     # Save all nodes
-                    # cursor.execute('select * from Node where ModelId=?', (model_id,))
-                    # for node_record in cursor.fetchall():
-                    #     node_id = node_record[2]
-                    #     node_name = node_record[3]
-                    #     node_type = node_record[5]
-                    #     blob_model = NodeTagListBlob_pb2.List_String()
-                    #     blob_model.ParseFromString(node_record[15])
-                    #     tag_list = blob_model.items._values
-                    #     if node_type in ('inputnode', 'constnode', 'inputiteratornode', 'percentAllocationNode'):
-                    #         node, _ = Node.objects.update_or_create(model=model, tags=tag_list,
-                    #                                                 tam_id=node_id, defaults={'name': node_name})
-                    #         if node_type == 'inputnode':
-                    #             cursor.execute("select NodeInputData from NodeScenarioData"
-                    #                            " where NodeId=?", (node_id,))
-                    #             blob_model = InputNodeData_pb2.InputNodeData()
-                    #             record = cursor.fetchone()
-                    #             blob_model.ParseFromString(record[0])
-                    #             node_data = [[val.InputData.LowerBound, val.InputData.Low, val.InputData.Nominal,
-                    #                           val.InputData.High, val.InputData.UpperBound]
-                    #                          for val in blob_model.LayerData._values]
-                    #             InputNodeData.objects.update_or_create(node=node, default_data=node_data, is_model=True)
-                    #         if node_type == 'constnode':
-                    #             cursor.execute("select NodeInputData from NodeScenarioData where NodeId=?", (node_id,))
-                    #             record = cursor.fetchone()
-                    #             blob_model = ConstNodeData_pb2.ConstNodeData()
-                    #             blob_model.ParseFromString(record[0])
-                    #             node_data = [val.ConstData for val in blob_model.AllLayerData._values]
-                    #             ConstNodeData.objects.update_or_create(node=node, default_data=node_data, is_model=True)
+                    cursor.execute('select * from Node where ModelId=?', (model_id,))
+                    for node_record in cursor.fetchall():
+                        node_id = node_record[2]
+                        node_name = node_record[3]
+                        node_type = node_record[5]
+                        blob_model = NodeTagListBlob_pb2.List_String()
+                        blob_model.ParseFromString(node_record[15])
+                        tag_list = blob_model.items._values
+                        is_right_type = node_type in ('inputnode', 'constnode', 'inputiteratornode', 'percentAllocationNode')
+
+                        # Check if node has CAM tags
+                        has_cam_tags = False
+                        for tag in tag_list:
+                            has_cam_tags = has_cam_tags or tag.startsWith('CAM_INPUT_CATEGORY==')
+                            if has_cam_tags:
+                                break
+                        if is_right_type and has_cam_tags:
+                            # Create Node model
+                            node, _ = Node.objects.update_or_create(model=model, tags=tag_list,
+                                                                    tam_id=node_id, defaults={'name': node_name})
+                            # Create InputNodeData model
+                            if node_type == 'inputnode':
+                                cursor.execute("select NodeInputData from NodeScenarioData"
+                                               " where NodeId=?", (node_id,))
+                                blob_model = InputNodeData_pb2.InputNodeData()
+                                record = cursor.fetchone()
+                                blob_model.ParseFromString(record[0])
+                                node_data = [[val.InputData.LowerBound, val.InputData.Low, val.InputData.Nominal,
+                                              val.InputData.High, val.InputData.UpperBound]
+                                             for val in blob_model.LayerData._values]
+                                InputNodeData.objects.update_or_create(node=node, default_data=node_data, is_model=True)
+
+                            # Create ConstNodeData model
+                            if node_type == 'constnode':
+                                cursor.execute("select NodeInputData from NodeScenarioData where NodeId=?", (node_id,))
+                                record = cursor.fetchone()
+                                blob_model = ConstNodeData_pb2.ConstNodeData()
+                                blob_model.ParseFromString(record[0])
+                                node_data = [val.ConstData for val in blob_model.AllLayerData._values]
+                                ConstNodeData.objects.update_or_create(node=node, default_data=node_data, is_model=True)
 
         finally:
             os.remove(filename)

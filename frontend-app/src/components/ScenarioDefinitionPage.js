@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {PrimaryButton, Text, Pivot, PivotItem, ComboBox} from "@fluentui/react";
+import {PrimaryButton, Text, Pivot, PivotItem, ComboBox, Dropdown} from "@fluentui/react";
 import SetupPage from "./SetupPage";
 import InputCategoryPage from "./InputCategoryPage";
 import NodesContext from "./NodesContext";
@@ -29,7 +29,7 @@ class ScenarioDefinitionPage extends Component {
             description: '',
             nodes_changed: 0,
             roles: {},
-            activeRole: 'All'
+            activeRoles: []
         };
 
         this.onClickCategory = this.onClickCategory.bind(this);
@@ -75,7 +75,16 @@ class ScenarioDefinitionPage extends Component {
     }
 
     changeRole(e, role) {
-        this.setState({activeRole: role.text});
+        let newRoles = [...this.state.activeRoles];
+        if (role.selected) {
+            newRoles.push(role.key);
+        } else {
+            let index = newRoles.indexOf(role.key);
+            if (index !== -1) {
+                newRoles.splice(index, 1);
+            }
+        }
+        this.setState({activeRoles: newRoles});
     }
 
     changeTab(val) {
@@ -171,7 +180,6 @@ class ScenarioDefinitionPage extends Component {
                 // Retrieve Input Nodes
                 response.input_nodes.map(node => {
                     if (nodes[node.node] !== undefined) {
-                        console.log(node.default_data); //TODO: Remove
                         nodes[node.node].data = node.default_data;
                     }
                 });
@@ -227,7 +235,6 @@ class ScenarioDefinitionPage extends Component {
                         });
                     }
                 });
-                roles['All'] = 'All';
                 newInputCategoryOrder.sort();
                 this.setState({
                     nodes: nodes,
@@ -319,7 +326,7 @@ class ScenarioDefinitionPage extends Component {
                 boxShadow: '0px 1px 4px 1px rgb(194, 194, 194)',
                 selectors: {
                     '.ms-Pivot-link:hover': {
-                        backgroundColor: 'green'
+                        backgroundColor: 'rgb(4, 53,102)'
                     },
                     '.linkIsSelected-48::before': {
                         backgroundColor: 'white'
@@ -361,10 +368,11 @@ class ScenarioDefinitionPage extends Component {
                                         </div>
                                     </div>
                                     <div className="ms-Grid-col ms-md8">
-                                        <ComboBox options={Object.keys(this.state.roles).map(role => {return {key: role, text: role}})}
-                                                  autoComplete="on" label='Roles'
+                                        {/* Role Filter */}
+                                        <Dropdown options={Object.keys(this.state.roles).map(role => {return {key: role, text: role}})}
+                                                  label='Roles' multiSelect
                                                   styles={{root: {marginBottom: '20px'}}}
-                                                  selectedKey={this.state.activeRole}
+                                                  selectedKeys={this.state.activeRoles}
                                                   onChange={(e, val) =>
                                                       this.changeRole(e, val)}/>
                                         {/* Input Category Pages */}
@@ -377,8 +385,8 @@ class ScenarioDefinitionPage extends Component {
                                         {this.state.tab === 'category' &&
                                         <InputCategoryPage filters={this.state.filters} nodes={this.state.nodes}
                                                            name={this.state.category.substring(this.state.category.indexOf('.') + 1, this.state.category.length)}
-                                                           index={this.state.category_idx} role={this.state.activeRole}
-                                                           changeTab={this.changeTab}
+                                                           index={this.state.category_idx} roles={this.state.activeRoles}
+                                                           changeTab={this.changeTab} postScenario={this.createOrUpdateScenario}
                                                            categoryNodes={this.state.inputCategories[this.state.category]}/>
                                         }
                                         {this.state.tab === 'review' &&

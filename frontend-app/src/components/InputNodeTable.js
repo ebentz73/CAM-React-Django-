@@ -16,17 +16,30 @@ class InputNodeTable extends Component {
             <NodesContext.Consumer>
                     {(context) =>
                         <tbody>
-                            <tr>
-                                <td></td>
-                                {this.props.data.map((_, index) => {
-                                    return (
-                                        <td key={`header_${index}`}>
-                                            <Text>{this.months[index % 12]}</Text>
-                                        </td>
-                                    );
-                                })}
-                            </tr>
-                            {this.props.data[0].map((_, nomIdx) => {
+                            {!this.props.fixed &&
+                                <tr>
+                                    <td></td>
+                                    {this.props.data.map((_, index) => {
+                                        return (
+                                            <td key={`header_${index}`}>
+                                                <Text>{this.months[index % 12]}</Text>
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            }
+                            {this.props.fixed && this.props.data[0].map((_, nomIdx) => {
+                                return (
+                                    <tr key={nomIdx}>
+                                        <td><Text>{this.nomLabels[nomIdx]}</Text></td>
+                                        <td><NodeTableTextField data={this.props.data[0][nomIdx]} nodeId={this.props.nodeId}
+                                                                                       layerIdx={0} nomIdx={nomIdx}
+                                                                                       type={'input'}
+                                                                                       updateData={context.updateInputNodeData}/></td>
+                                    </tr>
+                                );
+                            })}
+                            {!this.props.fixed && this.props.data[0].map((_, nomIdx) => {
                                 return (
                                     <tr key={nomIdx}>
                                         <td><Text>{this.nomLabels[nomIdx]}</Text></td>
@@ -39,18 +52,20 @@ class InputNodeTable extends Component {
                                     </tr>
                                 );
                             })}
-                            <tr>
-                                <td></td>
-                                {this.props.data.map((_, index) => {
-                                    return (
-                                        <td key={`copy_${index}`}>
-                                            <PrimaryButton className="table-input"
-                                                           onClick={() => {context.copyToAllLayers(this.props.nodeId, index)}}
-                                                           text="Copy to All" />
-                                        </td>
-                                    );
-                                })}
-                            </tr>
+                            {!this.props.fixed &&
+                                <tr>
+                                    <td></td>
+                                    {this.props.data.map((_, index) => {
+                                        return (
+                                            <td key={`copy_${index}`}>
+                                                <PrimaryButton className="table-input"
+                                                               onClick={() => {context.copyToAllLayers(this.props.nodeId, index)}}
+                                                               text="Copy to All" />
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            }
                         </tbody>
                     }
                 </NodesContext.Consumer>
