@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import UserImage from '../../static/frontend-app/transparent-user.jpg';
 
 class UserIcon extends Component {
     constructor(props) {
@@ -7,7 +8,7 @@ class UserIcon extends Component {
 
     render() {
         return(
-            <img className="nav-bar-user" src="/static/frontend-app/transparent-user.jpg"/>
+            <img className="nav-bar-user" src={UserImage}/>
         );
     }
 }

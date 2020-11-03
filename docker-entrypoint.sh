@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Build files for frontend app
+cd frontend_app
+npm i
+npm run dev
+cd ..
+
 # Collect static files
 echo "Collect static files"
 python manage.py collectstatic --noinput

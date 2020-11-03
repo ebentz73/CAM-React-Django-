@@ -63,7 +63,7 @@ def update_model(sender, **kwargs):
                         # Check if node has CAM tags
                         has_cam_tags = False
                         for tag in tag_list:
-                            has_cam_tags = has_cam_tags or tag.startsWith('CAM_INPUT_CATEGORY==')
+                            has_cam_tags = has_cam_tags or tag.startswith('CAM_INPUT_CATEGORY==')
                             if has_cam_tags:
                                 break
                         if is_right_type and has_cam_tags:
