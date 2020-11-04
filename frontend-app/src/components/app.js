@@ -5,6 +5,7 @@ import ScenarioDefinitionPage from "./ScenarioDefinitionPage";
 import PowerBIReport from './PowerBIReport';
 import AnalyticsSolutionPage from './AnalyticsSolutionPage';
 import ScenarioHomePage from './ScenarioHomePage';
+import LoginPage from './LoginPage';
 
 class App extends Component {
     constructor(props) {
@@ -14,7 +15,7 @@ class App extends Component {
     render() {
         return (
             <React.Fragment>
-            <div>
+            <div className="trunav-main">
                 <BrowserRouter>
                     <Switch>
                         <Route exact path='/frontend-app/solution/:id/new-scenario' component={ScenarioDefinitionPage}/>
@@ -33,6 +34,9 @@ class App extends Component {
                     </Switch>
                     <Switch>
                         <Route exact path='/frontend-app' component={ScenarioDefinitionPage}/>
+                    </Switch>
+                    <Switch>
+                        <Route exact path='/frontend-app/login' component={LoginPage}/>
                     </Switch>
                 </BrowserRouter>
             </div>
