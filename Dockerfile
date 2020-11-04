@@ -13,6 +13,7 @@ RUN pip install -r requirements.txt
 
 # install frontend app dependencies
 RUN apt-get install nodejs
+RUN cd frontend-app && npm i && npm run dev && cd ..
 
 # copy project
 COPY . .
