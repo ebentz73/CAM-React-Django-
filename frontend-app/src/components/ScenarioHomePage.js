@@ -91,7 +91,8 @@ class ScenarioHomePage extends Component {
                     </div>
                     <div className="ms-Grid-col ms-md6">
                         <div align="right">
-                            <ActionButton iconProps={{ iconName: 'Add' }} onClick={() => {window.location="/frontend-app"}}>
+                            <ActionButton iconProps={{ iconName: 'Add' }}
+                                          onClick={() => {window.location=`/frontend-app/solution/${this.props.match.params['id']}/new-scenario`}}>
                               Scenario
                             </ActionButton>
                         </div>

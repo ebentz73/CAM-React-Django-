@@ -6,6 +6,7 @@ import NodesContext from "./NodesContext";
 import ReviewPage from "./ReviewPage";
 import NavBar from "./NavBar";
 import ScenarioProgressStep from "./ScenarioProgressStep";
+import PowerBIReport from "./PowerBIReport";
 
 function getCookie(name) {
     return (name = (document.cookie + ';').match(new RegExp(name + '=.*;'))) && name[0].split(/=|;/)[1];
@@ -401,7 +402,9 @@ class ScenarioDefinitionPage extends Component {
                                 </div>
                             </NodesContext.Provider>
                         </PivotItem>
-                        <PivotItem headerText="Results"></PivotItem>
+                        <PivotItem headerText="Results">
+                            <PowerBIReport solutionId={this.solution_id} />
+                        </PivotItem>
                     </Pivot>
                 </div>
             </React.Fragment>

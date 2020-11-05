@@ -1,6 +1,5 @@
 import React, {Component} from "react";
-import UserIcon from './UserIcon'
-import LogoImage from '../../static/frontend-app/lone-star-logo.png';
+import UserIcon from './UserIcon';
 
 class NavBar extends Component {
     constructor(props) {
@@ -10,7 +9,10 @@ class NavBar extends Component {
     render(){
         return(
             <div className="nav-bar">
-                <img className="nav-bar-logo" src={LogoImage}/>
+                <a href='/frontend-app/home'>
+                    <img className="nav-bar-logo"
+                         src='https://cdne-cam-dev.azureedge.net/static/frontend-app/lone-star-logo.png'/>
+                </a>
                 <UserIcon />
                 <div style={{clear: 'both'}} />
             </div>
