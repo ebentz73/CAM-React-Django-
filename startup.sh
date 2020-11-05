@@ -1,10 +1,4 @@
 #!/bin/bash
-
-apt-get install nodejs
-cd frontend-app
-npm run dev
-cd ..
-
 source /antenv/bin/activate
 
 python manage.py migrate
