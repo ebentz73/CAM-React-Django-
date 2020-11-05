@@ -26,7 +26,7 @@ class ScenarioHomePage extends Component {
     }
 
     fetchScenariosData() {
-        fetch("http://" + window.location.host + "/api/solution/" + this.props.match.params['id'] +"/scenario")
+        fetch(`${window.location.protocol}://${window.location.host}/api/solution/${this.props.match.params['id']}/scenario`)
             .then(response => {
                 return response.json()
             })

@@ -99,7 +99,7 @@ class ScenarioDefinitionPage extends Component {
     }
 
     createOrUpdateScenario() {
-        return fetch('http://' + window.location.host + '/api/post-scenario', {
+        return fetch(`${window.location.protocol}://${window.location.host}/api/post-scenario`, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -124,7 +124,7 @@ class ScenarioDefinitionPage extends Component {
         Object.keys(this.state.nodes).filter(node_id => this.state.nodes[node_id].dirty).map(node_id => {
             let node = this.state.nodes[node_id];
             let node_data_id;
-            fetch(`http://${window.location.host}/api/node-data/scenario`, {
+            fetch(`${window.location.protocol}://${window.location.host}/api/node-data/scenario`, {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -172,7 +172,7 @@ class ScenarioDefinitionPage extends Component {
     }
 
     fetchNodeDataByScenario(scenario_id) {
-        fetch('http://' + window.location.host + '/api/node-data/scenario=' + scenario_id)
+        fetch(`${window.location.protocol}://${window.location.host}/api/node-data/scenario=${scenario_id}`)
             .then(response => {
                 return response.json();
             })
@@ -196,7 +196,7 @@ class ScenarioDefinitionPage extends Component {
 
     fetchNodesBySolution(solution_id) {
         // Fetching Nodes
-        fetch('http://' + window.location.host + '/api/node/solution=' + solution_id)
+        fetch(`${window.location.protocol}://${window.location.host}/api/node/solution=${solution_id}`)
             .then(response => {
                 return response.json();
             })
@@ -249,7 +249,7 @@ class ScenarioDefinitionPage extends Component {
             });
 
         // Fetching NodeDatas for corresponding Nodes
-        fetch('http://' + window.location.host + '/api/model-node-data/solution=' + solution_id)
+        fetch(`${window.location.protocol}://${window.location.host}/api/model-node-data/solution=${solution_id}`)
             .then(response => {
                 return response.json();
             })
@@ -278,7 +278,7 @@ class ScenarioDefinitionPage extends Component {
     }
 
     filtersBySolution(solution_id) {
-        fetch("http://" + window.location.host + "/api/filters/solution=" + solution_id)
+        fetch(`${window.location.protocol}://${window.location.host}/api/filters/solution=${solution_id}`)
             .then(response => {
                 return response.json()
             })

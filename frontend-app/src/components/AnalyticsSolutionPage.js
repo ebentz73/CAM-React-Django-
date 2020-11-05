@@ -21,7 +21,7 @@ class AnalyticsSolutionPage extends Component {
     }
 
     fetchAnalyticsSolutionsData() {
-        fetch("http://" + window.location.host + "/api/solution/")
+        fetch(`${window.location.protocol}://${window.location.host}/api/solution/`)
             .then(response => {
                 return response.json()
             })
