@@ -52,9 +52,7 @@ AZ_MEDIA_CONTAINER = os.environ.get('AZ_MEDIA_CONTAINER', 'media')
 AZ_STATIC_CONTAINER = os.environ.get('AZ_STATIC_CONTAINER', 'static')
 
 AZ_STORAGE_HOST = os.environ.get(
-    'AZ_STORAGE_HOST', f'https://{AZ_STORAGE_ACCOUNT}.blob.core.windows.net'
+    'AZ_STORAGE_HOST', f'{AZ_STORAGE_ACCOUNT}.blob.core.windows.net'
 )
 STATIC_URL = f'https://{AZ_STORAGE_HOST}/{AZ_STATIC_CONTAINER}/'
 MEDIA_URL = f'https://{AZ_STORAGE_HOST}/{AZ_MEDIA_CONTAINER}/'
-
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
