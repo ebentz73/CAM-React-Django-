@@ -1,7 +1,7 @@
-from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
 import numpy as np
 import pandas as pd
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 
 def validate_input_date_set_file(value):
@@ -11,8 +11,11 @@ def validate_input_date_set_file(value):
         2. Low Bound, High Bound, Base, 10, 90 --> should have all numeric and non-empty values
         3. Low Bound <= 10 <= Base <= 90 <= High Bound
 
-    :param value: file object
-    :return: raises validation error when validation fails else returns nothing
+    Args:
+        value: File object.
+
+    Raises:
+        ValidationError when validation fails.
     """
     dataframe = pd.read_excel(value)
     try:

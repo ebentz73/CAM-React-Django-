@@ -12,22 +12,26 @@ from app.utils import ModelType
 
 __all__ = [
     'AnalyticsSolution',
+    'ConstNodeData',
     'DecimalNodeOverride',
     'EvalJob',
     'ExecutiveView',
+    'FilterCategory',
+    'FilterOption',
     'Input',
     'InputChoice',
     'InputDataSet',
     'InputDataSetInput',
     'InputDataSetInputChoice',
+    'InputNodeData',
     'InputPage',
     'Model',
     'Node',
+    'NodeData',
     'NodeResult',
     'NumericInput',
     'Scenario',
     'SliderInput',
-    'NodeData'
 ]
 
 

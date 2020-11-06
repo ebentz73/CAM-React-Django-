@@ -1,22 +1,39 @@
 from functools import wraps
 
 import material.frontend.views as material
-from django.shortcuts import render, get_object_or_404, redirect
-from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
-from rest_framework import status
-from rest_framework import generics
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from app.forms import CreateEvalJobForm
-from app.models import ExecutiveView, EvalJob, NodeData, Node, Model, \
-    InputNodeData, ConstNodeData, AnalyticsSolution, FilterOption, FilterCategory, Scenario
-from app.serializers import EvalJobSerializer, NodeResultSerializer, AnalyticsSolutionSerializer, \
-    NodeDataSerializer, NodeSerializer, ModelSerializer, \
-    FilterCategorySerializer, FilterOptionSerializer, InputNodeDataSerializer, \
-    ConstNodeDataSerializer, ScenarioSerializer
+from app.models import (
+    AnalyticsSolution,
+    ConstNodeData,
+    EvalJob,
+    ExecutiveView,
+    FilterCategory,
+    FilterOption,
+    InputNodeData,
+    Model,
+    Node,
+    Scenario,
+)
+from app.serializers import (
+    AnalyticsSolutionSerializer,
+    ConstNodeDataSerializer,
+    EvalJobSerializer,
+    FilterCategorySerializer,
+    FilterOptionSerializer,
+    InputNodeDataSerializer,
+    ModelSerializer,
+    NodeResultSerializer,
+    NodeSerializer,
+    ScenarioSerializer,
+)
 from app.utils import PowerBI
 
 
@@ -48,6 +65,7 @@ class NodeResultView(APIView):
     def post(request, serializer):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ScenarioAPIView(generics.ListCreateAPIView):

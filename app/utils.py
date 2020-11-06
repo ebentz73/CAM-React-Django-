@@ -1,12 +1,11 @@
 import json
-import msal
-import requests
 import logging
 import os
 import sqlite3
-from typing import TypeVar, Generic, Iterator, IO, AnyStr
+from typing import AnyStr, Generic, IO, Iterator, TypeVar
 
 import docker
+import msal
 import requests
 from django.conf import settings
 from django.core.files.storage import default_storage
@@ -160,6 +159,10 @@ def run_eval_engine_cloud(evaljob_id: int):
         logging.error(e)
 
 
+run_eval_engine = run_eval_engine_cloud if is_cloud() else run_eval_engine_local
+run_eval_engine.__doc__ = 'Run the eval engine container.'
+
+
 def create_dashboard(title: str) -> dict:
     """Create a new dashboard by duplicating the template dashboard.
 
@@ -294,7 +297,3 @@ class PowerBI:
         self.solution = solution
         access_token = self.get_access_token()
         return self.get_embed_token(access_token)
-
-
-run_eval_engine = run_eval_engine_cloud if is_cloud() else run_eval_engine_local
-run_eval_engine.__doc__ = 'Run the eval engine container.'
