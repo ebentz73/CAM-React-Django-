@@ -60,7 +60,7 @@ class EvalJobSerializer(serializers.ModelSerializer):
         # Prepare schema to return to eval engine
         evaljob_json = {
             'analytics_job_id': evaljob_id,
-            'tam_model_url': StorageHelper.get_url(str(solution.tam_file), expire=60),
+            'tam_model_url': StorageHelper.get_url(str(solution.tam_file), expire=600),
             'results_url': f'{callback_url}/api/results/',
             'time_start': evaljob['layer_time_start'],
             'time_increment_unit': evaljob['layer_time_increment'],
