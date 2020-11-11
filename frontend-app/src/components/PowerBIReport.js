@@ -19,11 +19,15 @@ class PowerBIReport extends Component {
                 return response.json()
             })
             .then(response => {
-                this.setState({embedToken: response['embedToken'], embedUrl: response['embedUrl'], reportId: response['reportId']})
+                this.setState({
+                    embedToken: response['embedToken'],
+                    embedUrl: response['embedUrl'],
+                    reportId: response['reportId']
+                })
             })
             .catch(err => {
                 console.log(err);
-            })
+            });
     }
 
     componentDidMount() {
@@ -33,8 +37,8 @@ class PowerBIReport extends Component {
     render() {
         return (
             <div>
-               <PowerBIEmbed
-                    embedConfig = {{
+                <PowerBIEmbed
+                    embedConfig={{
                         type: 'report',   // Supported types: report, dashboard, tile, visual and qna
                         id: this.state.reportId,
                         embedUrl: this.state.embedUrl,
@@ -50,8 +54,8 @@ class PowerBIReport extends Component {
                             background: models.BackgroundType.Transparent,
                         }
                     }}
-                    cssClassName = { "report-style-class" }
-               />
+                    cssClassName={"report-style-class"}
+                />
             </div>
         );
     }

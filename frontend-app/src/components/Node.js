@@ -15,7 +15,7 @@ class Node extends Component {
                     <div className="node-header-label">{this.props.node.name}</div>
                 </div>
             </div>
-        )
+        );
     }
 }
 

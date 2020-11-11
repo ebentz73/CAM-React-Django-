@@ -8,13 +8,6 @@ initializeIcons();
 class ReviewPage extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            //
-        }
-    }
-
-    componentDidMount() {
-        //
     }
 
     render(){
@@ -36,7 +29,7 @@ class ReviewPage extends Component {
                     </Stack>
                 </div>
             </React.Fragment>
-        )
+        );
     }
 }
 

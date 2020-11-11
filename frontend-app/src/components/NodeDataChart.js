@@ -41,10 +41,6 @@ class NodeDataChart extends Component {
         }
     }
 
-    componentDidMount() {
-        //this.setupChartData(this.props.node);
-    }
-
     render() {
         return (
             <div className="line-chart-container">

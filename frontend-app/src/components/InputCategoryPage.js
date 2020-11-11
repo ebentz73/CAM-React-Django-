@@ -1,12 +1,8 @@
 import React, {Component} from "react";
-import {ComboBox, Stack, PrimaryButton, Text, ScrollablePane, DefaultButton} from '@fluentui/react';
+import {ComboBox, Stack, PrimaryButton, Text, DefaultButton} from '@fluentui/react';
 import Node from "./Node";
-import ConstantNodes from "./ConstantNodes";
-import {Line} from "react-chartjs-2";
 import NodeDataChart from './NodeDataChart';
 import {ChevronDownIcon, ChevronUpIcon} from "@fluentui/react-icons";
-import InputNodeTable from "./InputNodeTable";
-import ConstNodeTable from "./ConstNodeTable";
 import NodeTable from "./NodeTable";
 
 class InputCategoryPage extends Component {
@@ -25,7 +21,7 @@ class InputCategoryPage extends Component {
         }
 
         this.changeFilterOption = this.changeFilterOption.bind(this);
-        this.filterNodesByInputCategory = this.filterNodesByInputCategory.bind(this);
+        this.setInputCategoryNodes = this.setInputCategoryNodes.bind(this);
         this.changeNodeShownOnChart = this.changeNodeShownOnChart.bind(this);
         this.toggleFiltersBox = this.toggleFiltersBox.bind(this);
         this.setCurrentNode = this.setCurrentNode.bind(this);
@@ -45,21 +41,21 @@ class InputCategoryPage extends Component {
         this.setState({nodeOnChart: this.state.nodes[node_id]});
     }
 
-    filterNodesByInputCategory(categoryNodes) {
+    setInputCategoryNodes(categoryNodes) {
         this.setState({categoryNodes: categoryNodes.map(a => a.toString())});
     }
 
     componentWillReceiveProps(nextProps, nextContext) {
         if (nextProps.categoryNodes !== this.props.categoryNodes) {
-            console.log('will-receieve'); //TODO: Remove
+
             // Change of Input Category Page
-            this.filterNodesByInputCategory(nextProps.categoryNodes);
+            this.setInputCategoryNodes(nextProps.categoryNodes);
             this.setState({
-            currentNodeID: '',
-            currentNodeData: {},
-            currentNodeType: '',
-            nodeOnChart: 'none'
-        });
+                currentNodeID: '',
+                currentNodeData: {},
+                currentNodeType: '',
+                nodeOnChart: 'none'
+            });
         }
 
         if (nextProps.nodes !== this.props.nodes) {
@@ -68,14 +64,14 @@ class InputCategoryPage extends Component {
     }
 
     componentDidMount() {
-        this.filterNodesByInputCategory(this.props.categoryNodes);
+        this.setInputCategoryNodes(this.props.categoryNodes);
     }
 
     isNodeVisible(node) {
         let visible = true;
         Object.keys(node.selectedCategories).map(cat_id => {
             visible &= node.selectedCategories[cat_id];
-        })
+        });
         return visible;
     }
 
@@ -97,9 +93,8 @@ class InputCategoryPage extends Component {
             } else {
                 let selectedOptionMatchTag = false;
                 for (let i = 0; i < node.tags.length; i++) {
-                    let a = newFilters[cat_id].selected;
-                    let b = newFilters[cat_id].options;
-                    if (newFilters[cat_id].options[a].tag.includes(node.tags[i])) {
+                    let selectedFilters = newFilters[cat_id].selected;
+                    if (newFilters[cat_id].options[selectedFilters].tag.includes(node.tags[i])) {
                         selectedOptionMatchTag = true;
                     }
                 }
@@ -170,13 +165,11 @@ class InputCategoryPage extends Component {
 
                                     // Filter by role
                                     let inRole = false;
-                                    if (!inRole) {
-                                        node.tags.forEach(tag => {
-                                            this.props.roles.forEach(role => {
-                                                inRole |= tag.includes('ROLE==' + role)
-                                            });
+                                    node.tags.forEach(tag => {
+                                        this.props.roles.forEach(role => {
+                                            inRole |= tag.includes('ROLE==' + role)
                                         });
-                                    }
+                                    });
                                     if (!node.visible | !inRole) return;
                                     return (
                                         <Node key={node_id} nodeId={node_id} node={node} onClick={() => this.setCurrentNode(node_id)}
@@ -213,7 +206,7 @@ class InputCategoryPage extends Component {
                     </div>
                 </div>
             </React.Fragment>
-        )
+        );
     }
 }
 

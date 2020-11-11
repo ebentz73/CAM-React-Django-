@@ -17,10 +17,6 @@ class FixedVariableToggle extends Component {
     }
 
     render() {
-        let containerStyle = {
-            //
-        };
-
         let leftSideStyle = {
             position: 'relative',
             borderStyle: 'solid',
@@ -43,7 +39,7 @@ class FixedVariableToggle extends Component {
             fontSize: '0.8em',
             color: this.state.variable ? 'gray' : 'black',
             userSelect: 'none'
-        }
+        };
 
         let rightSideStyle = {
             position: 'relative',
@@ -67,9 +63,10 @@ class FixedVariableToggle extends Component {
             left: '12px',
             fontSize: '0.8em',
             color: this.state.variable ? 'black' : 'gray'
-        }
+        };
+
         return(
-            <div style={containerStyle}>
+            <div>
                 <div style={leftSideStyle} onClick={() => this.toggleVariable(false)}><span style={leftSpanStyle}>Fixed</span></div>
                 <div style={rightSideStyle} onClick={() => this.toggleVariable(true)}><span style={rightSpanStyle}>Variable</span></div>
             </div>

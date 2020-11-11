@@ -1,7 +1,4 @@
 import React, {Component} from "react";
-import {ScrollablePane, PrimaryButton, Text} from "@fluentui/react";
-import NodeTableTextField from "./NodeTableTextField";
-import NodesContext from "./NodesContext";
 import FixedVariableToggle from "./FixedVariableToggle";
 import InputNodeTable from "./InputNodeTable";
 import ConstNodeTable from "./ConstNodeTable";
@@ -18,7 +15,7 @@ class NodeTable extends Component {
     }
 
     toggleFixedTableView(val) {
-        this.setState({fixed: val})
+        this.setState({fixed: val});
     }
 
     render() {

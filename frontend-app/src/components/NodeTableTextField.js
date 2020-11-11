@@ -16,7 +16,7 @@ class NodeTableTextField extends Component {
 
     setData(e) {
         let val = parseFloat(this.state.value);
-        if (!isNaN(val) && this.props.data !== val){
+        if (!isNaN(val) && this.props.data !== val) {
             if (this.props.type === 'const') {
                 this.props.updateData(this.props.nodeId, this.props.layerIdx, val);
             } else {
@@ -26,7 +26,7 @@ class NodeTableTextField extends Component {
     }
 
     handleKeyPress(e) {
-        if(e.key === 'Enter'){
+        if (e.key === 'Enter') {
             this.setData();
         }
     }

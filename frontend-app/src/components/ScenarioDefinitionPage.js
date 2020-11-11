@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {PrimaryButton, Text, Pivot, PivotItem, ComboBox, Dropdown} from "@fluentui/react";
+import { Pivot, PivotItem, Dropdown } from "@fluentui/react";
 import SetupPage from "./SetupPage";
 import InputCategoryPage from "./InputCategoryPage";
 import NodesContext from "./NodesContext";
@@ -59,8 +59,8 @@ class ScenarioDefinitionPage extends Component {
             updateDate: this.changeModelDate
         }
 
-        this.solution_id = this.props.match.params['id'] || 42;
-        this.scenario_id = this.props.match.params['scenarioId'] || 23;
+        this.solution_id = this.props.match.params['id'];
+        this.scenario_id = this.props.match.params['scenarioId'];
     }
 
     changeScenarioName(val) {
@@ -111,32 +111,36 @@ class ScenarioDefinitionPage extends Component {
         }).then(resp => {
             return resp.json();
         }).then(resp => {
-            console.log(resp);
-            //this.scenario_id = resp.id;
             this.createOrUpdateScenNodeDatas();
         }).catch(err => {
-            console.log(err);
+            console.error(err);
         });
     }
 
     createOrUpdateScenNodeDatas() {
         // Only post data for nodes with changed values
-        Object.keys(this.state.nodes).filter(node_id => this.state.nodes[node_id].dirty).map(node_id => {
-            let node = this.state.nodes[node_id];
-            let node_data_id;
-            fetch(`${window.location.protocol}//${window.location.host}/api/node-data/scenario`, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrf_token
-                },
-                body: JSON.stringify({node: node_id, default_data: this.state.nodes[node_id].data,
-                    scenario_id: this.scenario_id, is_model: false, type: node.type})
-            }).catch(err => {
-                console.log(err);
+        Object.keys(this.state.nodes)
+            .filter(node_id => this.state.nodes[node_id].dirty)
+            .map(node_id => {
+                let node = this.state.nodes[node_id];
+                fetch(`${window.location.protocol}//${window.location.host}/api/node-data/scenario`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrf_token
+                    },
+                    body: JSON.stringify({
+                        node: node_id,
+                        default_data: this.state.nodes[node_id].data,
+                        scenario_id: this.scenario_id,
+                        is_model: false,
+                        type: node.type
+                    })
+                }).catch(err => {
+                    console.error(err);
+                });
             });
-        });
     }
 
     updateInputNodeData(node_id, layer_idx, nom_idx, val) {
@@ -179,13 +183,13 @@ class ScenarioDefinitionPage extends Component {
             .then(response => {
                 let nodes = {...this.state.nodes};
                 // Retrieve Input Nodes
-                response.input_nodes.map(node => {
+                response.input_nodes.forEach(node => {
                     if (nodes[node.node] !== undefined) {
                         nodes[node.node].data = node.default_data;
                     }
                 });
                 // Retrieve Const Nodes
-                response.const_nodes.map(node => {
+                response.const_nodes.forEach(node => {
                     if (nodes[node.node] !== undefined) {
                         nodes[node.node].data = node.default_data;
                     }
@@ -205,21 +209,24 @@ class ScenarioDefinitionPage extends Component {
                 let newInputCategoryOrder = [];
                 let newInputCategories = {...this.state.inputCategories};
                 let roles = {};
-                response.map(node => {
+                response.forEach(node => {
                     // Only include nodes with tags
                     if (node.tags.length > 0) { //  && node.tags.includes('ROLE==' + this.role)
                         // Add initial node data to component state
                         let node_obj = {
-                            name: node.name, tags: node.tags,
-                            visible: true, selectedCategories: {}, dirty: false
+                            name: node.name,
+                            tags: node.tags,
+                            visible: true,
+                            selectedCategories: {},
+                            dirty: false
                         };
-                        Object.keys(this.state.filters).map(cat_id => {
+                        Object.keys(this.state.filters).forEach(cat_id => {
                             node_obj.selectedCategories[cat_id] = true;
-                        })
+                        });
                         nodes[node.id] = node_obj;
 
                         // Retrieve input category from node if any
-                        node.tags.map(tag => {
+                        node.tags.forEach(tag => {
                             if (tag.includes('CAM_INPUT_CATEGORY==')) {
                                 let input_category = tag.substring(tag.lastIndexOf('=') + 1, tag.length);
                                 if (newInputCategories.hasOwnProperty(input_category)) {
@@ -245,7 +252,7 @@ class ScenarioDefinitionPage extends Component {
                 });
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
             });
 
         // Fetching NodeDatas for corresponding Nodes
@@ -256,14 +263,14 @@ class ScenarioDefinitionPage extends Component {
             .then(response => {
                 let nodes = {...this.state.nodes};
                 // Retrieve Input Nodes
-                response.input_nodes.map(node => {
+                response.input_nodes.forEach(node => {
                     if (nodes[node.node] !== undefined) {
                         nodes[node.node].data = node.default_data;
                         nodes[node.node].type = 'input';
                     }
                 });
                 // Retrieve Const Nodes
-                response.const_nodes.map(node => {
+                response.const_nodes.forEach(node => {
                     if (nodes[node.node] !== undefined) {
                         nodes[node.node].data = node.default_data;
                         nodes[node.node].type = 'const';
@@ -273,27 +280,27 @@ class ScenarioDefinitionPage extends Component {
                 if (this.scenario_id >= 0) this.fetchNodeDataByScenario(this.scenario_id);
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
             });
     }
 
     filtersBySolution(solution_id) {
         fetch(`${window.location.protocol}//${window.location.host}/api/filters/solution=${solution_id}`)
             .then(response => {
-                return response.json()
+                return response.json();
             })
             .then(response => {
                 let filters = {};
-                response.categories.map(category => {
+                response.categories.forEach(category => {
                     filters[category.id] = {name: category.name, options: {}, selected: -1};
                 });
-                response.options.map(option => {
+                response.options.forEach(option => {
                     filters[option.category].options[option.id] = {display_name: option.display_name, tag: option.tag};
                 });
                 this.setState({filters: filters});
             })
             .catch(err => {
-                console.log(err);
+                console.error(err);
             })
     }
 
