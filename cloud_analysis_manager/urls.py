@@ -35,13 +35,14 @@ urlpatterns = [
         ),
     ),
     path("api/results/", views.NodeResultView.as_view()),
+
     path("api/model/", views.ModelAPIView.as_view()),
+
     path('api/solution/<pk>/report/', views.PowerBIAPIView.as_view()),
     path('api/solution/<pk>/scenario/', views.AnalyticsSolutionScenarios.as_view()),
     path("api/solution/", views.AnalyticsSolutionAPIView.as_view()),
     path("api/scenario/", views.ScenarioAPIView.as_view()),
-    url("^api/model-node-data/solution=(?P<solution>.+)/$", views.ModelNodeDataBySolutionAPIView.as_view()),
-    url("^api/scenario/solution=(?P<solution>.+)/$", views.ScenariosBySolutionAPIView.as_view()),
+    path('api/solution/<solution>/model-node-data/', views.ModelNodeDataBySolutionAPIView.as_view()),
     path("api/node-data/scenario", views.CreateOrUpdateNodeDataByScenario.as_view()),
     path("api/post-scenario", views.CreateOrUpdateScenario.as_view()),
     path("api/input-node-data/", views.InputNodeDataAPIView.as_view()),
@@ -49,10 +50,10 @@ urlpatterns = [
     url('^api/const-node-data/node=(?P<node>.+)/$', views.ConstNodeDataByNodeListAPIView.as_view()),
     url('^api/input-node-data/node=(?P<node>.+)/$', views.InputNodeDataByNodeListAPIView.as_view()),
     url('^api/node/model=(?P<model>.+)/$', views.NodeByModelListAPIView.as_view()),
-    url('^api/node/solution=(?P<solution>.+)/$', views.NodeBySolutionListAPIView.as_view()),
+    url('^api/solution/(?P<solution>.+)/node/$', views.NodeBySolutionListAPIView.as_view()),
     url('^api/node-data/model=(?P<model>.+)/$', views.AllNodeDataByModelAPIView.as_view()),
-    url('^api/node-data/scenario=(?P<scenario>.+)/$', views.AllNodeDataByScenarioAPIView.as_view()),
+    url('^api/scenario/(?P<scenario>.+)/node-data/$', views.AllNodeDataByScenarioAPIView.as_view()),
     url('^api/node-data/solution=(?P<solution>.+)/$', views.AllNodeDataBySolutionAPIView.as_view()),
-    url('^api/filters/solution=(?P<solution>.+)/$', views.FilterCategoriesAndOptionsBySolutionAPIView.as_view()),
+    url('^api/solution/(?P<solution>.+)/filters/$', views.FilterCategoriesAndOptionsBySolutionAPIView.as_view()),
 
 ]

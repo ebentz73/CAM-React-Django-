@@ -176,7 +176,7 @@ class ScenarioDefinitionPage extends Component {
     }
 
     fetchNodeDataByScenario(scenario_id) {
-        fetch(`${window.location.protocol}//${window.location.host}/api/node-data/scenario=${scenario_id}`)
+        fetch(`${window.location.protocol}//${window.location.host}/api/scenario/${scenario_id}/node-data/`)
             .then(response => {
                 return response.json();
             })
@@ -200,7 +200,7 @@ class ScenarioDefinitionPage extends Component {
 
     fetchNodesBySolution(solution_id) {
         // Fetching Nodes
-        fetch(`${window.location.protocol}//${window.location.host}/api/node/solution=${solution_id}`)
+        fetch(`${window.location.protocol}//${window.location.host}/api/solution/${solution_id}/node/`)
             .then(response => {
                 return response.json();
             })
@@ -256,7 +256,7 @@ class ScenarioDefinitionPage extends Component {
             });
 
         // Fetching NodeDatas for corresponding Nodes
-        fetch(`${window.location.protocol}//${window.location.host}/api/model-node-data/solution=${solution_id}`)
+        fetch(`${window.location.protocol}//${window.location.host}/api/solution/${solution_id}/model-node-data/`)
             .then(response => {
                 return response.json();
             })
@@ -285,7 +285,7 @@ class ScenarioDefinitionPage extends Component {
     }
 
     filtersBySolution(solution_id) {
-        fetch(`${window.location.protocol}//${window.location.host}/api/filters/solution=${solution_id}`)
+        fetch(`${window.location.protocol}//${window.location.host}/api/solution/${solution_id}/filters/`)
             .then(response => {
                 return response.json();
             })
