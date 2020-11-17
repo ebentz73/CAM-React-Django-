@@ -41,8 +41,13 @@ urlpatterns = [
     path('api/solution/<pk>/report/', views.PowerBIAPIView.as_view()),
     path('api/solution/<pk>/scenario/', views.AnalyticsSolutionScenarios.as_view()),
     path("api/solution/", views.AnalyticsSolutionAPIView.as_view()),
+    path('api/solution/<pk>/node/', views.NodeBySolutionListAPIView.as_view()),
+    path('api/solution/<pk>/filters/', views.FilterCategoriesAndOptionsBySolutionAPIView.as_view()),
+    path('api/solution/<pk>/model-node-data/', views.ModelNodeDataBySolutionAPIView.as_view()),
+
     path("api/scenario/", views.ScenarioAPIView.as_view()),
-    path('api/solution/<solution>/model-node-data/', views.ModelNodeDataBySolutionAPIView.as_view()),
+    path('api/scenario/<pk>/node-data/', views.AllNodeDataByScenarioAPIView.as_view()),
+
     path("api/node-data/scenario", views.CreateOrUpdateNodeDataByScenario.as_view()),
     path("api/post-scenario", views.CreateOrUpdateScenario.as_view()),
     path("api/input-node-data/", views.InputNodeDataAPIView.as_view()),
@@ -50,10 +55,6 @@ urlpatterns = [
     url('^api/const-node-data/node=(?P<node>.+)/$', views.ConstNodeDataByNodeListAPIView.as_view()),
     url('^api/input-node-data/node=(?P<node>.+)/$', views.InputNodeDataByNodeListAPIView.as_view()),
     url('^api/node/model=(?P<model>.+)/$', views.NodeByModelListAPIView.as_view()),
-    url('^api/solution/(?P<solution>.+)/node/$', views.NodeBySolutionListAPIView.as_view()),
-    url('^api/node-data/model=(?P<model>.+)/$', views.AllNodeDataByModelAPIView.as_view()),
-    url('^api/scenario/(?P<scenario>.+)/node-data/$', views.AllNodeDataByScenarioAPIView.as_view()),
-    url('^api/node-data/solution=(?P<solution>.+)/$', views.AllNodeDataBySolutionAPIView.as_view()),
-    url('^api/solution/(?P<solution>.+)/filters/$', views.FilterCategoriesAndOptionsBySolutionAPIView.as_view()),
+
 
 ]

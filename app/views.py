@@ -75,7 +75,7 @@ class ScenarioAPIView(generics.ListCreateAPIView):
 
 class FilterCategoriesAndOptionsBySolutionAPIView(generics.ListAPIView):
     def get(self, request, format=None, **kwargs):
-        categories = FilterCategory.objects.filter(solution_id=self.kwargs['solution'])
+        categories = FilterCategory.objects.filter(solution_id=self.kwargs['pk'])
         categories_serializer = FilterCategorySerializer(categories, many=True)
         category_ids = [category.id for category in categories]
         options = FilterOption.objects.filter(category_id__in=category_ids)
@@ -201,10 +201,10 @@ class CreateOrUpdateNodeDataByScenario(APIView):
 class AllNodeDataByScenarioAPIView(generics.ListAPIView):
     def get(self, request, format=None, **kwargs):
 
-        input_nodes = InputNodeData.objects.filter(scenario=self.kwargs['scenario'])
+        input_nodes = InputNodeData.objects.filter(scenario=self.kwargs['pk'])
         input_serializer = InputNodeDataSerializer(input_nodes, many=True)
 
-        const_nodes = ConstNodeData.objects.filter(scenario=self.kwargs['scenario'])
+        const_nodes = ConstNodeData.objects.filter(scenario=self.kwargs['pk'])
         const_serializer = ConstNodeDataSerializer(const_nodes, many=True)
 
         return Response({
