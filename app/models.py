@@ -35,6 +35,10 @@ __all__ = [
 ]
 
 
+def NON_POLYMORPHIC_CASCADE(collector, field, sub_objs, using):
+    return models.CASCADE(collector, field, sub_objs.non_polymorphic(), using)
+
+
 class AnalyticsSolution(models.Model, ModelDiffMixin):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=2048, null=True, blank=True)
@@ -269,9 +273,9 @@ class DecimalNodeOverride(NodeOverride):
 
 
 class NodeData(PolymorphicModel):
-    node = models.ForeignKey(Node, on_delete=models.CASCADE, default=None)
+    node = models.ForeignKey(Node, on_delete=NON_POLYMORPHIC_CASCADE, default=None)
     is_model = models.BooleanField(default=True)
-    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, default=None, null=True)
+    scenario = models.ForeignKey(Scenario, on_delete=NON_POLYMORPHIC_CASCADE, default=None, null=True)
 
 
 class InputNodeData(NodeData):

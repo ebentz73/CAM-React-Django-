@@ -89,7 +89,7 @@ class FilterCategoriesAndOptionsBySolutionAPIView(generics.ListAPIView):
 
 class ModelNodeDataBySolutionAPIView(generics.ListAPIView):
     def get(self, request, format=None, **kwargs):
-        models = Model.objects.filter(solution_id=self.kwargs['solution'])
+        models = Model.objects.filter(solution_id=self.kwargs['pk'])
         model_ids = [model.id for model in models]
         nodes = Node.objects.filter(model_id__in=model_ids)
         node_ids = [node.id for node in nodes]
