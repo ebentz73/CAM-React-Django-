@@ -89,7 +89,7 @@ class FilterCategoriesAndOptionsBySolutionAPIView(generics.ListAPIView):
 
 class ModelNodeDataBySolutionAPIView(generics.ListAPIView):
     def get(self, request, format=None, **kwargs):
-        models = Model.objects.filter(solution_id=self.kwargs['solution'])
+        models = Model.objects.filter(solution_id=self.kwargs['pk'])
         model_ids = [model.id for model in models]
         nodes = Node.objects.filter(model_id__in=model_ids)
         node_ids = [node.id for node in nodes]
@@ -276,7 +276,7 @@ class NodeBySolutionListAPIView(generics.ListAPIView):
     serializer_class = NodeSerializer
 
     def get_queryset(self):
-        solution = self.kwargs['solution']
+        solution = self.kwargs['pk']
         model_ids = [model.id for model in Model.objects.filter(solution_id=solution)]
         return Node.objects.filter(model_id__in=model_ids)
 
