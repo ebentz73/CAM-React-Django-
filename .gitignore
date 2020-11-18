@@ -6,3 +6,5 @@ id_rsa
 *.pyc
 node_modules
 .env
+.azure
+tam_models

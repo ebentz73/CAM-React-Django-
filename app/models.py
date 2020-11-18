@@ -1,27 +1,33 @@
 import uuid
+import datetime
 
-from django.contrib.postgres.fields import JSONField
+from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
 from django.db.models import Q
 from polymorphic.models import PolymorphicModel
 
-from app.utils import ModelType, create_dashboard
 from app.mixins import ModelDiffMixin
 from app.validators import validate_input_date_set_file
+from app.utils import ModelType
 
 __all__ = [
     'AnalyticsSolution',
+    'ConstNodeData',
     'DecimalNodeOverride',
     'EvalJob',
     'ExecutiveView',
+    'FilterCategory',
+    'FilterOption',
     'Input',
     'InputChoice',
     'InputDataSet',
     'InputDataSetInput',
     'InputDataSetInputChoice',
+    'InputNodeData',
     'InputPage',
     'Model',
     'Node',
+    'NodeData',
     'NodeResult',
     'NumericInput',
     'Scenario',
@@ -29,16 +35,15 @@ __all__ = [
 ]
 
 
-def _name_tam_file(*_):
-    return f'tam_models/{uuid.uuid4().hex}'
-
-
 class AnalyticsSolution(models.Model, ModelDiffMixin):
     name = models.CharField(max_length=255)
+    description = models.CharField(max_length=2048, null=True, blank=True)
     upload_date = models.DateTimeField(auto_now=True)
-    tam_file = models.FileField(upload_to=_name_tam_file)
-    dashboard_uid = models.CharField(max_length=40, editable=False)
-    dashboard_url = models.CharField(max_length=255, editable=False)
+    tam_file = models.FileField(upload_to='tam_models/')
+    dashboard_uid = models.CharField(max_length=40, editable=False, default='')
+    dashboard_url = models.CharField(max_length=255, editable=False, default='')
+    report_id = models.CharField(max_length=128, null=True, blank=True)
+    workspace_id = models.CharField(max_length=128, null=True, blank=True)
 
     def __str__(self):
         return f'Analytics Solution ({self.id}) - {self.name}'
@@ -51,19 +56,14 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
     def scenarios(self) -> ModelType['Scenario']:
         return self.scenario_set.filter(is_adhoc=False)
 
-    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        if not self.pk:
-            # Only execute if the object is not in the database yet
-            dashboard = create_dashboard(self.name)
-            self.dashboard_uid = dashboard['uid']
-            self.dashboard_url = dashboard['url']
-        super().save(force_insert, force_update, using, update_fields)
-
 
 class Scenario(models.Model):
     solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     is_adhoc = models.BooleanField(default=False)
+    is_in_progress = models.BooleanField(default=False)
+    date = models.DateField(default=datetime.date.today())
+    status = models.CharField(max_length=256, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -75,6 +75,10 @@ class Scenario(models.Model):
     @property
     def node_overrides(self) -> ModelType['NodeOverride']:
         return self.nodeoverride_set.all()
+
+    @property
+    def scenario_node_data(self) -> ModelType['ScenarioNodeData']:
+        return self.scenarionodedata_set.all()
 
 
 class Model(models.Model):
@@ -110,6 +114,7 @@ class InputPage(models.Model):
 class Node(models.Model):
     model = models.ForeignKey(Model, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
+    tags = ArrayField(models.CharField(max_length=255), default=list)
     tam_id = models.UUIDField(editable=False)
 
     def __str__(self):
@@ -127,15 +132,19 @@ class Node(models.Model):
     def slider_inputs(self) -> ModelType['SliderInput']:
         return self.sliderinput_set.all()
 
+    @property
+    def node_data(self) -> ModelType['NodeData']:
+        return self.nodedata_set.all()
 
-def _name_ids_file(*_):
-    return f'inputdatasets/{uuid.uuid4().hex}'
+    @property
+    def scenario_node_data(self) -> ModelType['ScenarioNodeData']:
+        return self.scenarionodedata_set.all()
 
 
 class InputDataSet(models.Model):
     input_page = models.ForeignKey(InputPage, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    file = models.FileField(upload_to=_name_ids_file, validators=[validate_input_date_set_file])
+    file = models.FileField(upload_to='inputdatasets/', validators=[validate_input_date_set_file])
     scenarios = models.ManyToManyField(Scenario, blank=True)
 
     def __str__(self):
@@ -257,3 +266,28 @@ class NodeOverride(PolymorphicModel):
 
 class DecimalNodeOverride(NodeOverride):
     value = models.DecimalField(max_digits=15, decimal_places=5)
+
+
+class NodeData(PolymorphicModel):
+    node = models.ForeignKey(Node, on_delete=models.CASCADE, default=None)
+    is_model = models.BooleanField(default=True)
+    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, default=None, null=True)
+
+
+class InputNodeData(NodeData):
+    default_data = ArrayField(ArrayField(models.DecimalField(max_digits=15, decimal_places=5)))
+
+
+class ConstNodeData(NodeData):
+    default_data = ArrayField(models.DecimalField(max_digits=15, decimal_places=5))
+
+
+class FilterCategory(models.Model):
+    solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+
+
+class FilterOption(models.Model):
+    category = models.ForeignKey(FilterCategory, on_delete=models.CASCADE)
+    display_name = models.CharField(max_length=255)
+    tag = models.CharField(max_length=255, default='')

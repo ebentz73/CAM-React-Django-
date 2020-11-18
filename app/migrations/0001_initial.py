@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=255)),
                 ('upload_date', models.DateTimeField(auto_now=True)),
-                ('tam_file', models.FileField(upload_to=app.models._name_tam_file)),
+                ('tam_file', models.FileField(upload_to='tam_models/')),
             ],
         ),
         migrations.CreateModel(
@@ -161,7 +161,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=255)),
-                ('file', models.FileField(upload_to=app.models._name_ids_file)),
+                ('file', models.FileField(upload_to='inputdatasets/')),
                 ('input_page', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='app.InputPage')),
                 ('scenarios', models.ManyToManyField(to='app.Scenario')),
             ],

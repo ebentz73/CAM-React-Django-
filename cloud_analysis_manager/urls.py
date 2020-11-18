@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf.urls import url
 from django.views.generic import RedirectView
 from material.frontend import urls as frontend_urls
 
@@ -23,11 +24,37 @@ from app import views
 urlpatterns = [
     path('', include(frontend_urls)),
     path('', RedirectView.as_view(url='app/')),
+    path("admin/", admin.site.urls),
+    url("^frontend-app/.*", include("frontend-app.urls")),
+    path("app/", include("app.urls")),
+    path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
+    path(
+        "api/evaljob/<int:pk>/",
+        views.EvalJobDefinitionViewSet.as_view(
+            {"get": "retrieve", "patch": "partial_update"}
+        ),
+    ),
+    path("api/results/", views.NodeResultView.as_view()),
 
-    path('admin/', admin.site.urls),
+    path("api/model/", views.ModelAPIView.as_view()),
 
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('api/evaljob/<int:pk>/', views.EvalJobDefinitionViewSet.as_view({
-        'get': 'retrieve', 'patch': 'partial_update'})),
-    path('api/results/', views.NodeResultView.as_view()),
+    path('api/solution/<pk>/report/', views.PowerBIAPIView.as_view()),
+    path('api/solution/<pk>/scenario/', views.AnalyticsSolutionScenarios.as_view()),
+    path("api/solution/", views.AnalyticsSolutionAPIView.as_view()),
+    path('api/solution/<pk>/node/', views.NodeBySolutionListAPIView.as_view()),
+    path('api/solution/<pk>/filters/', views.FilterCategoriesAndOptionsBySolutionAPIView.as_view()),
+    path('api/solution/<pk>/model-node-data/', views.ModelNodeDataBySolutionAPIView.as_view()),
+
+    path("api/scenario/", views.ScenarioAPIView.as_view()),
+    path('api/scenario/<pk>/node-data/', views.AllNodeDataByScenarioAPIView.as_view()),
+
+    path("api/node-data/scenario", views.CreateOrUpdateNodeDataByScenario.as_view()),
+    path("api/post-scenario", views.CreateOrUpdateScenario.as_view()),
+    path("api/input-node-data/", views.InputNodeDataAPIView.as_view()),
+    path("api/const-node-data/", views.ConstNodeDataAPIView.as_view()),
+    url('^api/const-node-data/node=(?P<node>.+)/$', views.ConstNodeDataByNodeListAPIView.as_view()),
+    url('^api/input-node-data/node=(?P<node>.+)/$', views.InputNodeDataByNodeListAPIView.as_view()),
+    url('^api/node/model=(?P<model>.+)/$', views.NodeByModelListAPIView.as_view()),
+
+
 ]

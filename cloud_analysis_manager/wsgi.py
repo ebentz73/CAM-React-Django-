@@ -11,6 +11,9 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cloud_analysis_manager.settings')
+if os.environ.get('DJANGO_ENV') in ('dev', 'prod'):
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cloud_analysis_manager.settings_cloud')
+else:
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cloud_analysis_manager.settings')
 
 application = get_wsgi_application()

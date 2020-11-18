@@ -11,6 +11,10 @@ ENV PYTHONUNBUFFERED 1
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
+# install frontend app dependencies
+RUN apt-get install nodejs
+RUN cd frontend-app && npm i && npm run dev && cd ..
+
 # copy project
 COPY . .
 RUN chmod +x docker-entrypoint.sh

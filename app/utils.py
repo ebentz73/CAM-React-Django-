@@ -1,10 +1,13 @@
 import json
+import logging
+import os
 import sqlite3
-from typing import Union, TypeVar, Generic, Iterator
+from typing import AnyStr, Generic, IO, Iterator, TypeVar
 
 import docker
-import environ
-import storages.backends.gcloud
+import msal
+import requests
+from django.conf import settings
 from django.core.files.storage import default_storage
 from django.db.models import QuerySet
 from grafana_api.grafana_face import GrafanaFace
@@ -14,7 +17,7 @@ _Z = TypeVar('_Z')
 
 class ModelType(Generic[_Z], QuerySet):
     def __iter__(self) -> Iterator[_Z]:
-        ...
+        pass
 
 
 class Sqlite:
@@ -40,84 +43,124 @@ class Sqlite:
         self.conn.close()
 
 
-class GoogleCloudStorage:
-
+class StorageHelper:
     @staticmethod
-    def check_file_exists(filename: str,
-                          storage: storages.backends.gcloud.GoogleCloudStorage = default_storage) -> bool:
-        """Check if the given file exists in gcs.
+    def check_file_exists(filename: str, storage=default_storage) -> bool:
+        """Check if the specified file exists.
 
         Args:
-            filename: Path to the file inside the bucket.
-            storage: Storage backend to use. This sets which bucket is used.
+            filename: The file to check.
+            storage: The Django storage backend to use. Defaults to
+                default_storage.
         """
         return storage.exists(filename)
 
     @staticmethod
-    def read_file(filename: str, storage: storages.backends.gcloud.GoogleCloudStorage = default_storage) -> bytes:
-        """Read the given file from gcs.
+    def read_file(filename: str, storage=default_storage) -> bytes:
+        """Read the specified file from storage.
 
         Args:
-            filename: Path to the file inside the bucket.
-            storage: Storage backend to use. This sets which bucket is used.
+            filename: The file to read.
+            storage: The Django storage backend to use. Defaults to
+                default_storage.
         """
         with storage.open(filename, 'r') as f:
             return f.read()
 
     @staticmethod
-    def upload_file(filename: str,
-                    file_content: Union[bytes, str],
-                    storage: storages.backends.gcloud.GoogleCloudStorage = default_storage):
-        """Upload the given file to gcs.
+    def upload_file(
+            filename: str, file_content: IO[AnyStr], storage=default_storage
+    ):
+        """Save the specified file to storage.
 
         Args:
-            filename: Path to the file inside the bucket.
-            file_content: The value written to the file.
-            storage: Storage backend to use. This sets which bucket is used.
+            filename: The pathname of the file to be saved.
+            file_content: The contents of the file.
+            storage: The Django storage backend to use. Defaults to
+                default_storage.
         """
         with storage.open(filename, 'w') as f:
             f.write(file_content)
 
     @staticmethod
-    def delete_file(filename: str, storage: storages.backends.gcloud.GoogleCloudStorage = default_storage):
-        """Delete the given file from gcs.
+    def delete_file(filename: str, storage=default_storage):
+        """Delete the given file from Azure Storage Accounts.
 
         Args:
-            filename: Path to the file inside the bucket.
-            storage: Storage backend to use. This sets which bucket is used.
+            filename: The file to delete.
+            storage: The Django storage backend to use. Defaults to
+                default_storage.
         """
         storage.delete(filename)
 
     @staticmethod
-    def get_url(filename: str, storage: storages.backends.gcloud.GoogleCloudStorage = default_storage) -> str:
-        """Return the url for the Blob associated with the given file.
+    def get_url(filename: str, expire=None, storage=default_storage) -> str:
+        """Return a URL where the file's contents can be accessed.
 
         Args:
-            filename: Path to the file inside the bucket.
-            storage: Storage backend to use. This sets which bucket is used.
+            filename: The file to access.
+            expire: Number of seconds until the url expires.
+            storage: The Django storage backend to use. Defaults to
+                default_storage.
         """
-        return storage.url(filename)
+        return storage.url(filename, expire=expire)
 
 
-def run_eval_engine(evaljob_id: int):
-    env = environ.Env()
+def is_cloud() -> bool:
+    """Return ``True`` if web app is running in the cloud, otherwise ``False``."""
+    return os.environ.get('DJANGO_ENV') in ('dev', 'prod')
 
-    # Run eval engine docker container for eval job
+
+def run_eval_engine_local(evaljob_id: int):
+    from app.models import EvalJob
+
+    tam_file = EvalJob.objects.get(pk=evaljob_id).solution.tam_file
+
     client = docker.APIClient(base_url='tcp://localhost:2375')
-    container = client.create_container('trunavconsolecore:latest',
-                                        detach=True,
-                                        environment={
-                                            'EVALJOB_ID': evaljob_id,
-                                            'EVALJOBDEF_URL': f'http://host.docker.internal:8000/api/evaljob/{evaljob_id}/',
-                                            'RESULTS_URL': 'http://host.docker.internal:8000/api/results/',
-                                            'GOOGLE_APPLICATION_CREDENTIALS': '/credentials.json'},
-                                        volumes=['/credentials.json'],
-                                        host_config=client.create_host_config(
-                                            binds=[
-                                                f"{env('GOOGLE_APPLICATION_CREDENTIALS')}:/credentials.json"
-                                            ]
-                                        ))
+
+    environment = {
+        'EVALJOB_CALLBACK': f'http://host.docker.internal:8000/api/evaljob/{evaljob_id}/',
+    }
+
+    volumes = [tam_file.path]
+
+    host_config = client.create_host_config(binds=[f'{tam_file.path}:/app/{tam_file}'])
+
+    container = client.create_container(
+        image=settings.EVAL_ENGINE_IMAGE,
+        environment=environment,
+        volumes=volumes,
+        host_config=host_config,
+        detach=True,
+    )
+
     client.start(container)
+
+
+def run_eval_engine_cloud(evaljob_id: int):
+    headers = {'x-functions-key': settings.AZ_FUNC_CREATE_ACI_KEY}
+
+    data = {
+        'location': 'southcentralus',
+        'image': settings.EVAL_ENGINE_IMAGE,
+        'memory': 8.0,
+        'cpu': 2.0,
+        'environment_variables': {
+            'EVALJOB_CALLBACK': f'https://{settings.AZ_CUSTOM_DOMAIN}/api/evaljob/{evaljob_id}/',
+        },
+    }
+
+    r = requests.post(
+        settings.AZ_FUNC_CREATE_ACI, json=data, headers=headers,
+    )
+    try:
+        r.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        logging.error(e)
+
+
+run_eval_engine = run_eval_engine_cloud if is_cloud() else run_eval_engine_local
+run_eval_engine.__doc__ = 'Run the eval engine container.'
 
 
 def create_dashboard(title: str) -> dict:
@@ -129,10 +172,126 @@ def create_dashboard(title: str) -> dict:
     Returns:
         Json response of the created dashboard.
     """
-    env = environ.Env()
 
-    grafana_api = GrafanaFace(auth=env('GRAFANA_API_KEY'), host=env('GRAFANA_HOST'))
-    with open(env('GRAFANA_TEMPLATE')) as f:
+    grafana_api = GrafanaFace(auth=os.environ.get('GRAFANA_API_KEY'), host=os.environ.get('GRAFANA_HOST'))
+    with open(os.environ.get('GRAFANA_TEMPLATE')) as f:
         dashboard = json.load(f)
     dashboard['title'] = title
     return grafana_api.dashboard.update_dashboard({'dashboard': dashboard})
+
+
+class PowerBI:
+    SCOPE = ['https://analysis.windows.net/powerbi/api/.default']
+    AUTHORITY = 'https://login.microsoftonline.com/organizations'
+    solution = None
+
+    def get_workspace_id(self):
+        return self.solution.workspace_id
+
+    def get_report_id(self):
+        return self.solution.report_id
+
+    def get_roles(self):
+        return ['T', 'V']
+
+    def get_username(self):
+        return ""
+
+    def get_client_secret(self):
+        return os.environ.get('POWERBI_CLIENT_SECRET')
+
+    def get_client_id(self):
+        return os.environ.get('POWERBI_CLIENT_ID')
+
+    def get_tenant_id(self):
+        return os.environ.get('POWERBI_TENANT_ID')
+
+    def get_access_token(self):
+        """Returns AAD token using MSAL"""
+
+        try:
+            authority = self.AUTHORITY.replace('organizations', self.get_tenant_id())
+            clientapp = msal.ConfidentialClientApplication(self.get_client_id(),
+                                                           client_credential=self.get_client_secret(),
+                                                           authority=authority)
+
+            # Retrieve Access token from cache if available
+            response = clientapp.acquire_token_silent(scopes=self.SCOPE, account=None)
+            if not response:
+                # Make a client call if Access token is not available in cache
+                response = clientapp.acquire_token_for_client(scopes=self.SCOPE)
+            try:
+                return response['access_token']
+            except KeyError:
+                raise Exception(response['error_description'])
+
+        except Exception as ex:
+            raise Exception('Error retrieving Access token\n' + str(ex))
+
+    def get_embed_token(self, access_token):
+        """Returns Embed token and Embed URL"""
+
+        try:
+            headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + access_token}
+            reporturl = 'https://api.powerbi.com/v1.0/myorg/groups/' + self.get_workspace_id() + '/reports/' + self.get_report_id()
+
+            try:
+                apiresponse = requests.get(reporturl, headers=headers)
+            except Exception as ex:
+                raise Exception('Error while retrieving report Embed URL\n')
+
+            if not apiresponse:
+                raise Exception(
+                    'Error while retrieving report Embed URL\n' + apiresponse.reason + '\nRequestId: ' + apiresponse.headers.get(
+                        'RequestId'))
+
+            try:
+                apiresponse = json.loads(apiresponse.text)
+                embedurl = apiresponse['embedUrl']
+                datasetId = apiresponse['datasetId']
+            except Exception as ex:
+                raise Exception('Error while extracting Embed URL from API response\n' + apiresponse.text)
+
+            # Get embed token
+            embedtokenurl = 'https://api.powerbi.com/v1.0/myorg/GenerateToken'
+            body = {'datasets': []}
+            if datasetId != '':
+                body['datasets'].append({'id': datasetId})
+
+            if self.get_report_id() != '':
+                body['reports'] = []
+                body['reports'].append({'id': self.get_report_id()})
+
+            if self.get_workspace_id() != '':
+                body['targetWorkspaces'] = []
+                body['targetWorkspaces'].append({'id': self.get_workspace_id()})
+
+            try:
+
+                # Generate Embed token for multiple workspaces, datasets, and reports. Refer https://aka.ms/MultiResourceEmbedToken
+                apiresponse = requests.post(embedtokenurl, data=json.dumps(body), headers=headers)
+            except:
+                raise Exception('Error while invoking Embed token REST API endpoint\n')
+
+            if not apiresponse:
+                raise Exception(
+                    'Error while retrieving report Embed URL\n' + apiresponse.reason + '\nRequestId: ' + apiresponse.headers.get(
+                        'RequestId'))
+
+            try:
+                apiresponse = json.loads(apiresponse.text)
+                embedtoken = apiresponse['token']
+                embedtokenid = apiresponse['tokenId']
+                tokenexpiry = apiresponse['expiration']
+            except Exception as ex:
+                raise Exception('Error while extracting Embed token from API response\n' + apiresponse.reason)
+
+            response = {'embedToken': embedtoken, 'embedUrl': embedurl, 'tokenExpiry': tokenexpiry, 'reportId': self.get_report_id()}
+            return response
+        except Exception as ex:
+            return {'errorMsg': str(ex)}, 500
+
+    def run(self, solution):
+        self.solution = solution
+        access_token = self.get_access_token()
+        return self.get_embed_token(access_token)

@@ -4,6 +4,8 @@
   "description": "| ENV                    | Default                         | Description                                                                               |\r |------------------------|---------------------------------|-------------------------------------------------------------------------------------------|\r | DJANGO_SETTINGS_MODULE | cloud_analysis_manager.settings | Django settings path. NOTE: This will need to be set through PyCharm's run configuration. |\r | DB_USER                |                                 | Database User                                                                             |\r | DB_PASSWORD            |                                 | Database Password                                                                         |\r | DB_HOST                |                                 | Database Host                                                                             |\r | DB_PORT                |                                 | Database Port                                                                             |",
   "main": "index.js",
   "scripts": {
+    "dev": "webpack --mode development ./src/index.js --output ./static/frontend-app/main.js",
+    "build": "webpack --mode production ./src/index.js --output ./static/frontend-app/main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

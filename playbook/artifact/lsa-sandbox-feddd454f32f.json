@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "lsa-sandbox",
+  "private_key_id": "feddd454f32fe2267cf17305f9629561d36a5e05",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC5/BlWuFmrF1DG\nPahWpplPN92VsyH0exqPz9sUPzO8ChwltDazvDNWhlS6RFaLTkkjHhedFtZ9kA6p\nwxsSz8tpIP9GQlj3C9di6wn26pL8ZjsAHTBbciz8S97rD6lvi3/0AO3R6U3kRoiq\nA3EUQp4R7tRoi1tC0VURV+gAzms3O7I0KIJ9FMXH0vaPaoXi/955A8vH6VGtWWAh\ngLw7AlPogDCoGu6Pwv2K+0ovhnTHGt20u7xeOVW3LKV7UlkSEY3LpSCAd+/5ZK1U\nv2f9awR8XIeV/UORYC4IUcF6nGOusXOeENEhymi1IC2JjSLI/fKDACrpIwjqy6kO\nEJU9bCHxAgMBAAECggEAAYFAqhGY4yV6W+JJljWSpGq/A6GKOavUf7umid6cN5jW\n2GIXC7kEVX5whCco/UdTbZdGSQ5+CuXN9+caNS/31Rh6jE9ditaJENXhSU17BekP\nWugW498z2JDww12SSR1mOjDsO7W2hu11rgzT/vOY4Guv7bkhR8mrwCr3jP3JQw5Y\nblCh/q0CwKEhxwx7sXAbok6C9WaFpTbeAOEPSfbQBZT+d3mXH71Zzt/1PkabOrwY\nt6J0VQJiU5mcv3mdWWQmL4fBvrCvnntj1M7urF3xZbL7ivC1Zu1weEIX+xqZ0Unx\nSF8AeL+lQhGUPgTDkMaaI2uO38QNIbc6vyTmGmD2gQKBgQDu2nrLOHmHBSbtnYP8\nXXIK731+YnGSTDepVQL2c9BW0bdYw/epkDFvQXV1mhnuakNQYaa8T/LFI4yLor8+\nS17DubCnenqLxLo1SiTswiTlhgkgneTNnNzZBpyOKpxVTBZSbOXi3nANBEWmTG15\nx1jwKaTlWmICWlZWe48dcgvLMQKBgQDHVgb0xUcPONdoLmupChCyuyhmQqiVhvtF\nMVDlXef0Af+XmXHFDNtA0SstPLCmn3cqVDni959pBMezI2hI5XmGnotcd0oFH3DE\n/Cy0QMoggLZzdRZ3DltF3ZI/EI8mZSK1Yv7LYksMMdPM+DUplKR3oJF/72GClVpT\nnnGovYaSwQKBgQCOWWMpTkUPNQDYSDHq634WClkOQ3lQKWBa6LFVU/xsYZwVqOUn\nByqPFcH9DpQ5xNbNRwVp4XPcDa2rYpj7dUvK9hXUGmiCeAJJ1CBhgesfZ1x1NeSw\nrbXpGcmf6ME3DJuZEBGJveultlAUJiRwmV/l8cu2bMFQiao+7HCEqf1hYQKBgQCH\nZJVA+CY13qPg7XbO0DlbTOg53Rjox1AwRTjvMgN0p07Vx7GQ6BScR/aNuWU7J6En\nLSJMWWj7SfXiZTBWIxeSKmn6GkQ6iopsIeSzYjZoMUS701G4+BVitQa6syKoL5WN\nonnx5weWdtmnpQdnAMFdR8DMJuoSaiN6HGqS9HhNgQKBgE+TiM4SF+xVVtoeUCl2\nWADYRcmU0ZNUXd2WRkZaJKY7oBvAf7T29NIqNoE4TcUOVmFCgEijZaPJLRvB9UFv\neW7BNRjWikhE4oNsbmtZwfM/fVpIc2SHlT4zajxDKLRxiA/h65LXtIG6raqmtdSM\nFt2EMTj914AIFrCPeT2lomQI\n-----END PRIVATE KEY-----\n",
+  "client_email": "cloud-analysis-manager@lsa-sandbox.iam.gserviceaccount.com",
+  "client_id": "114724137697828209192",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cloud-analysis-manager%40lsa-sandbox.iam.gserviceaccount.com"
+}
