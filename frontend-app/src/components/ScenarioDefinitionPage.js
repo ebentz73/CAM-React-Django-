@@ -211,7 +211,7 @@ class ScenarioDefinitionPage extends Component {
                 let roles = {};
                 response.forEach(node => {
                     // Only include nodes with tags
-                    if (node.tags.length > 0) { //  && node.tags.includes('ROLE==' + this.role)
+                    if (node.tags.length > 0) {
                         // Add initial node data to component state
                         let node_obj = {
                             name: node.name,
@@ -236,7 +236,7 @@ class ScenarioDefinitionPage extends Component {
                                     newInputCategoryOrder.push(input_category);
                                 }
                             }
-                            if (tag.includes('ROLE==')) {
+                            if (tag.includes('CAM_ROLE==')) {
                                 let role = tag.substring(tag.lastIndexOf('=') + 1, tag.length);
                                 roles[role] = role;
                             }
