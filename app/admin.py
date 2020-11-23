@@ -112,11 +112,6 @@ class InputAdmin(PolymorphicParentModelAdmin, HideModelBase):
         return [relation.related_model for relation in self.model._meta.related_objects]
 
 
-@admin.register(models.ExecutiveView)
-class ExecutiveViewAdmin(PolymorphicInlineSupportMixin, admin.ModelAdmin):
-    inlines = (InputInline,)
-
-
 admin.site.register(models.AnalyticsSolution, ModelAdminBase)
 admin.site.register(models.Model, HideModelAdmin)
 admin.site.register(models.InputPage, HideModelAdmin)

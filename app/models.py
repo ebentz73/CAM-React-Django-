@@ -222,7 +222,7 @@ class ExecutiveView(models.Model):
 
 
 class Input(PolymorphicModel):
-    exec_view = models.ForeignKey(ExecutiveView, on_delete=models.CASCADE)
+    solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
 
     def __str__(self):
