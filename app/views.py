@@ -73,6 +73,14 @@ class ScenarioAPIView(generics.ListCreateAPIView):
     serializer_class = ScenarioSerializer
 
 
+class ScenarioByIdAPIView(generics.ListCreateAPIView):
+    queryset = Scenario.objects.all()
+    serializer_class = ScenarioSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(id=self.kwargs.get('pk'))
+
+
 class FilterCategoriesAndOptionsBySolutionAPIView(generics.ListAPIView):
     def get(self, request, format=None, **kwargs):
         categories = FilterCategory.objects.filter(solution_id=self.kwargs['pk'])
@@ -123,7 +131,6 @@ class AnalyticsSolutionScenarios(generics.ListAPIView):
 
     def get_queryset(self):
         solution_id = self.kwargs.get('pk')
-        print(solution_id, '------------------------')
         return self.queryset.filter(solution=solution_id)
 
 
@@ -150,18 +157,21 @@ class AllNodeDataBySolutionAPIView(generics.ListAPIView):
 
 class CreateOrUpdateScenario(APIView):
     def post(self, request, format=None):
-        print(request.data)
-        scenarios = Scenario.objects.filter(id=request.data['scenario_id'])
-        scenario_count = scenarios.count()
-        serializer = None
-        if scenario_count == 1:
-            data = {'name': request.data['name'], 'solution': request.data['solution'], 'is_adhoc': request.data['is_adhoc']}
-            serializer = ScenarioSerializer(scenarios[0], data=data)
+        solution = AnalyticsSolution.objects.get(id=request.data['solution'])
+        if 'scenario_id' in request.data:
+            scenario = Scenario.objects.get(id=request.data['scenario_id'])
+            data = {'name': request.data['name'], 'solution': request.data['solution'],
+                    'is_adhoc': request.data['is_adhoc'], 'date': request.data['date']}
+            serializer = ScenarioSerializer(scenario, data=data)
             if serializer.is_valid():
                 serializer.save()
-        elif scenario_count == 0:
-            scenario, _ = Scenario.objects.create(name=request.data['name'],
-                                                  solution=request.data['solution'], is_adhoc=request.data['is_adhoc'])
+        else:
+            if request.data['date']:
+                scenario = Scenario.objects.create(name=request.data['name'], solution=solution,
+                                                   date=request.data['date'], is_adhoc=request.data['is_adhoc'])
+            else:
+                scenario = Scenario.objects.create(name=request.data['name'], solution=solution,
+                                                   is_adhoc=request.data['is_adhoc'])
             serializer = ScenarioSerializer(scenario)
         return Response(serializer.data)
 
