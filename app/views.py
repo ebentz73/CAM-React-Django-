@@ -57,6 +57,16 @@ class EvalJobDefinitionViewSet(ModelViewSet):
     serializer_class = EvalJobSerializer
 
 
+class AnalyticsSolutionViewSet(ModelViewSet):
+    queryset = AnalyticsSolution.objects.all()
+    serializer_class = AnalyticsSolutionSerializer
+
+
+class ScenarioViewSet(ModelViewSet):
+    queryset = Scenario.objects.all()
+    serializer_class = ScenarioSerializer
+
+
 class NodeResultView(APIView):
     """Create or update a node result."""
 

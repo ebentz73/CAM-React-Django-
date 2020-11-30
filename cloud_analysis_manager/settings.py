@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'material',
     'material.frontend',
     'app',
+    'profile',
     'frontend-app',
 ]
 
