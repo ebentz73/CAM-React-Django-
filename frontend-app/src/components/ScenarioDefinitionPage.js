@@ -176,7 +176,7 @@ class ScenarioDefinitionPage extends Component {
     }
 
     fetchNodeDataByScenario(scenario_id) {
-        fetch(`${window.location.protocol}//${window.location.host}/api/node-data/scenario=${scenario_id}`)
+        fetch(`${window.location.protocol}//${window.location.host}/api/scenario/${scenario_id}/node-data/`)
             .then(response => {
                 return response.json();
             })
@@ -200,7 +200,7 @@ class ScenarioDefinitionPage extends Component {
 
     fetchNodesBySolution(solution_id) {
         // Fetching Nodes
-        fetch(`${window.location.protocol}//${window.location.host}/api/node/solution=${solution_id}`)
+        fetch(`${window.location.protocol}//${window.location.host}/api/solution/${solution_id}/node/`)
             .then(response => {
                 return response.json();
             })
@@ -211,7 +211,7 @@ class ScenarioDefinitionPage extends Component {
                 let roles = {};
                 response.forEach(node => {
                     // Only include nodes with tags
-                    if (node.tags.length > 0) { //  && node.tags.includes('ROLE==' + this.role)
+                    if (node.tags.length > 0) {
                         // Add initial node data to component state
                         let node_obj = {
                             name: node.name,
@@ -236,7 +236,7 @@ class ScenarioDefinitionPage extends Component {
                                     newInputCategoryOrder.push(input_category);
                                 }
                             }
-                            if (tag.includes('ROLE==')) {
+                            if (tag.includes('CAM_ROLE==')) {
                                 let role = tag.substring(tag.lastIndexOf('=') + 1, tag.length);
                                 roles[role] = role;
                             }
@@ -256,7 +256,7 @@ class ScenarioDefinitionPage extends Component {
             });
 
         // Fetching NodeDatas for corresponding Nodes
-        fetch(`${window.location.protocol}//${window.location.host}/api/model-node-data/solution=${solution_id}`)
+        fetch(`${window.location.protocol}//${window.location.host}/api/solution/${solution_id}/model-node-data/`)
             .then(response => {
                 return response.json();
             })
@@ -285,7 +285,7 @@ class ScenarioDefinitionPage extends Component {
     }
 
     filtersBySolution(solution_id) {
-        fetch(`${window.location.protocol}//${window.location.host}/api/filters/solution=${solution_id}`)
+        fetch(`${window.location.protocol}//${window.location.host}/api/solution/${solution_id}/filters/`)
             .then(response => {
                 return response.json();
             })

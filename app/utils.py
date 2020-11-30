@@ -254,11 +254,9 @@ class PowerBI:
 
             # Get embed token
             embedtokenurl = 'https://api.powerbi.com/v1.0/myorg/GenerateToken'
-            body = {'datasets': [], 'identities': []}
+            body = {'datasets': []}
             if datasetId != '':
                 body['datasets'].append({'id': datasetId})
-                body['identities'].append(
-                    {'username': self.get_username(), "roles": self.get_roles(), "datasets": [datasetId]})
 
             if self.get_report_id() != '':
                 body['reports'] = []
