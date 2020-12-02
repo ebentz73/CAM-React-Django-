@@ -30,7 +30,8 @@ class ScenarioDefinitionPage extends Component {
             description: '',
             nodes_changed: 0,
             roles: {},
-            activeRoles: []
+            activeRoles: [],
+            isLoading: true
         };
 
         this.onClickCategory = this.onClickCategory.bind(this);
@@ -196,7 +197,7 @@ class ScenarioDefinitionPage extends Component {
                         nodes[node.node].data = node.default_data;
                     }
                 });
-                this.setState({nodes: nodes});
+                this.setState({nodes: nodes, isLoading: false});
             })
     }
 
@@ -279,7 +280,11 @@ class ScenarioDefinitionPage extends Component {
                     }
                 });
                 this.setState({nodes: nodes});
-                if (this.scenario_id >= 0) this.fetchNodeDataByScenario(this.scenario_id);
+                if (this.scenario_id >= 0) {
+                    this.fetchNodeDataByScenario(this.scenario_id);
+                } else {
+                    this.setState({isLoading: false});
+                }
             })
             .catch(err => {
                 console.error(err);
@@ -402,7 +407,7 @@ class ScenarioDefinitionPage extends Component {
                                                    name={this.state.scenario_name}
                                                    desc={this.state.description}
                                                    date={this.state.model_date}/>}
-                                        {this.state.tab === 'category' &&
+                                        {this.state.tab === 'category' && !this.state.isLoading &&
                                         <InputCategoryPage filters={this.state.filters} nodes={this.state.nodes}
                                                            name={this.state.category.substring(this.state.category.indexOf('.') + 1, this.state.category.length)}
                                                            index={this.state.category_idx} roles={this.state.activeRoles}
