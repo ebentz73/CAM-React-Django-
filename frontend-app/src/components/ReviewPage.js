@@ -8,7 +8,17 @@ initializeIcons();
 class ReviewPage extends Component {
     constructor(props) {
         super(props);
+        this.state = {
+            date: props.date
+        }
     }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        if (this.props.date !== prevProps.date) {
+            //
+        }
+    }
+
 
     render(){
         return (
@@ -18,7 +28,7 @@ class ReviewPage extends Component {
                 <div className="scenario-info">
                     <TextField label="Scenario Name" placeholder={this.props.name} disabled />
                     <TextField label="Description (Optional)" placeholder={this.props.desc} disabled multiline rows={4} />
-                    <DatePicker label="Model Start" placeholder={this.props.date.toDateString()} disabled />
+                    <DatePicker label="Model Start" placeholder={this.props.date} disabled />
                     <TextField label="Nodes Changed: " placeholder={this.props.nodesChanged} disabled />
                     <Stack horizontal >
                         <Stack.Item align="start" >

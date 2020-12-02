@@ -1,6 +1,8 @@
 from functools import wraps
 
 import material.frontend.views as material
+import datetime
+import time
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -158,20 +160,20 @@ class AllNodeDataBySolutionAPIView(generics.ListAPIView):
 class CreateOrUpdateScenario(APIView):
     def post(self, request, format=None):
         solution = AnalyticsSolution.objects.get(id=request.data['solution'])
+        if request.data['date']:
+            date = datetime.datetime.strptime(request.data['date'], "%Y-%m-%dT%H:%M:%S.%fZ").date()
+        else:
+            date = datetime.date.today()
         if 'scenario_id' in request.data:
             scenario = Scenario.objects.get(id=request.data['scenario_id'])
             data = {'name': request.data['name'], 'solution': request.data['solution'],
-                    'is_adhoc': request.data['is_adhoc'], 'date': request.data['date']}
+                    'is_adhoc': request.data['is_adhoc'], 'date': date}
             serializer = ScenarioSerializer(scenario, data=data)
             if serializer.is_valid():
                 serializer.save()
         else:
-            if request.data['date']:
-                scenario = Scenario.objects.create(name=request.data['name'], solution=solution,
-                                                   date=request.data['date'], is_adhoc=request.data['is_adhoc'])
-            else:
-                scenario = Scenario.objects.create(name=request.data['name'], solution=solution,
-                                                   is_adhoc=request.data['is_adhoc'])
+            scenario = Scenario.objects.create(name=request.data['name'], solution=solution,
+                                               date=date, is_adhoc=request.data['is_adhoc'])
             serializer = ScenarioSerializer(scenario)
         return Response(serializer.data)
 
