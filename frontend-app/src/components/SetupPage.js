@@ -28,7 +28,7 @@ class SetupPage extends Component {
                     <TextField label="Description (Optional)" defaultValue={this.props.desc} multiline rows={4}
                                onBlur={(e) => this.props.updateDesc(e.target.value)} />
                     <DatePicker label="Model Start" defaultValue={this.props.date}
-                                onBlur={(e) => this.props.updateDate(e.target.value)} />
+                                onSelectDate={(date) => this.props.updateDate(date)} />
                     <div className="next-button"><PrimaryButton text="Next" onClick={() => this.props.changeTab(0)} /></div>
                 </div>
             </React.Fragment>

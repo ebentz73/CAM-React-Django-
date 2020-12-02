@@ -37,6 +37,13 @@ __all__ = [
 
 
 class AnalyticsSolution(models.Model, ModelDiffMixin):
+    TIME_OPTIONS = (
+        ('day', 'Day'),
+        ('week', 'Week'),
+        ('month', 'Month'),
+        ('year', 'Year'),
+    )
+
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=2048, null=True, blank=True)
     upload_date = models.DateTimeField(auto_now=True)
@@ -45,6 +52,7 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
     dashboard_url = models.CharField(max_length=255, editable=False, default='')
     report_id = models.CharField(max_length=128, null=True, blank=True)
     workspace_id = models.CharField(max_length=128, null=True, blank=True)
+    layer_time_increment = models.TextField(choices=TIME_OPTIONS)
 
     def __str__(self):
         return f'Analytics Solution ({self.id}) - {self.name}'
@@ -65,6 +73,7 @@ class Scenario(models.Model):
     is_in_progress = models.BooleanField(default=False)
     date = models.DateField(default=datetime.date.today())
     status = models.CharField(max_length=256, null=True, blank=True)
+    layer_date_start = models.DateField()
     shared = models.ManyToManyField(User, blank=True)
 
     def __str__(self):

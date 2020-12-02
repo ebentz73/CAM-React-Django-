@@ -28,12 +28,9 @@ router.register(r'api/v1/solutions', views.AnalyticsSolutionViewSet, basename='s
 solution_router = routers.NestedSimpleRouter(router, r'api/v1/solutions', lookup='solution')
 solution_router.register(r'scenarios', views.ScenarioViewSet, basename='scenarios')
 
-scenario_router = routers.NestedSimpleRouter(solution_router, r'scenarios', lookup='scenario')
-
 urlpatterns = [
     path('', include(router.urls)),
     path('', include(solution_router.urls)),
-    path('', include(scenario_router.urls)),
 
     path('', include(frontend_urls)),
     path('', RedirectView.as_view(url='app/')),
