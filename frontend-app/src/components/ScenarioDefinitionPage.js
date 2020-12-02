@@ -38,6 +38,7 @@ class ScenarioDefinitionPage extends Component {
         this.filtersBySolution = this.filtersBySolution.bind(this);
         this.fetchNodesBySolution = this.fetchNodesBySolution.bind(this);
         this.fetchNodeDataByScenario = this.fetchNodeDataByScenario.bind(this);
+        this.fetchScenarioMetadata = this.fetchScenarioMetadata.bind(this);
 
         this.createOrUpdateScenario = this.createOrUpdateScenario.bind(this);
         this.createOrUpdateScenNodeDatas = this.createOrUpdateScenNodeDatas.bind(this);
@@ -107,10 +108,11 @@ class ScenarioDefinitionPage extends Component {
                 'X-CSRFToken': csrf_token
             },
             body: JSON.stringify({scenario_id: this.scenario_id, name: this.state.scenario_name,
-                is_adhoc: true, solution: this.solution_id})
+                is_adhoc: true, solution: this.solution_id, date: new Date(this.state.model_date)})
         }).then(resp => {
             return resp.json();
         }).then(resp => {
+            if (resp.id) this.scenario_id = resp.id;
             this.createOrUpdateScenNodeDatas();
         }).catch(err => {
             console.error(err);
@@ -301,6 +303,16 @@ class ScenarioDefinitionPage extends Component {
             })
             .catch(err => {
                 console.error(err);
+            })
+    }
+    
+    fetchScenarioMetadata(){
+        fetch(`${window.location.protocol}//${window.location.host}/api/scenario/${scenario_id}/`)
+            .then(resp => {
+                return resp.json();
+            })
+            .then(resp => {
+                this.setState({scenario_name: resp[0].name, model_date: resp[0].date, description: ''});
             })
     }
 

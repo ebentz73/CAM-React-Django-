@@ -47,6 +47,7 @@ urlpatterns = [
 
     path("api/scenario/", views.ScenarioAPIView.as_view()),
     path('api/scenario/<pk>/node-data/', views.AllNodeDataByScenarioAPIView.as_view()),
+    path('api/scenario/<pk>/', views.ScenarioByIdAPIView.as_view()),
 
     path("api/node-data/scenario", views.CreateOrUpdateNodeDataByScenario.as_view()),
     path("api/post-scenario", views.CreateOrUpdateScenario.as_view()),
