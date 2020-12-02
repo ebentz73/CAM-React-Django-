@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from app.models import AnalyticsSolution, EvalJob, NodeResult, \
@@ -99,10 +100,32 @@ class ConstNodeDataSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class UserSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()  # implicitly-generated ``id`` field is read-only
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'first_name', 'last_name')
+
+
 class ScenarioSerializer(serializers.ModelSerializer):
+    shared = UserSerializer(many=True)
+
     class Meta:
         model = Scenario
         fields = '__all__'
+
+    @staticmethod
+    def add_shared(instance, shared):
+        for user_data in shared:
+            user = User.objects.get(pk=user_data.get('id'))
+            instance.shared.add(user)
+
+    def update(self, instance, validated_data):
+        shared = validated_data.pop('shared', [])
+        instance = super().update(instance, validated_data)
+        self.add_shared(instance, shared)
+        return instance
 
 
 class NodeSerializer(serializers.ModelSerializer):

@@ -1,6 +1,7 @@
 import uuid
 import datetime
 
+from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
 from django.db.models import Q
@@ -64,6 +65,7 @@ class Scenario(models.Model):
     is_in_progress = models.BooleanField(default=False)
     date = models.DateField(default=datetime.date.today())
     status = models.CharField(max_length=256, null=True, blank=True)
+    shared = models.ManyToManyField(User, blank=True)
 
     def __str__(self):
         return self.name
@@ -190,11 +192,21 @@ class NodeResult(models.Model):
     node = models.CharField(max_length=255)
     layer = models.DateField()
     node_tags = JSONField()
+    role = models.CharField(max_length=255, null=True, editable=False)
     result_10 = models.FloatField()
     result_30 = models.FloatField()
     result_50 = models.FloatField()
     result_70 = models.FloatField()
     result_90 = models.FloatField()
+
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        self.role = next(
+            (tag.split('==')[1] for tag in self.node_tags if tag.startswith('ROLE==')),
+            None,
+        )
+        super().save(force_insert, force_update, using, update_fields)
 
 
 class ExecutiveView(models.Model):
