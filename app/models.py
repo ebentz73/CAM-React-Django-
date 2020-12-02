@@ -10,6 +10,7 @@ from polymorphic.models import PolymorphicModel
 from app.mixins import ModelDiffMixin
 from app.validators import validate_input_date_set_file
 from app.utils import ModelType
+from profile.models import Role
 
 __all__ = [
     'AnalyticsSolution',
@@ -45,6 +46,7 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
     dashboard_url = models.CharField(max_length=255, editable=False, default='')
     report_id = models.CharField(max_length=128, null=True, blank=True)
     workspace_id = models.CharField(max_length=128, null=True, blank=True)
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, null=True, default=None)
 
     def __str__(self):
         return f'Analytics Solution ({self.id}) - {self.name}'

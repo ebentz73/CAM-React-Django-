@@ -36,6 +36,8 @@ from app.serializers import (
 )
 from app.utils import PowerBI
 
+from profile.models import Role, UserProfile
+
 
 # region REST Framework Api
 def validate_api(serializer_cls, many=False):
@@ -239,7 +241,16 @@ class AllNodeDataByModelAPIView(generics.ListAPIView):
 
 class AnalyticsSolutionAPIView(generics.ListAPIView):
     queryset = AnalyticsSolution.objects.all()
-    serializer_class = AnalyticsSolutionSerializer
+
+    def get(self, request, format=None, **kwargs):
+        if request.user.is_superuser:
+            solutions = AnalyticsSolution.objects.all()
+        else:
+            profile = UserProfile.objects.get(user=request.user)
+            solutions = AnalyticsSolution.objects.filter(role__in=profile.roles.all())
+
+        serializer = AnalyticsSolutionSerializer(solutions, many=True)
+        return Response(serializer.data)
 
 
 class ModelAPIView(generics.ListAPIView):
