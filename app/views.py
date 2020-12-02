@@ -197,12 +197,12 @@ class CreateOrUpdateNodeDataByScenario(APIView):
                                                            scenario=request.data['scenario_id'])
             if const_node_data.count() > 0:
                 data = {'default_data': request.data['default_data']}
-                serializer = ConstNodeDataSerializer(input_node_data[0], data=data)
+                serializer = ConstNodeDataSerializer(const_node_data[0], data=data)
 
                 if serializer.is_valid():
                     serializer.save()
             else:
-                const_data = InputNodeData.objects.create(node=node, scenario=scenario,
+                const_data = ConstNodeData.objects.create(node=node, scenario=scenario,
                                                           default_data=request.data['default_data'], is_model=False, )
 
         return Response(status=status.HTTP_201_CREATED)
