@@ -167,7 +167,7 @@ class InputCategoryPage extends Component {
                                     let inRole = false;
                                     node.tags.forEach(tag => {
                                         this.props.roles.forEach(role => {
-                                            inRole |= tag.includes('ROLE==' + role)
+                                            inRole |= tag.includes('CAM_ROLE==' + role)
                                         });
                                     });
                                     if (!node.visible | !inRole) return;

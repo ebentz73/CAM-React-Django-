@@ -73,6 +73,14 @@ class ScenarioAPIView(generics.ListCreateAPIView):
     serializer_class = ScenarioSerializer
 
 
+class ScenarioByIdAPIView(generics.ListCreateAPIView):
+    queryset = Scenario.objects.all()
+    serializer_class = ScenarioSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(id=self.kwargs.get('pk'))
+
+
 class FilterCategoriesAndOptionsBySolutionAPIView(generics.ListAPIView):
     def get(self, request, format=None, **kwargs):
         categories = FilterCategory.objects.filter(solution_id=self.kwargs['pk'])
@@ -123,13 +131,12 @@ class AnalyticsSolutionScenarios(generics.ListAPIView):
 
     def get_queryset(self):
         solution_id = self.kwargs.get('pk')
-        print(solution_id, '------------------------')
         return self.queryset.filter(solution=solution_id)
 
 
 class AllNodeDataBySolutionAPIView(generics.ListAPIView):
     def get(self, request, format=None, **kwargs):
-        models = Model.objects.filter(solution_id=self.kwargs['solution'])
+        models = Model.objects.filter(solution_id=self.kwargs['pk'])
         model_ids = [model.id for model in models]
         nodes = Node.objects.filter(model_id__in=model_ids)
         node_ids = [node.id for node in nodes]
@@ -150,18 +157,21 @@ class AllNodeDataBySolutionAPIView(generics.ListAPIView):
 
 class CreateOrUpdateScenario(APIView):
     def post(self, request, format=None):
-        print(request.data)
-        scenarios = Scenario.objects.filter(id=request.data['scenario_id'])
-        scenario_count = scenarios.count()
-        serializer = None
-        if scenario_count == 1:
-            data = {'name': request.data['name'], 'solution': request.data['solution'], 'is_adhoc': request.data['is_adhoc']}
-            serializer = ScenarioSerializer(scenarios[0], data=data)
+        solution = AnalyticsSolution.objects.get(id=request.data['solution'])
+        if 'scenario_id' in request.data:
+            scenario = Scenario.objects.get(id=request.data['scenario_id'])
+            data = {'name': request.data['name'], 'solution': request.data['solution'],
+                    'is_adhoc': request.data['is_adhoc'], 'date': request.data['date']}
+            serializer = ScenarioSerializer(scenario, data=data)
             if serializer.is_valid():
                 serializer.save()
-        elif scenario_count == 0:
-            scenario, _ = Scenario.objects.create(name=request.data['name'],
-                                                  solution=request.data['solution'], is_adhoc=request.data['is_adhoc'])
+        else:
+            if request.data['date']:
+                scenario = Scenario.objects.create(name=request.data['name'], solution=solution,
+                                                   date=request.data['date'], is_adhoc=request.data['is_adhoc'])
+            else:
+                scenario = Scenario.objects.create(name=request.data['name'], solution=solution,
+                                                   is_adhoc=request.data['is_adhoc'])
             serializer = ScenarioSerializer(scenario)
         return Response(serializer.data)
 
@@ -187,12 +197,12 @@ class CreateOrUpdateNodeDataByScenario(APIView):
                                                            scenario=request.data['scenario_id'])
             if const_node_data.count() > 0:
                 data = {'default_data': request.data['default_data']}
-                serializer = ConstNodeDataSerializer(input_node_data[0], data=data)
+                serializer = ConstNodeDataSerializer(const_node_data[0], data=data)
 
                 if serializer.is_valid():
                     serializer.save()
             else:
-                const_data = InputNodeData.objects.create(node=node, scenario=scenario,
+                const_data = ConstNodeData.objects.create(node=node, scenario=scenario,
                                                           default_data=request.data['default_data'], is_model=False, )
 
         return Response(status=status.HTTP_201_CREATED)
@@ -253,7 +263,7 @@ class ScenariosBySolutionAPIView(generics.ListCreateAPIView):
     serializer_class = ScenarioSerializer
 
     def get_queryset(self):
-        return Scenario.objects.filter(solution=self.kwargs['solution'])
+        return Scenario.objects.filter(solution=self.kwargs['pk'])
 
 
 class InputNodeDataByNodeListAPIView(generics.ListCreateAPIView):
