@@ -52,7 +52,22 @@ INSTALLED_APPS = [
     'app',
     'profile',
     'frontend-app',
+    'django.contrib.sites',
+    'microsoft_auth'
 ]
+
+SITE_ID = 1
+
+# Azure AD Authentication
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'microsoft_auth.backends.MicrosoftAuthenticationBackend'
+]
+
+MICROSOFT_AUTH_CLIENT_ID = '81979922-7b4e-4153-b187-25e797a9fab5'
+MICROSOFT_AUTH_CLIENT_SECRET = os.environ.get('MICROSOFT_AUTH_CLIENT_SECRET', '')
+MICROSOFT_AUTH_TENANT_ID = '6ad3288b-f5ec-4051-aa7c-91357ab8a46b'
+MICROSOFT_AUTH_LOGIN_TYPE = 'ma'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -79,6 +94,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'microsoft_auth.context_processors.microsoft'
             ],
         },
     },

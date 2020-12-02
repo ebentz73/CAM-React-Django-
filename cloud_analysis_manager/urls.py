@@ -35,6 +35,8 @@ urlpatterns = [
     path('', include(solution_router.urls)),
     path('', include(scenario_router.urls)),
 
+    path('microsoft/', include('microsoft_auth.urls', namespace='microsoft')),
+
     path('', include(frontend_urls)),
     path('', RedirectView.as_view(url='app/')),
     path("admin/", admin.site.urls),
