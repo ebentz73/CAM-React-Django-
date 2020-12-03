@@ -18,10 +18,20 @@ from django.urls import path, include
 from django.conf.urls import url
 from django.views.generic import RedirectView
 from material.frontend import urls as frontend_urls
+from rest_framework_nested import routers
 
 from app import views
 
+router = routers.SimpleRouter()
+router.register(r'api/v1/solutions', views.AnalyticsSolutionViewSet, basename='solutions')
+
+solution_router = routers.NestedSimpleRouter(router, r'api/v1/solutions', lookup='solution')
+solution_router.register(r'scenarios', views.ScenarioViewSet, basename='scenarios')
+
 urlpatterns = [
+    path('', include(router.urls)),
+    path('', include(solution_router.urls)),
+
     path('', include(frontend_urls)),
     path('', RedirectView.as_view(url='app/')),
     path("admin/", admin.site.urls),

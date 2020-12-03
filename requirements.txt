@@ -5,6 +5,7 @@ djangorestframework==3.11.0
 django-storages[azure]==1.10.1
 django-flatpickr==1.0.1
 django-material==1.6.3
+drf-nested-routers>=0.92
 requests==2.22.0
 psycopg2-binary==2.8.4
 docker==4.2.0

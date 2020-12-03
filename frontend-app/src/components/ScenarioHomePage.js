@@ -37,9 +37,17 @@ class ScenarioHomePage extends Component {
                   { key: 'status', name: 'Status', fieldName: 'status', minWidth: 100, maxWidth: 200, isResizable: true },
                   { key: 'shared', name: 'Shared', fieldName: 'shared', minWidth: 100, maxWidth: 200, isResizable: true },
                 ];
-                for(var r in response){
-                    response[r]['shared'] = ['VT', 'PM', 'SP', 'MV', 'CP', 'CB', 'XY', 'zA']
-                }
+                response.forEach(scenario => {
+                    scenario.shared = scenario.shared.map(user => {
+                        let firstName = user['first_name'];
+                        let lastName = user['last_name'];
+                        let username = user['username'];
+
+                        return firstName && lastName
+                            ? `${firstName.charAt(0)}${lastName.charAt(0)}`
+                            : username.substring(0, 2);
+                    });
+                });
 
                 this.setState({scenarios: response, columns: _columns, solution_id: this.props.match.params['id']})
             })

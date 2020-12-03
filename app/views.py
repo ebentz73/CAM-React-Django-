@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
@@ -35,8 +36,21 @@ from app.serializers import (
     NodeResultSerializer,
     NodeSerializer,
     ScenarioSerializer,
+    ScenarioEvaluateSerializer,
 )
-from app.utils import PowerBI
+from app.utils import PowerBI, run_eval_engine
+
+
+class ResponseThen(Response):
+    def __init__(self, data, then, then_args=None, then_kwargs=None, **kwargs):
+        super().__init__(data, **kwargs)
+        self.then = then
+        self.then_args = then_args or ()
+        self.then_kwargs = then_kwargs or {}
+
+    def close(self):
+        super().close()
+        self.then(*self.then_args, **self.then_kwargs)
 
 
 # region REST Framework Api
@@ -57,6 +71,46 @@ def validate_api(serializer_cls, many=False):
 class EvalJobDefinitionViewSet(ModelViewSet):
     queryset = EvalJob.objects.all()
     serializer_class = EvalJobSerializer
+
+
+class AnalyticsSolutionViewSet(ModelViewSet):
+    queryset = AnalyticsSolution.objects.all()
+    serializer_class = AnalyticsSolutionSerializer
+
+
+class ScenarioViewSet(ModelViewSet):
+    queryset = Scenario.objects.all()
+    serializer_class = ScenarioSerializer
+
+    def create(self, request, solution_pk=None, **kwargs):
+        if 'solution' not in request.data:
+            request.data['solution'] = solution_pk
+        if 'shared' not in request.data:
+            request.data['shared'] = []
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+
+        return ResponseThen(
+            serializer.data,
+            run_eval_engine,
+            then_args=(solution_pk, serializer.data['id']),
+            status=status.HTTP_201_CREATED,
+            headers=headers,
+        )
+
+    @action(detail=True)
+    def evaluate(self, request, solution_pk, pk):
+        instance = self.get_object()
+        serializer = ScenarioEvaluateSerializer(instance)
+        return Response(serializer.data)
+
+
+class ScenarioEvaluateViewSet(ModelViewSet):
+    queryset = Scenario.objects.all()
+    serializer_class = ScenarioEvaluateSerializer
 
 
 class NodeResultView(APIView):

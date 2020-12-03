@@ -101,15 +101,32 @@ class ScenarioDefinitionPage extends Component {
     }
 
     createOrUpdateScenario() {
-        return fetch(`${window.location.protocol}//${window.location.host}/api/post-scenario`, {
-            method: 'POST',
+        let formatDate = (date) => {
+            let year = date.getFullYear();
+            let month = `0${date.getMonth() + 1}`.slice(-2);
+            let day = `0${date.getDate()}`.slice(-2);
+            return `${year}-${month}-${day}`;
+        };
+
+        let url = `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.solution_id}/scenarios/`;
+        let method = 'POST';
+        if (this.scenario_id) {
+            url += `${this.scenario_id}/`;
+            method = 'PUT';
+        }
+        return fetch(url, {
+            method: method,
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrf_token
             },
-            body: JSON.stringify({scenario_id: this.scenario_id, name: this.state.scenario_name,
-                is_adhoc: true, solution: this.solution_id, date: new Date(this.state.model_date)})
+            body: JSON.stringify({
+                // scenario_id: this.scenario_id,
+                name: this.state.scenario_name,
+                is_adhoc: true,
+                layer_date_start: formatDate(this.state.model_date),
+            })
         }).then(resp => {
             return resp.json();
         }).then(resp => {
@@ -310,7 +327,7 @@ class ScenarioDefinitionPage extends Component {
                 console.error(err);
             })
     }
-    
+
     fetchScenarioMetadata(){
         fetch(`${window.location.protocol}//${window.location.host}/api/scenario/${scenario_id}/`)
             .then(resp => {

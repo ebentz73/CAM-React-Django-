@@ -111,15 +111,24 @@ def is_cloud() -> bool:
     return os.environ.get('DJANGO_ENV') in ('dev', 'prod')
 
 
-def run_eval_engine_local(evaljob_id: int):
-    from app.models import EvalJob
+def run_eval_engine(solution_pk: int, scenario_pk: int):
+    """Run the eval engine container."""
+    url_path = f'api/v1/solutions/{solution_pk}/scenarios/{scenario_pk}/evaluate/'
+    if is_cloud():
+        run_eval_engine_cloud(url_path)
+    else:
+        run_eval_engine_local(url_path, solution_pk)
 
-    tam_file = EvalJob.objects.get(pk=evaljob_id).solution.tam_file
+
+def run_eval_engine_local(url_path: str, solution_pk: int):
+    from app.models import AnalyticsSolution
+
+    tam_file = AnalyticsSolution.objects.get(pk=solution_pk).tam_file
 
     client = docker.APIClient(base_url='tcp://localhost:2375')
 
     environment = {
-        'EVALJOB_CALLBACK': f'http://host.docker.internal:8000/api/evaljob/{evaljob_id}/',
+        'EVALJOB_CALLBACK': f'http://host.docker.internal:8000/{url_path}',
     }
 
     volumes = [tam_file.path]
@@ -137,8 +146,8 @@ def run_eval_engine_local(evaljob_id: int):
     client.start(container)
 
 
-def run_eval_engine_cloud(evaljob_id: int):
-    headers = {'x-functions-key': settings.AZ_FUNC_CREATE_ACI_KEY}
+def run_eval_engine_cloud(url_path: str):
+    evaljob_callback = f'https://{settings.AZ_CUSTOM_DOMAIN}/{url_path}'
 
     data = {
         'location': 'southcentralus',
@@ -146,21 +155,18 @@ def run_eval_engine_cloud(evaljob_id: int):
         'memory': 8.0,
         'cpu': 2.0,
         'environment_variables': {
-            'EVALJOB_CALLBACK': f'https://{settings.AZ_CUSTOM_DOMAIN}/api/evaljob/{evaljob_id}/',
+            'EVALJOB_CALLBACK': evaljob_callback,
         },
     }
 
     r = requests.post(
-        settings.AZ_FUNC_CREATE_ACI, json=data, headers=headers,
+        settings.AZ_FUNC_CREATE_ACI,
+        json=data,
     )
     try:
         r.raise_for_status()
     except requests.exceptions.RequestException as e:
         logging.error(e)
-
-
-run_eval_engine = run_eval_engine_cloud if is_cloud() else run_eval_engine_local
-run_eval_engine.__doc__ = 'Run the eval engine container.'
 
 
 def create_dashboard(title: str) -> dict:
