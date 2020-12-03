@@ -185,6 +185,7 @@ class ScenarioEvaluateSerializer(serializers.ModelSerializer):
                 }
             )
         return {
+            'pk': obj.pk,
             'name': obj.name,
             'models': model_json,
         }
