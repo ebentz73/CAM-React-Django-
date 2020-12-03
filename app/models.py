@@ -189,17 +189,12 @@ class EvalJob(models.Model):
     def __str__(self):
         return self.name
 
-    @property
-    def node_results(self) -> ModelType['NodeResult']:
-        return self.noderesult_set.all()
-
     def is_complete(self):
         return self.status == 'Complete.'
 
 
 class NodeResult(models.Model):
-    eval_job = models.ForeignKey(EvalJob, on_delete=models.CASCADE)
-    scenario = models.CharField(max_length=255)
+    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
     model = models.CharField(max_length=255)
     node = models.CharField(max_length=255)
     layer = models.DateField()

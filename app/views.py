@@ -41,18 +41,6 @@ from app.serializers import (
 from app.utils import PowerBI, run_eval_engine
 
 
-class ResponseThen(Response):
-    def __init__(self, data, then, then_args=None, then_kwargs=None, **kwargs):
-        super().__init__(data, **kwargs)
-        self.then = then
-        self.then_args = then_args or ()
-        self.then_kwargs = then_kwargs or {}
-
-    def close(self):
-        super().close()
-        self.then(*self.then_args, **self.then_kwargs)
-
-
 # region REST Framework Api
 def validate_api(serializer_cls, many=False):
     def decorator(function):
@@ -88,18 +76,23 @@ class ScenarioViewSet(ModelViewSet):
         if 'shared' not in request.data:
             request.data['shared'] = []
 
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
+        response = super().create(request, **kwargs)
+        response.then = run_eval_engine
+        response.then_args = (solution_pk, response.data['id'])
 
-        return ResponseThen(
-            serializer.data,
-            run_eval_engine,
-            then_args=(solution_pk, serializer.data['id']),
-            status=status.HTTP_201_CREATED,
-            headers=headers,
-        )
+        return response
+
+    def update(self, request, solution_pk, pk, **kwargs):
+        if 'solution' not in request.data:
+            request.data['solution'] = solution_pk
+        if 'shared' not in request.data:
+            request.data['shared'] = []
+
+        response = super().update(request, **kwargs)
+        response.then = run_eval_engine
+        response.then_args = (solution_pk, pk)
+
+        return response
 
     @action(detail=True)
     def evaluate(self, request, solution_pk, pk):
