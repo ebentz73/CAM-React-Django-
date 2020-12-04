@@ -120,6 +120,15 @@ class ScenarioViewSet(ModelViewSet):
     @evaluate.mapping.patch
     def patch_evaluate(self, request, solution_pk, pk):
         return self.update(request, solution_pk, pk, partial=True)
+        
+    @action(detail=True, methods=['post'])
+    def clone(self, request, solution_pk, pk):
+        clone = Scenario.objects.get(pk=pk)
+        clone.pk = None
+        clone.name = 'INSERT NAME HERE'
+        serializer = ScenarioSerializer(clone)
+        clone.save()
+        return Response(serializer.data)
 
 
 class ScenarioEvaluateViewSet(ModelViewSet):
