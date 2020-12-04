@@ -91,8 +91,12 @@ class Scenario(models.Model):
         return self.nodeoverride_set.all()
 
     @property
-    def scenario_node_data(self) -> ModelType['ScenarioNodeData']:
-        return self.scenarionodedata_set.all()
+    def node_data(self) -> ModelType['NodeData']:
+        return self.nodedata_set.all()
+
+    @property
+    def node_results(self) -> ModelType['NodeResult']:
+        return self.noderesult_set.all()
 
 
 class Model(models.Model):
