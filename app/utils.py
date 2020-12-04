@@ -247,15 +247,15 @@ class PowerBI:
             authority=self.authority,
         )
 
-            # Retrieve Access token from cache if available
+        # Retrieve Access token from cache if available
         response = client.acquire_token_silent(scopes=self.SCOPE, account=None)
-            if not response:
-                # Make a client call if Access token is not available in cache
+        if not response:
+            # Make a client call if Access token is not available in cache
             response = client.acquire_token_for_client(scopes=self.SCOPE)
-            try:
+        try:
             self._access_token = response['access_token']
             return self._access_token
-            except KeyError:
+        except KeyError:
             raise Exception(response['error_description']) from None
 
     @property
@@ -287,8 +287,8 @@ class PowerBI:
         embed_url = report['embed_url']
         dataset_id = report['dataset_id']
 
-            # Get embed token
-            body = {'datasets': []}
+        # Get embed token
+        body = {'datasets': []}
         if dataset_id:
             body['datasets'].append(
                 {
