@@ -103,7 +103,8 @@ class StorageHelper:
             storage: The Django storage backend to use. Defaults to
                 default_storage.
         """
-        return storage.url(filename, expire=expire)
+        kwargs = {'expire': expire} if is_cloud() else {}
+        return storage.url(filename, **kwargs)
 
 
 def is_cloud() -> bool:
