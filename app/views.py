@@ -1,3 +1,4 @@
+import logging
 from functools import wraps
 
 import material.frontend.views as material
@@ -62,6 +63,16 @@ class EvalJobDefinitionViewSet(ModelViewSet):
 class AnalyticsSolutionViewSet(ModelViewSet):
     queryset = AnalyticsSolution.objects.all()
     serializer_class = AnalyticsSolutionSerializer
+
+    @action(detail=True)
+    def report(self, request, pk):
+        instance = self.get_object()
+        powerbi = PowerBI(instance, request.user)
+        try:
+            return Response(powerbi.get_embed_token())
+        except Exception as e:
+            logging.error(e, exc_info=True)
+            return Response({'errorMsg': str(e)}, 500)
 
 
 class ScenarioViewSet(ModelViewSet):
@@ -160,8 +171,12 @@ class PowerBIAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         solution = AnalyticsSolution.objects.get(**kwargs)
-        powerbi = PowerBI()
-        return Response(powerbi.run(solution))
+        powerbi = PowerBI(solution, request.user)
+        try:
+            return Response(powerbi.get_embed_token())
+        except Exception as e:
+            logging.error(e, exc_info=True)
+            return Response({'errorMsg': str(e)}, 500)
 
 
 class AnalyticsSolutionScenarios(generics.ListAPIView):
