@@ -82,26 +82,32 @@ class ScenarioViewSet(ModelViewSet):
     serializer_class = ScenarioSerializer
 
     def create(self, request, solution_pk=None, **kwargs):
+        run_eval = request.data.pop('run_eval', False)
+
         if 'solution' not in request.data:
             request.data['solution'] = solution_pk
         if 'shared' not in request.data:
             request.data['shared'] = []
 
         response = super().create(request, **kwargs)
-        response.then = run_eval_engine
-        response.then_args = (solution_pk, response.data['id'])
+        if run_eval:
+            response.then = run_eval_engine
+            response.then_args = (solution_pk, response.data['id'])
 
         return response
 
     def update(self, request, solution_pk, pk, **kwargs):
+        run_eval = request.data.pop('run_eval', False)
+
         if 'solution' not in request.data:
             request.data['solution'] = solution_pk
         if 'shared' not in request.data:
             request.data['shared'] = []
 
         response = super().update(request, **kwargs)
-        response.then = run_eval_engine
-        response.then_args = (solution_pk, pk)
+        if run_eval:
+            response.then = run_eval_engine
+            response.then_args = (solution_pk, pk)
 
         return response
 
@@ -110,6 +116,10 @@ class ScenarioViewSet(ModelViewSet):
         instance = self.get_object()
         serializer = ScenarioEvaluateSerializer(instance)
         return Response(serializer.data)
+
+    @evaluate.mapping.patch
+    def patch_evaluate(self, request, solution_pk, pk):
+        return self.update(request, solution_pk, pk, partial=True)
 
 
 class ScenarioEvaluateViewSet(ModelViewSet):
