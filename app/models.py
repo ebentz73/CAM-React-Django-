@@ -198,7 +198,8 @@ class EvalJob(models.Model):
 
 
 class NodeResult(models.Model):
-    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
+    scenario_id = models.ForeignKey(Scenario, on_delete=models.CASCADE, db_column='scenario_id')
+    scenario = models.CharField(max_length=255)
     model = models.CharField(max_length=255)
     node = models.CharField(max_length=255)
     layer = models.DateField()
@@ -214,7 +215,7 @@ class NodeResult(models.Model):
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
         self.role = next(
-            (tag.split('==')[1] for tag in self.node_tags if tag.startswith('ROLE==')),
+            (tag.split('==')[1] for tag in self.node_tags if tag.startswith('CAM_ROLE==')),
             None,
         )
         super().save(force_insert, force_update, using, update_fields)
