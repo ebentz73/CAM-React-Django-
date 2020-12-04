@@ -1,10 +1,13 @@
 from functools import wraps
 
 import material.frontend.views as material
+import datetime
+import time
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
@@ -33,8 +36,9 @@ from app.serializers import (
     NodeResultSerializer,
     NodeSerializer,
     ScenarioSerializer,
+    ScenarioEvaluateSerializer,
 )
-from app.utils import PowerBI
+from app.utils import PowerBI, run_eval_engine
 
 from profile.models import Role, UserProfile
 
@@ -68,6 +72,41 @@ class ScenarioViewSet(ModelViewSet):
     queryset = Scenario.objects.all()
     serializer_class = ScenarioSerializer
 
+    def create(self, request, solution_pk=None, **kwargs):
+        if 'solution' not in request.data:
+            request.data['solution'] = solution_pk
+        if 'shared' not in request.data:
+            request.data['shared'] = []
+
+        response = super().create(request, **kwargs)
+        response.then = run_eval_engine
+        response.then_args = (solution_pk, response.data['id'])
+
+        return response
+
+    def update(self, request, solution_pk, pk, **kwargs):
+        if 'solution' not in request.data:
+            request.data['solution'] = solution_pk
+        if 'shared' not in request.data:
+            request.data['shared'] = []
+
+        response = super().update(request, **kwargs)
+        response.then = run_eval_engine
+        response.then_args = (solution_pk, pk)
+
+        return response
+
+    @action(detail=True)
+    def evaluate(self, request, solution_pk, pk):
+        instance = self.get_object()
+        serializer = ScenarioEvaluateSerializer(instance)
+        return Response(serializer.data)
+
+
+class ScenarioEvaluateViewSet(ModelViewSet):
+    queryset = Scenario.objects.all()
+    serializer_class = ScenarioEvaluateSerializer
+
 
 class NodeResultView(APIView):
     """Create or update a node result."""
@@ -83,6 +122,14 @@ class NodeResultView(APIView):
 class ScenarioAPIView(generics.ListCreateAPIView):
     queryset = Scenario.objects.all()
     serializer_class = ScenarioSerializer
+
+
+class ScenarioByIdAPIView(generics.ListCreateAPIView):
+    queryset = Scenario.objects.all()
+    serializer_class = ScenarioSerializer
+
+    def get_queryset(self):
+        return self.queryset.filter(id=self.kwargs.get('pk'))
 
 
 class FilterCategoriesAndOptionsBySolutionAPIView(generics.ListAPIView):
@@ -135,7 +182,6 @@ class AnalyticsSolutionScenarios(generics.ListAPIView):
 
     def get_queryset(self):
         solution_id = self.kwargs.get('pk')
-        print(solution_id, '------------------------')
         return self.queryset.filter(solution=solution_id)
 
 
@@ -162,18 +208,21 @@ class AllNodeDataBySolutionAPIView(generics.ListAPIView):
 
 class CreateOrUpdateScenario(APIView):
     def post(self, request, format=None):
-        print(request.data)
-        scenarios = Scenario.objects.filter(id=request.data['scenario_id'])
-        scenario_count = scenarios.count()
-        serializer = None
-        if scenario_count == 1:
-            data = {'name': request.data['name'], 'solution': request.data['solution'], 'is_adhoc': request.data['is_adhoc']}
-            serializer = ScenarioSerializer(scenarios[0], data=data)
+        solution = AnalyticsSolution.objects.get(id=request.data['solution'])
+        if request.data['date']:
+            date = datetime.datetime.strptime(request.data['date'], "%Y-%m-%dT%H:%M:%S.%fZ").date()
+        else:
+            date = datetime.date.today()
+        if 'scenario_id' in request.data:
+            scenario = Scenario.objects.get(id=request.data['scenario_id'])
+            data = {'name': request.data['name'], 'solution': request.data['solution'],
+                    'is_adhoc': request.data['is_adhoc'], 'date': date}
+            serializer = ScenarioSerializer(scenario, data=data)
             if serializer.is_valid():
                 serializer.save()
-        elif scenario_count == 0:
-            scenario, _ = Scenario.objects.create(name=request.data['name'],
-                                                  solution=request.data['solution'], is_adhoc=request.data['is_adhoc'])
+        else:
+            scenario = Scenario.objects.create(name=request.data['name'], solution=solution,
+                                               date=date, is_adhoc=request.data['is_adhoc'])
             serializer = ScenarioSerializer(scenario)
         return Response(serializer.data)
 
@@ -199,12 +248,12 @@ class CreateOrUpdateNodeDataByScenario(APIView):
                                                            scenario=request.data['scenario_id'])
             if const_node_data.count() > 0:
                 data = {'default_data': request.data['default_data']}
-                serializer = ConstNodeDataSerializer(input_node_data[0], data=data)
+                serializer = ConstNodeDataSerializer(const_node_data[0], data=data)
 
                 if serializer.is_valid():
                     serializer.save()
             else:
-                const_data = InputNodeData.objects.create(node=node, scenario=scenario,
+                const_data = ConstNodeData.objects.create(node=node, scenario=scenario,
                                                           default_data=request.data['default_data'], is_model=False, )
 
         return Response(status=status.HTTP_201_CREATED)

@@ -30,7 +30,8 @@ class ScenarioDefinitionPage extends Component {
             description: '',
             nodes_changed: 0,
             roles: {},
-            activeRoles: []
+            activeRoles: [],
+            isLoading: true
         };
 
         this.onClickCategory = this.onClickCategory.bind(this);
@@ -38,6 +39,7 @@ class ScenarioDefinitionPage extends Component {
         this.filtersBySolution = this.filtersBySolution.bind(this);
         this.fetchNodesBySolution = this.fetchNodesBySolution.bind(this);
         this.fetchNodeDataByScenario = this.fetchNodeDataByScenario.bind(this);
+        this.fetchScenarioMetadata = this.fetchScenarioMetadata.bind(this);
 
         this.createOrUpdateScenario = this.createOrUpdateScenario.bind(this);
         this.createOrUpdateScenNodeDatas = this.createOrUpdateScenNodeDatas.bind(this);
@@ -99,18 +101,36 @@ class ScenarioDefinitionPage extends Component {
     }
 
     createOrUpdateScenario() {
-        return fetch(`${window.location.protocol}//${window.location.host}/api/post-scenario`, {
-            method: 'POST',
+        let formatDate = (date) => {
+            let year = date.getFullYear();
+            let month = `0${date.getMonth() + 1}`.slice(-2);
+            let day = `0${date.getDate()}`.slice(-2);
+            return `${year}-${month}-${day}`;
+        };
+
+        let url = `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.solution_id}/scenarios/`;
+        let method = 'POST';
+        if (this.scenario_id) {
+            url += `${this.scenario_id}/`;
+            method = 'PUT';
+        }
+        return fetch(url, {
+            method: method,
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrf_token
             },
-            body: JSON.stringify({scenario_id: this.scenario_id, name: this.state.scenario_name,
-                is_adhoc: true, solution: this.solution_id})
+            body: JSON.stringify({
+                // scenario_id: this.scenario_id,
+                name: this.state.scenario_name,
+                is_adhoc: true,
+                layer_date_start: formatDate(this.state.model_date),
+            })
         }).then(resp => {
             return resp.json();
         }).then(resp => {
+            if (resp.id) this.scenario_id = resp.id;
             this.createOrUpdateScenNodeDatas();
         }).catch(err => {
             console.error(err);
@@ -194,7 +214,7 @@ class ScenarioDefinitionPage extends Component {
                         nodes[node.node].data = node.default_data;
                     }
                 });
-                this.setState({nodes: nodes});
+                this.setState({nodes: nodes, isLoading: false});
             })
     }
 
@@ -277,7 +297,11 @@ class ScenarioDefinitionPage extends Component {
                     }
                 });
                 this.setState({nodes: nodes});
-                if (this.scenario_id >= 0) this.fetchNodeDataByScenario(this.scenario_id);
+                if (this.scenario_id >= 0) {
+                    this.fetchNodeDataByScenario(this.scenario_id);
+                } else {
+                    this.setState({isLoading: false});
+                }
             })
             .catch(err => {
                 console.error(err);
@@ -301,6 +325,16 @@ class ScenarioDefinitionPage extends Component {
             })
             .catch(err => {
                 console.error(err);
+            })
+    }
+
+    fetchScenarioMetadata(){
+        fetch(`${window.location.protocol}//${window.location.host}/api/scenario/${scenario_id}/`)
+            .then(resp => {
+                return resp.json();
+            })
+            .then(resp => {
+                this.setState({scenario_name: resp[0].name, model_date: resp[0].date, description: ''});
             })
     }
 
@@ -390,7 +424,7 @@ class ScenarioDefinitionPage extends Component {
                                                    name={this.state.scenario_name}
                                                    desc={this.state.description}
                                                    date={this.state.model_date}/>}
-                                        {this.state.tab === 'category' &&
+                                        {this.state.tab === 'category' && !this.state.isLoading &&
                                         <InputCategoryPage filters={this.state.filters} nodes={this.state.nodes}
                                                            name={this.state.category.substring(this.state.category.indexOf('.') + 1, this.state.category.length)}
                                                            index={this.state.category_idx} roles={this.state.activeRoles}

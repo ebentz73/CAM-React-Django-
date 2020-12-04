@@ -37,7 +37,18 @@ __all__ = [
 ]
 
 
+def NON_POLYMORPHIC_CASCADE(collector, field, sub_objs, using):
+    return models.CASCADE(collector, field, sub_objs.non_polymorphic(), using)
+
+
 class AnalyticsSolution(models.Model, ModelDiffMixin):
+    TIME_OPTIONS = (
+        ('day', 'Day'),
+        ('week', 'Week'),
+        ('month', 'Month'),
+        ('year', 'Year'),
+    )
+
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=2048, null=True, blank=True)
     upload_date = models.DateTimeField(auto_now=True)
@@ -47,6 +58,7 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
     report_id = models.CharField(max_length=128, null=True, blank=True)
     workspace_id = models.CharField(max_length=128, null=True, blank=True)
     role = models.ForeignKey(Role, on_delete=models.CASCADE, null=True, default=None)
+    layer_time_increment = models.TextField(choices=TIME_OPTIONS)
 
     def __str__(self):
         return f'Analytics Solution ({self.id}) - {self.name}'
@@ -65,8 +77,8 @@ class Scenario(models.Model):
     name = models.CharField(max_length=255)
     is_adhoc = models.BooleanField(default=False)
     is_in_progress = models.BooleanField(default=False)
-    date = models.DateField(default=datetime.date.today())
     status = models.CharField(max_length=256, null=True, blank=True)
+    layer_date_start = models.DateField()
     shared = models.ManyToManyField(User, blank=True)
 
     def __str__(self):
@@ -179,17 +191,12 @@ class EvalJob(models.Model):
     def __str__(self):
         return self.name
 
-    @property
-    def node_results(self) -> ModelType['NodeResult']:
-        return self.noderesult_set.all()
-
     def is_complete(self):
         return self.status == 'Complete.'
 
 
 class NodeResult(models.Model):
-    eval_job = models.ForeignKey(EvalJob, on_delete=models.CASCADE)
-    scenario = models.CharField(max_length=255)
+    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
     model = models.CharField(max_length=255)
     node = models.CharField(max_length=255)
     layer = models.DateField()
@@ -283,9 +290,9 @@ class DecimalNodeOverride(NodeOverride):
 
 
 class NodeData(PolymorphicModel):
-    node = models.ForeignKey(Node, on_delete=models.CASCADE, default=None)
+    node = models.ForeignKey(Node, on_delete=NON_POLYMORPHIC_CASCADE, default=None)
     is_model = models.BooleanField(default=True)
-    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, default=None, null=True)
+    scenario = models.ForeignKey(Scenario, on_delete=NON_POLYMORPHIC_CASCADE, default=None, null=True)
 
 
 class InputNodeData(NodeData):
