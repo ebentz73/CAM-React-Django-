@@ -132,28 +132,28 @@ class ScenarioViewSet(ModelViewSet):
         serializer = ScenarioSerializer(clone)
         clone.save()
 
-        const_node_data = ConstNodeData.objects.filter(scenario=pk)
+        const_node_data = ConstNodeData.objects.filter(scenario_id=pk)
         for const_data in const_node_data:
             const_data.id = None
             const_data.pk = None
-            const_data.scenario = clone.pk
+            const_data.scenario_id = clone.pk
             const_data.save()
 
-        input_node_data = InputNodeData.objects.filter(scenario=pk)
+        input_node_data = InputNodeData.objects.filter(scenario_id=pk)
         for input_data in input_node_data:
             input_data.id = None
             input_data.pk = None
-            input_data.scenario = clone.pk
+            input_data.scenario_id = clone.pk
             input_data.save()
 
-        decimal_node_override = DecimalNodeOverride.objects.filter(scenario=pk)
+        decimal_node_override = DecimalNodeOverride.objects.filter(scenario_id=pk)
         for decimal_override in decimal_node_override:
             decimal_override.id = None
             decimal_override.pk = None
-            decimal_override.scenario = clone.pk
+            decimal_override.scenario_id = clone.pk
             decimal_override.save()
 
-        return Response(const_node_data.count())
+        return Response(serializer.data)
 
 
 class ScenarioEvaluateViewSet(ModelViewSet):
