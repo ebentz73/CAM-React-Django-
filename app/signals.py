@@ -2,6 +2,8 @@ import os
 import tempfile
 
 from django.db.models.signals import m2m_changed, post_save, post_init
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import Permission
 from django.dispatch import receiver
 
 from app.models import (
@@ -32,9 +34,15 @@ def create_solution_role(solution):
     roles = Role.objects.filter(name='role_' + solution.name)
     if roles.count() < 1:
         role = Role.objects.create(name='role_' + solution.name)
+        content_type = ContentType.objects.get_for_model(AnalyticsSolution)
+        permission = Permission.objects.get(
+            codename='view_analyticssolution',
+            content_type=content_type,
+        )
+        role.permissions.add(permission)
+        assign_perm('view_analyticssolution', role, solution)
     else:
         role = roles[0]
-    assign_perm('view_analyticssolution', role, solution)
     return role
 
 
@@ -60,7 +68,13 @@ def update_model(sender, **kwargs):
                     category, _ = FilterCategory.objects.update_or_create(
                         solution=solution, name=category_name
                     )
-                    assign_perm('view_filtercategory', role, solution)
+                    content_type = ContentType.objects.get_for_model(FilterCategory)
+                    permission = Permission.objects.get(
+                        codename='view_filtercategory',
+                        content_type=content_type,
+                    )
+                    role.permissions.add(permission)
+                    assign_perm('view_filtercategory', role, category)
                     blob_model = TagFilterOption_pb2.List_TagFilterOption()
                     blob_model.ParseFromString(filter_blob)
                     for option in blob_model.items:

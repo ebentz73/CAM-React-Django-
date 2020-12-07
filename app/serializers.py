@@ -92,7 +92,7 @@ InputNodeDataSerializer = generic_serializer(InputNodeData)
 ConstNodeDataSerializer = generic_serializer(ConstNodeData)
 # ScenarioSerializer = generic_serializer(Scenario, depth=1)
 NodeSerializer = generic_serializer(Node)
-FilterCategorySerializer = generic_serializer(FilterCategory)
+FilterCategorySerializer = generic_serializer(FilterCategory, depth=1)
 FilterOptionSerializer = generic_serializer(FilterOption)
 ModelSerializer = generic_serializer(Model)
 
@@ -103,6 +103,32 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'first_name', 'last_name')
+
+
+class ScenarioSerializer(serializers.ModelSerializer):
+    shared = UserSerializer(many=True)
+
+    class Meta:
+        model = Scenario
+        fields = '__all__'
+
+    @staticmethod
+    def add_shared(instance, shared):
+        for user_data in shared:
+            user = User.objects.get(pk=user_data.get('id'))
+            instance.shared.add(user)
+
+    def create(self, validated_data):
+        shared = validated_data.pop('shared', [])
+        instance = super().create(validated_data)
+        self.add_shared(instance, shared)
+        return instance
+
+    def update(self, instance, validated_data):
+        shared = validated_data.pop('shared', [])
+        instance = super().update(instance, validated_data)
+        self.add_shared(instance, shared)
+        return instance
 
 
 class ScenarioSerializer(serializers.ModelSerializer):

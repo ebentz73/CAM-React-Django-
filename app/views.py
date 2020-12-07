@@ -66,10 +66,12 @@ class EvalJobDefinitionViewSet(ModelViewSet):
 
 
 class FilterCategoryViewSet(ModelViewSet):
-    queryset = FilterCategory.objects.all()
     serializer_class = FilterCategorySerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
     filter_backends = (DjangoObjectPermissionsFilter,)
+
+    def get_queryset(self):
+        return FilterCategory.objects.filter(solution=self.kwargs['solution_pk'])
 
 
 class AnalyticsSolutionViewSet(ModelViewSet):
