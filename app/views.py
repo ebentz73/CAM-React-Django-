@@ -2,15 +2,17 @@ from functools import wraps
 
 import material.frontend.views as material
 import datetime
-import time
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
+
+from .permissions import CustomObjectPermissions
+from .filters import DjangoObjectPermissionsFilter
 
 from app.forms import CreateEvalJobForm
 from app.models import (
@@ -63,9 +65,18 @@ class EvalJobDefinitionViewSet(ModelViewSet):
     serializer_class = EvalJobSerializer
 
 
+class FilterCategoryViewSet(ModelViewSet):
+    queryset = FilterCategory.objects.all()
+    serializer_class = FilterCategorySerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
+    filter_backends = (DjangoObjectPermissionsFilter,)
+
+
 class AnalyticsSolutionViewSet(ModelViewSet):
     queryset = AnalyticsSolution.objects.all()
     serializer_class = AnalyticsSolutionSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
+    filter_backends = (DjangoObjectPermissionsFilter,)
 
 
 class ScenarioViewSet(ModelViewSet):

@@ -1,7 +1,7 @@
 import os
 import tempfile
 
-from django.db.models.signals import m2m_changed, post_save
+from django.db.models.signals import m2m_changed, post_save, post_init
 from django.dispatch import receiver
 
 from app.models import (
@@ -24,12 +24,26 @@ from app.proto_modules import (
 )
 from app.utils import Sqlite
 
+from profile.models import Role
+from guardian.shortcuts import assign_perm, get_objects_for_group, get_group_perms
+
+
+def create_solution_role(solution):
+    roles = Role.objects.filter(name='role_' + solution.name)
+    if roles.count() < 1:
+        role = Role.objects.create(name='role_' + solution.name)
+    else:
+        role = roles[0]
+    assign_perm('view_analyticssolution', role, solution)
+    return role
+
 
 @receiver(post_save, sender=AnalyticsSolution)
 def update_model(sender, **kwargs):
     solution = kwargs.get('instance')
 
     if 'tam_file' in solution.changed_fields:
+        role = create_solution_role(solution)
         # Download tam model file and save only what we need
         f, filename = tempfile.mkstemp()
         try:
@@ -46,6 +60,7 @@ def update_model(sender, **kwargs):
                     category, _ = FilterCategory.objects.update_or_create(
                         solution=solution, name=category_name
                     )
+                    assign_perm('view_filtercategory', role, solution)
                     blob_model = TagFilterOption_pb2.List_TagFilterOption()
                     blob_model.ParseFromString(filter_blob)
                     for option in blob_model.items:

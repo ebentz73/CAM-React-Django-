@@ -53,7 +53,8 @@ INSTALLED_APPS = [
     'profile',
     'frontend-app',
     'django.contrib.sites',
-    'microsoft_auth'
+    'microsoft_auth',
+    'guardian'
 ]
 
 SITE_ID = 1
@@ -61,7 +62,8 @@ SITE_ID = 1
 # Azure AD Authentication
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    'microsoft_auth.backends.MicrosoftAuthenticationBackend'
+    'microsoft_auth.backends.MicrosoftAuthenticationBackend',
+    'guardian.backends.ObjectPermissionBackend',
 ]
 
 MICROSOFT_AUTH_CLIENT_ID = '81979922-7b4e-4153-b187-25e797a9fab5'

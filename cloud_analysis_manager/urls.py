@@ -26,7 +26,9 @@ router = routers.SimpleRouter()
 router.register(r'api/v1/solutions', views.AnalyticsSolutionViewSet, basename='solutions')
 
 solution_router = routers.NestedSimpleRouter(router, r'api/v1/solutions', lookup='solution')
+
 solution_router.register(r'scenarios', views.ScenarioViewSet, basename='scenarios')
+solution_router.register(r'filtercategories', views.FilterCategoryViewSet, basename='filtercategories')
 
 urlpatterns = [
     path('', include(router.urls)),

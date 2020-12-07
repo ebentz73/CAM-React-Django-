@@ -127,3 +127,4 @@ admin.site.register(models.Node, HideModelAdmin)
 admin.site.register(models.InputDataSetInput, InputChildAdmin)
 admin.site.register(models.NumericInput, InputChildAdmin)
 admin.site.register(models.SliderInput, InputChildAdmin)
+admin.site.reg
