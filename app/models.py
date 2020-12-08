@@ -93,8 +93,12 @@ class Scenario(models.Model):
         return self.nodeoverride_set.all()
 
     @property
-    def scenario_node_data(self) -> ModelType['ScenarioNodeData']:
-        return self.scenarionodedata_set.all()
+    def node_data(self) -> ModelType['NodeData']:
+        return self.nodedata_set.all()
+
+    @property
+    def node_results(self) -> ModelType['NodeResult']:
+        return self.noderesult_set.all()
 
 
 class Model(models.Model):
@@ -196,7 +200,8 @@ class EvalJob(models.Model):
 
 
 class NodeResult(models.Model):
-    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
+    scenario_id = models.ForeignKey(Scenario, on_delete=models.CASCADE, db_column='scenario_id')
+    scenario = models.CharField(max_length=255)
     model = models.CharField(max_length=255)
     node = models.CharField(max_length=255)
     layer = models.DateField()
@@ -212,7 +217,7 @@ class NodeResult(models.Model):
         self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
         self.role = next(
-            (tag.split('==')[1] for tag in self.node_tags if tag.startswith('ROLE==')),
+            (tag.split('==')[1] for tag in self.node_tags if tag.startswith('CAM_ROLE==')),
             None,
         )
         super().save(force_insert, force_update, using, update_fields)

@@ -1,3 +1,4 @@
+import logging
 from functools import wraps
 
 import material.frontend.views as material
@@ -137,32 +138,48 @@ class ConstNodeDataViewSet(ModelViewSet):
         else:
             return ConstNodeData.objects.filter(node=self.kwargs['node_pk'])
 
+    @action(detail=True)
+    def report(self, request, pk):
+        instance = self.get_object()
+        powerbi = PowerBI(instance, request.user)
+        try:
+            return Response(powerbi.get_embed_token())
+        except Exception as e:
+            logging.error(e, exc_info=True)
+            return Response({'errorMsg': str(e)}, 500)
+
 
 class ScenarioViewSet(ModelViewSet):
     queryset = Scenario.objects.all()
     serializer_class = ScenarioSerializer
 
     def create(self, request, solution_pk=None, **kwargs):
+        run_eval = request.data.pop('run_eval', False)
+
         if 'solution' not in request.data:
             request.data['solution'] = solution_pk
         if 'shared' not in request.data:
             request.data['shared'] = []
 
         response = super().create(request, **kwargs)
-        response.then = run_eval_engine
-        response.then_args = (solution_pk, response.data['id'])
+        if run_eval:
+            response.then = run_eval_engine
+            response.then_args = (solution_pk, response.data['id'])
 
         return response
 
     def update(self, request, solution_pk, pk, **kwargs):
+        run_eval = request.data.pop('run_eval', False)
+
         if 'solution' not in request.data:
             request.data['solution'] = solution_pk
         if 'shared' not in request.data:
             request.data['shared'] = []
 
         response = super().update(request, **kwargs)
-        response.then = run_eval_engine
-        response.then_args = (solution_pk, pk)
+        if run_eval:
+            response.then = run_eval_engine
+            response.then_args = (solution_pk, pk)
 
         return response
 
@@ -171,6 +188,10 @@ class ScenarioViewSet(ModelViewSet):
         instance = self.get_object()
         serializer = ScenarioEvaluateSerializer(instance)
         return Response(serializer.data)
+
+    @evaluate.mapping.patch
+    def patch_evaluate(self, request, solution_pk, pk):
+        return self.update(request, solution_pk, pk, partial=True)
 
 
 class ScenarioEvaluateViewSet(ModelViewSet):
@@ -242,8 +263,12 @@ class PowerBIAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         solution = AnalyticsSolution.objects.get(**kwargs)
-        powerbi = PowerBI()
-        return Response(powerbi.run(solution))
+        powerbi = PowerBI(solution, request.user)
+        try:
+            return Response(powerbi.get_embed_token())
+        except Exception as e:
+            logging.error(e, exc_info=True)
+            return Response({'errorMsg': str(e)}, 500)
 
 
 class AnalyticsSolutionScenarios(generics.ListAPIView):

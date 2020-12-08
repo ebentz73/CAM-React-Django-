@@ -4,6 +4,12 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
+def forward(apps, schema_editor):
+    # noinspection PyPep8Naming
+    NodeResult = apps.get_model('app', 'NodeResult')
+    NodeResult.objects.all().delete()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -11,13 +17,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(forward),
         migrations.RemoveField(
             model_name='noderesult',
             name='eval_job',
         ),
-        migrations.AlterField(
+        migrations.AddField(
             model_name='noderesult',
-            name='scenario',
+            name='scenario_id',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='app.Scenario'),
         ),
     ]

@@ -103,7 +103,8 @@ class StorageHelper:
             storage: The Django storage backend to use. Defaults to
                 default_storage.
         """
-        return storage.url(filename, expire=expire)
+        kwargs = {'expire': expire} if is_cloud() else {}
+        return storage.url(filename, **kwargs)
 
 
 def is_cloud() -> bool:
@@ -188,116 +189,138 @@ def create_dashboard(title: str) -> dict:
 
 class PowerBI:
     SCOPE = ['https://analysis.windows.net/powerbi/api/.default']
-    AUTHORITY = 'https://login.microsoftonline.com/organizations'
-    solution = None
 
-    def get_workspace_id(self):
+    def __init__(self, solution, user):
+        self.solution = solution
+        self.user = user
+
+        self._access_token = None
+        self._report = None
+
+    @property
+    def workspace_id(self):
         return self.solution.workspace_id
 
-    def get_report_id(self):
+    @property
+    def report_id(self):
         return self.solution.report_id
 
-    def get_roles(self):
-        return ['T', 'V']
+    @property
+    def roles(self):
+        return [role.name for role in self.user.profile.roles.all()]
 
-    def get_username(self):
-        return ""
+    @property
+    def username(self):
+        return self.user.email
 
-    def get_client_secret(self):
+    @property
+    def client_secret(self):
         return os.environ.get('POWERBI_CLIENT_SECRET')
 
-    def get_client_id(self):
+    @property
+    def client_id(self):
         return os.environ.get('POWERBI_CLIENT_ID')
 
-    def get_tenant_id(self):
+    @property
+    def tenant_id(self):
         return os.environ.get('POWERBI_TENANT_ID')
 
-    def get_access_token(self):
-        """Returns AAD token using MSAL"""
+    @property
+    def authority(self):
+        return f'https://login.microsoftonline.com/{self.tenant_id}'
 
+    @property
+    def headers(self):
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {self.access_token}'
+        }
+
+    @property
+    def access_token(self):
+        """Returns AAD token using MSAL."""
+        if self._access_token is not None:
+            return self._access_token
+
+        client = msal.ConfidentialClientApplication(
+            self.client_id,
+            client_credential=self.client_secret,
+            authority=self.authority,
+        )
+
+        # Retrieve Access token from cache if available
+        response = client.acquire_token_silent(scopes=self.SCOPE, account=None)
+        if not response:
+            # Make a client call if Access token is not available in cache
+            response = client.acquire_token_for_client(scopes=self.SCOPE)
         try:
-            authority = self.AUTHORITY.replace('organizations', self.get_tenant_id())
-            clientapp = msal.ConfidentialClientApplication(self.get_client_id(),
-                                                           client_credential=self.get_client_secret(),
-                                                           authority=authority)
+            self._access_token = response['access_token']
+            return self._access_token
+        except KeyError:
+            raise Exception(response['error_description']) from None
 
-            # Retrieve Access token from cache if available
-            response = clientapp.acquire_token_silent(scopes=self.SCOPE, account=None)
-            if not response:
-                # Make a client call if Access token is not available in cache
-                response = clientapp.acquire_token_for_client(scopes=self.SCOPE)
-            try:
-                return response['access_token']
-            except KeyError:
-                raise Exception(response['error_description'])
+    @property
+    def report(self):
+        if self._report is not None:
+            return self._report
 
-        except Exception as ex:
-            raise Exception('Error retrieving Access token\n' + str(ex))
+        url = (
+            'https://api.powerbi.com/v1.0/myorg/groups/'
+            + self.workspace_id
+            + '/reports/'
+            + self.report_id
+        )
 
-    def get_embed_token(self, access_token):
-        """Returns Embed token and Embed URL"""
+        response = requests.get(url, headers=self.headers)
+        response.raise_for_status()
 
-        try:
-            headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + access_token}
-            reporturl = 'https://api.powerbi.com/v1.0/myorg/groups/' + self.get_workspace_id() + '/reports/' + self.get_report_id()
+        body = response.json()
+        self._report = {
+            'embed_url': body['embedUrl'],
+            'dataset_id': body['datasetId'],
+        }
+        return self._report
 
-            try:
-                apiresponse = requests.get(reporturl, headers=headers)
-            except Exception as ex:
-                raise Exception('Error while retrieving report Embed URL\n')
+    def get_embed_token(self):
+        """Returns Embed token and Embed URL."""
 
-            if not apiresponse:
-                raise Exception(
-                    'Error while retrieving report Embed URL\n' + apiresponse.reason + '\nRequestId: ' + apiresponse.headers.get(
-                        'RequestId'))
+        report = self.report
+        embed_url = report['embed_url']
+        dataset_id = report['dataset_id']
 
-            try:
-                apiresponse = json.loads(apiresponse.text)
-                embedurl = apiresponse['embedUrl']
-                datasetId = apiresponse['datasetId']
-            except Exception as ex:
-                raise Exception('Error while extracting Embed URL from API response\n' + apiresponse.text)
+        # Get embed token
+        body = {'datasets': []}
+        if dataset_id:
+            body['datasets'].append(
+                {
+                    'id': dataset_id,
+                    'username': self.username,
+                    'roles': self.roles,
+                    'datasets': [dataset_id],
+                }
+            )
 
-            # Get embed token
-            embedtokenurl = 'https://api.powerbi.com/v1.0/myorg/GenerateToken'
-            body = {'datasets': []}
-            if datasetId != '':
-                body['datasets'].append({'id': datasetId})
+        if self.report_id:
+            body['reports'] = [{'id': self.report_id}]
 
-            if self.get_report_id() != '':
-                body['reports'] = []
-                body['reports'].append({'id': self.get_report_id()})
+        if self.workspace_id:
+            body['targetWorkspaces'] = [{'id': self.workspace_id}]
 
-            if self.get_workspace_id() != '':
-                body['targetWorkspaces'] = []
-                body['targetWorkspaces'].append({'id': self.get_workspace_id()})
+        # Generate Embed token for multiple workspaces, datasets, and reports.
+        # Refer https://aka.ms/MultiResourceEmbedToken
+        embed_token_url = 'https://api.powerbi.com/v1.0/myorg/GenerateToken'
+        response = requests.post(
+            embed_token_url, json=body, headers=self.headers
+        )
+        response.raise_for_status()
 
-            try:
+        body = response.json()
+        embed_token = body['token']
+        token_expiry = body['expiration']
 
-                # Generate Embed token for multiple workspaces, datasets, and reports. Refer https://aka.ms/MultiResourceEmbedToken
-                apiresponse = requests.post(embedtokenurl, data=json.dumps(body), headers=headers)
-            except:
-                raise Exception('Error while invoking Embed token REST API endpoint\n')
-
-            if not apiresponse:
-                raise Exception(
-                    'Error while retrieving report Embed URL\n' + apiresponse.reason + '\nRequestId: ' + apiresponse.headers.get(
-                        'RequestId'))
-
-            try:
-                apiresponse = json.loads(apiresponse.text)
-                embedtoken = apiresponse['token']
-                embedtokenid = apiresponse['tokenId']
-                tokenexpiry = apiresponse['expiration']
-            except Exception as ex:
-                raise Exception('Error while extracting Embed token from API response\n' + apiresponse.reason)
-
-            response = {'embedToken': embedtoken, 'embedUrl': embedurl, 'tokenExpiry': tokenexpiry, 'reportId': self.get_report_id()}
-            return response
-        except Exception as ex:
-            return {'errorMsg': str(ex)}, 500
-
-    def run(self, solution):
-        self.solution = solution
-        access_token = self.get_access_token()
-        return self.get_embed_token(access_token)
+        return {
+            'embedToken': embed_token,
+            'embedUrl': embed_url,
+            'tokenExpiry': token_expiry,
+            'reportId': self.report_id,
+        }
