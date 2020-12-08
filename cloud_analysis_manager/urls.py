@@ -29,10 +29,32 @@ solution_router = routers.NestedSimpleRouter(router, r'api/v1/solutions', lookup
 
 solution_router.register(r'scenarios', views.ScenarioViewSet, basename='scenarios')
 solution_router.register(r'filtercategories', views.FilterCategoryViewSet, basename='filtercategories')
+solution_router.register(r'evaljobs',
+                         views.EvalJobDefinitionViewSet,
+                         basename='evaljobs')
+solution_router.register(r'models', views.AnalyticsModelViewSet, basename='models')
+
+model_router = routers.NestedSimpleRouter(solution_router, r'models', lookup='model')
+model_router.register(r'nodes', views.NodeViewSet, basename='nodes')
+
+node_router = routers.NestedSimpleRouter(model_router, r'nodes', lookup='node')
+node_router.register(r'inputnodedatas', views.InputNodeDataViewSet, basename='node-inputnodedatas')
+node_router.register(r'constnodedatas', views.ConstNodeDataViewSet, basename='node-constnodedatas')
+
+scenario_router = routers.NestedSimpleRouter(solution_router, r'scenarios', lookup='scenario')
+scenario_router.register(r'inputnodedatas', views.InputNodeDataViewSet, basename='scenario-inputnodedatas')
+scenario_router.register(r'constnodedatas', views.ConstNodeDataViewSet, basename='scenario-constnodedatas')
+
+category_router = routers.NestedSimpleRouter(solution_router, r'filtercategories', lookup='filtercategory')
+category_router.register(r'filteroptions', views.FilterOptionViewSet, basename='filtercategory-filteroptions')
 
 urlpatterns = [
     path('', include(router.urls)),
     path('', include(solution_router.urls)),
+    path('', include(category_router.urls)),
+    path('', include(model_router.urls)),
+    path('', include(scenario_router.urls)),
+    path('', include(node_router.urls)),
 
     path('microsoft/', include('microsoft_auth.urls', namespace='microsoft')),
 

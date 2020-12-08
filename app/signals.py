@@ -5,6 +5,7 @@ from django.db.models.signals import m2m_changed, post_save, post_init
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Permission
 from django.dispatch import receiver
+from collections import OrderedDict
 
 from app.models import (
     AnalyticsSolution,
@@ -17,6 +18,7 @@ from app.models import (
     Model,
     Node,
     Scenario,
+    NodeData,
 )
 from app.proto_modules import (
     ConstNodeData_pb2,
@@ -28,6 +30,16 @@ from app.utils import Sqlite
 
 from profile.models import Role
 from guardian.shortcuts import assign_perm, get_objects_for_group, get_group_perms
+
+
+def assign_model_and_object_perms(cls, instance, role, codename):
+    content_type = ContentType.objects.get_for_model(cls)
+    permission = Permission.objects.get(
+        codename=codename,
+        content_type=content_type,
+    )
+    role.permissions.add(permission)
+    assign_perm(codename, role, instance)
 
 
 def create_solution_role(solution):
@@ -68,21 +80,17 @@ def update_model(sender, **kwargs):
                     category, _ = FilterCategory.objects.update_or_create(
                         solution=solution, name=category_name
                     )
-                    content_type = ContentType.objects.get_for_model(FilterCategory)
-                    permission = Permission.objects.get(
-                        codename='view_filtercategory',
-                        content_type=content_type,
-                    )
-                    role.permissions.add(permission)
-                    assign_perm('view_filtercategory', role, category)
+                    assign_model_and_object_perms(FilterCategory, category, role, 'view_filtercategory')
+
                     blob_model = TagFilterOption_pb2.List_TagFilterOption()
                     blob_model.ParseFromString(filter_blob)
                     for option in blob_model.items:
-                        FilterOption.objects.update_or_create(
+                        filter_option, _ = FilterOption.objects.update_or_create(
                             category=category,
                             tag=option.Tag,
                             display_name=option.DisplayName,
                         )
+                        assign_model_and_object_perms(FilterOption, filter_option, role, 'view_filteroption')
 
                 # Save all models
                 cursor.execute("SELECT ModelId, ModelName FROM TruNavModel")
@@ -92,6 +100,7 @@ def update_model(sender, **kwargs):
                         tam_id=model_id,
                         defaults={'name': model_name},
                     )
+                    assign_model_and_object_perms(Model, model, role, 'view_model')
 
                     # Save all input pages
                     cursor.execute(
@@ -101,11 +110,13 @@ def update_model(sender, **kwargs):
                         (model_id,),
                     )
                     for page_id, page_name in cursor.fetchall():
-                        InputPage.objects.update_or_create(
+                        page, _ = InputPage.objects.update_or_create(
                             model=model, tam_id=page_id, defaults={'name': page_name}
                         )
+                        assign_model_and_object_perms(InputPage, page, role, 'view_inputpage')
 
                     # Save all nodes
+                    tag_roles = {}
                     cursor.execute(
                         "SELECT n.NodeId, NodeName, NodeType, TagList, NodeInputData "
                         "FROM Node AS n, NodeScenarioData AS d "
@@ -131,6 +142,8 @@ def update_model(sender, **kwargs):
 
                         # Only save nodes if they are used by CAM
                         if has_tags:
+                            cam_roles = [tag for tag in tag_list if tag.startswith('CAM_ROLE==')]
+
                             # Create Node model
                             node, _ = Node.objects.update_or_create(
                                 model=model,
@@ -138,6 +151,20 @@ def update_model(sender, **kwargs):
                                 tam_id=node_id,
                                 defaults={'name': node_name},
                             )
+
+                            # Apply CAM role to Node
+                            for cam_role in cam_roles:
+                                if cam_role in tag_roles:
+                                    node_role = tag_roles[cam_role]
+                                else:
+                                    node_role = Role.objects.create(name='role_' + solution.name + '_' + cam_role)
+                                    permission = Permission.objects.get(
+                                        codename='view_node',
+                                        content_type=ContentType.objects.get_for_model(Node),
+                                    )
+                                    node_role.permissions.add(permission)
+                                    tag_roles[cam_role] = node_role
+                                assign_perm('view_node', node_role, node)
 
                             # Create InputNodeData model
                             if node_type == 'inputnode':
@@ -153,9 +180,10 @@ def update_model(sender, **kwargs):
                                     ]
                                     for val in blob_model.LayerData
                                 ]
-                                InputNodeData.objects.update_or_create(
+                                ind, _ = InputNodeData.objects.update_or_create(
                                     node=node, default_data=node_data, is_model=True
                                 )
+                                assign_model_and_object_perms(InputNodeData, ind, node_role, 'view_inputnodedata')
 
                             # Create ConstNodeData model
                             elif node_type == 'constnode':
@@ -165,9 +193,10 @@ def update_model(sender, **kwargs):
                                     val.ConstData
                                     for val in blob_model.AllLayerData
                                 ]
-                                ConstNodeData.objects.update_or_create(
+                                cnd, _ = ConstNodeData.objects.update_or_create(
                                     node=node, default_data=node_data, is_model=True
                                 )
+                                assign_model_and_object_perms(ConstNodeData, cnd, node_role, 'view_constnodedata')
 
         finally:
             os.remove(filename)

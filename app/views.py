@@ -26,6 +26,7 @@ from app.models import (
     Model,
     Node,
     Scenario,
+    NodeData
 )
 from app.serializers import (
     AnalyticsSolutionSerializer,
@@ -39,6 +40,7 @@ from app.serializers import (
     NodeSerializer,
     ScenarioSerializer,
     ScenarioEvaluateSerializer,
+    NodeDataSerializer
 )
 from app.utils import PowerBI, run_eval_engine
 
@@ -61,8 +63,21 @@ def validate_api(serializer_cls, many=False):
 
 
 class EvalJobDefinitionViewSet(ModelViewSet):
-    queryset = EvalJob.objects.all()
     serializer_class = EvalJobSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
+    filter_backends = (DjangoObjectPermissionsFilter,)
+
+    def get_queryset(self):
+        return EvalJob.objects.filter(solution=self.kwargs['solution_pk'])
+
+
+class NodeViewSet(ModelViewSet):
+    serializer_class = NodeSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
+    filter_backends = (DjangoObjectPermissionsFilter,)
+
+    def get_queryset(self):
+        return Node.objects.filter(model=self.kwargs['model_pk'])
 
 
 class FilterCategoryViewSet(ModelViewSet):
@@ -74,11 +89,53 @@ class FilterCategoryViewSet(ModelViewSet):
         return FilterCategory.objects.filter(solution=self.kwargs['solution_pk'])
 
 
+class FilterOptionViewSet(ModelViewSet):
+    serializer_class = FilterOptionSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
+    filter_backends = (DjangoObjectPermissionsFilter,)
+
+    def get_queryset(self):
+        return FilterOption.objects.filter(category=self.kwargs['filtercategory_pk'])
+
+
+class AnalyticsModelViewSet(ModelViewSet):
+    serializer_class = ModelSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
+    filter_backends = (DjangoObjectPermissionsFilter,)
+
+    def get_queryset(self):
+        return Model.objects.filter(solution=self.kwargs['solution_pk'])
+
+
 class AnalyticsSolutionViewSet(ModelViewSet):
     queryset = AnalyticsSolution.objects.all()
     serializer_class = AnalyticsSolutionSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
     filter_backends = (DjangoObjectPermissionsFilter,)
+
+
+class InputNodeDataViewSet(ModelViewSet):
+    serializer_class = InputNodeDataSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
+    filter_backends = (DjangoObjectPermissionsFilter,)
+
+    def get_queryset(self):
+        if 'scenario_pk' in self.kwargs:
+            return InputNodeData.objects.filter(scenario=self.kwargs['scenario_pk'])
+        else:
+            return InputNodeData.objects.filter(node=self.kwargs['node_pk'])
+
+
+class ConstNodeDataViewSet(ModelViewSet):
+    serializer_class = ConstNodeDataSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
+    filter_backends = (DjangoObjectPermissionsFilter,)
+
+    def get_queryset(self):
+        if 'scenario_pk' in self.kwargs:
+            return ConstNodeData.objects.filter(scenario=self.kwargs['scenario_pk'])
+        else:
+            return ConstNodeData.objects.filter(node=self.kwargs['node_pk'])
 
 
 class ScenarioViewSet(ModelViewSet):
