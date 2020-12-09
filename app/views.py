@@ -1,3 +1,4 @@
+import csv
 import json
 import logging
 from functools import wraps
@@ -6,6 +7,7 @@ import material.frontend.views as material
 import datetime
 import time
 from django.db.models import Q
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -27,6 +29,7 @@ from app.models import (
     InputNodeData,
     Model,
     Node,
+    NodeResult,
     Scenario,
 )
 from app.serializers import (
@@ -151,6 +154,24 @@ class ScenarioViewSet(ModelViewSet):
         self.copy_scenario_data(DecimalNodeOverride, body['mergeId'], clone.pk)
 
         return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def export(self, request, solution_pk, pk):
+        scenario = Scenario.objects.get(Q(pk=pk))
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="{scenario.name}_results.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(['Scenario', 'Model', 'Node', 'Layer',
+                         'Node Tags', 'Result 10', 'Result 30',
+                         'Result 50', 'Result 70', 'Result 90'])
+        node_results = NodeResult.objects.filter(Q(scenario_id=pk)).values_list('scenario', 'model', 'node', 'layer',
+                                                                                'node_tags', 'result_10', 'result_30',
+                                                                                'result_50', 'result_70', 'result_90')
+        for node_result in node_results:
+            writer.writerow(node_result)
+
+        return response
 
     @staticmethod
     def copy_scenario(pk, name):
