@@ -289,3 +289,7 @@
 .ms-Dialog-title {
   text-align: center;
 }
+
+.withoutUnderline {
+  text-decoration: none;
+}

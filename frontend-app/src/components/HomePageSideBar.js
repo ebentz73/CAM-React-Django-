@@ -10,7 +10,7 @@ class HomePageSideBar extends Component {
     return (
       <ul className="ms-List">
         <li className={"ms-ListItem"} tabIndex="0">
-          <Link to="/frontend-app/home">
+          <Link className="withoutUnderline" to="/frontend-app/home">
             <span className="ms-ListItem-secondaryText ms-fontWeight-bold">
               Home
             </span>
@@ -18,7 +18,7 @@ class HomePageSideBar extends Component {
         </li>
         {this.props.path !== "" && (
           <li className={"ms-ListItem"}>
-            <Link to={this.props.path}>
+            <Link className="withoutUnderline" to={this.props.path}>
               <span className="ms-ListItem-secondaryText">
                 Analytics Solution
               </span>
