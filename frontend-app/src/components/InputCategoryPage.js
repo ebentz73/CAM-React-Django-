@@ -166,11 +166,11 @@ class InputCategoryPage extends Component {
         {/* Chart */}
         <div className="ms-Grid-row">
           <div className="ms-Grid-col ms-md12">
-            {this.state.nodeOnChart !== "none" ? (
-              <NodeDataChart node={this.state.nodeOnChart} />
-            ) : (
-              <Spinner size={SpinnerSize.large} />
-            )}
+            {/* {this.state.nodeOnChart !== "none" ? ( */}
+            <NodeDataChart node={this.state.nodeOnChart} />
+            {/* ) : (
+            <Spinner size={SpinnerSize.large} />
+            )} */}
           </div>
         </div>
 
@@ -207,15 +207,15 @@ class InputCategoryPage extends Component {
             </div>
           </div>
           <div className="ms-Grid-col ms-md8 node-scroll-pane">
-            {this.state.currentNodeData.length > 0 ? (
-              <NodeTable
-                type={this.state.currentNodeType}
-                nodeId={this.state.currentNodeID}
-                data={this.state.currentNodeData}
-              />
-            ) : (
+            {/* {this.state.currentNodeData.length > 0 ? ( */}
+            <NodeTable
+              type={this.state.currentNodeType}
+              nodeId={this.state.currentNodeID}
+              data={this.state.currentNodeData}
+            />
+            {/* ) : (
               <Spinner size={SpinnerSize.large} />
-            )}
+            )} */}
           </div>
         </div>
         {/*Navigation Buttons*/}
