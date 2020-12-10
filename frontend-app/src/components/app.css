@@ -293,3 +293,8 @@
 .withoutUnderline {
   text-decoration: none;
 }
+
+.result-item {
+  display: flex;
+  justify-content: space-between;
+}
