@@ -31,7 +31,8 @@ class ScenarioDefinitionPage extends Component {
             nodes_changed: 0,
             roles: {},
             activeRoles: [],
-            isLoading: true
+            isLoading: true,
+            layer_offset: 0,
         };
 
         this.onClickCategory = this.onClickCategory.bind(this);
@@ -40,6 +41,7 @@ class ScenarioDefinitionPage extends Component {
         this.fetchNodesBySolution = this.fetchNodesBySolution.bind(this);
         this.fetchNodeDataByScenario = this.fetchNodeDataByScenario.bind(this);
         this.fetchScenarioMetadata = this.fetchScenarioMetadata.bind(this);
+        this.fetchSolutionMetadata = this.fetchSolutionMetadata.bind(this);
 
         this.createOrUpdateScenario = this.createOrUpdateScenario.bind(this);
         this.createOrUpdateScenNodeDatas = this.createOrUpdateScenNodeDatas.bind(this);
@@ -329,6 +331,16 @@ class ScenarioDefinitionPage extends Component {
             })
     }
 
+    fetchSolutionMetadata(){
+        fetch(`${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.solution_id}/`)
+            .then(resp => {
+                return resp.json();
+            })
+            .then(resp => {
+                this.setState({layer_offset: resp.layer_offset});
+            })
+    }
+
     fetchScenarioMetadata(){
         fetch(`${window.location.protocol}//${window.location.host}/api/scenario/${scenario_id}/`)
             .then(resp => {
@@ -340,6 +352,7 @@ class ScenarioDefinitionPage extends Component {
     }
 
     componentDidMount() {
+        this.fetchSolutionMetadata();
         this.filtersBySolution(this.solution_id);
         this.fetchNodesBySolution(this.solution_id);
     }
@@ -430,7 +443,8 @@ class ScenarioDefinitionPage extends Component {
                                                            name={this.state.category.substring(this.state.category.indexOf('.') + 1, this.state.category.length)}
                                                            index={this.state.category_idx} roles={this.state.activeRoles}
                                                            changeTab={this.changeTab} postScenario={this.createOrUpdateScenario}
-                                                           categoryNodes={this.state.inputCategories[this.state.category]}/>
+                                                           categoryNodes={this.state.inputCategories[this.state.category]}
+                                                           layerOffset={this.state.layer_offset}/>
                                         }
                                         {this.state.tab === 'review' &&
                                         <ReviewPage index={this.state.inputCategoryOrder.length}

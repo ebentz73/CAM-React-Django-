@@ -149,7 +149,7 @@ class InputCategoryPage extends Component {
                 }
                 <div className="ms-Grid-row">
                     <div className="ms-Grid-col ms-md12">
-                        <NodeDataChart node={this.state.nodeOnChart}/>
+                        <NodeDataChart node={this.state.nodeOnChart} layerOffset={this.props.layerOffset}/>
                     </div>
                 </div>
 
@@ -181,7 +181,7 @@ class InputCategoryPage extends Component {
                     </div>
                     <div className="ms-Grid-col ms-md8 node-scroll-pane">
                         <NodeTable type={this.state.currentNodeType} nodeId={this.state.currentNodeID}
-                                   data={this.state.currentNodeData} />
+                                   data={this.state.currentNodeData} layerOffset={this.props.layerOffset} />
 
                     </div>
                 </div>

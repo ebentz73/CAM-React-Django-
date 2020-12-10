@@ -19,12 +19,12 @@ class InputNodeTable extends Component {
                         {!this.props.fixed &&
                             <tr>
                                 <td></td>
-                                {this.props.data.map((_, index) => {
-                                    return (
+                                {this.props.data.flatMap((_, index) => {
+                                    return index < this.props.layerOffset ? [] : [(
                                         <td key={`header_${index}`}>
                                             <Text>{this.months[index % 12]}</Text>
                                         </td>
-                                    );
+                                    )];
                                 })}
                             </tr>
                         }
@@ -43,11 +43,13 @@ class InputNodeTable extends Component {
                             return (
                                 <tr key={nomIdx}>
                                     <td><Text>{this.nomLabels[nomIdx]}</Text></td>
-                                    {this.props.data.map((row, layerIdx) => {
-                                        return(<td key={layerIdx}><NodeTableTextField data={row[nomIdx]} nodeId={this.props.nodeId}
+                                    {this.props.data.flatMap((row, layerIdx) => {
+                                        return layerIdx < this.props.layerOffset ? [] : [(
+                                            <td key={layerIdx}><NodeTableTextField data={row[nomIdx]} nodeId={this.props.nodeId}
                                                                                    layerIdx={layerIdx} nomIdx={nomIdx}
                                                                                    type={'input'}
-                                                                                   updateData={context.updateInputNodeData}/></td>);
+                                                                                   updateData={context.updateInputNodeData}/>
+                                            </td>)];
                                     })}
                                 </tr>
                             );
@@ -55,14 +57,14 @@ class InputNodeTable extends Component {
                         {!this.props.fixed &&
                             <tr>
                                 <td></td>
-                                {this.props.data.map((_, index) => {
-                                    return (
+                                {this.props.data.flatMap((_, index) => {
+                                    return index < this.props.layerOffset ? [] : [(
                                         <td key={`copy_${index}`}>
                                             <PrimaryButton className="table-input"
                                                            onClick={() => {context.copyToAllLayers(this.props.nodeId, index)}}
                                                            text="Copy to All" />
                                         </td>
-                                    );
+                                    )];
                                 })}
                             </tr>
                         }

@@ -18,12 +18,18 @@ class NodeDataChart extends Component {
     setupChartData(node){
         if (node !== undefined && node.data !== undefined) {
             let labels = [];
-            for (let i = 0; i < node.data.length; i++) {
+            for (let i = this.props.layerOffset; i < node.data.length; i++) {
                 labels.push(this.months[i % 12]);
+            }
+            let chartData = [];
+            if (node.type === 'input') {
+                chartData = node.data.flatMap((layer, idx) => idx < this.props.layerOffset ? [] : [layer[2]]);
+            } else {
+                chartData = node.data.flatMap((data, idx) => idx < this.props.layerOffset ? [] : [data]);
             }
             let datasets = [{
                 label: node.name,
-                data: node.type === 'input' ? node.data.map(layer => layer[2]) : node.data.map(data => data),
+                data: chartData,
                 fill: false,
                 borderColor: "#742774",
                 lineTension: 0
