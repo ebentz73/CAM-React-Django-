@@ -33,6 +33,8 @@ solution_router.register(r'evaljobs',
                          views.EvalJobDefinitionViewSet,
                          basename='evaljobs')
 solution_router.register(r'models', views.AnalyticsModelViewSet, basename='models')
+solution_router.register(r'nodes', views.NodeViewSet, basename='solution-nodes')
+solution_router.register(r'modelnodedatas', views.NodeDataViewSet, basename='solution-modelnodedatas')
 
 model_router = routers.NestedSimpleRouter(solution_router, r'models', lookup='model')
 model_router.register(r'nodes', views.NodeViewSet, basename='nodes')
@@ -44,6 +46,7 @@ node_router.register(r'constnodedatas', views.ConstNodeDataViewSet, basename='no
 scenario_router = routers.NestedSimpleRouter(solution_router, r'scenarios', lookup='scenario')
 scenario_router.register(r'inputnodedatas', views.InputNodeDataViewSet, basename='scenario-inputnodedatas')
 scenario_router.register(r'constnodedatas', views.ConstNodeDataViewSet, basename='scenario-constnodedatas')
+scenario_router.register(r'nodedatas', views.NodeDataViewSet, basename='scenario-nodedatas')
 
 category_router = routers.NestedSimpleRouter(solution_router, r'filtercategories', lookup='filtercategory')
 category_router.register(r'filteroptions', views.FilterOptionViewSet, basename='filtercategory-filteroptions')

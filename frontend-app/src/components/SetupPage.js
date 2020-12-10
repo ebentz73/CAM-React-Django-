@@ -16,8 +16,8 @@ class SetupPage extends Component {
                 <Text variant='xLarge'>Setup</Text>
                 {/* Scenario Info */}
                 <div className="scenario-info">
-                    <TextField label="Scenario Name" defaultValue={this.props.name}
-                               onBlur={(e) => this.props.updateName(e.target.value)} />
+                    <TextField label="Scenario Name" value={this.props.name}
+                               onChange={(e) => this.props.updateName(e.target.value)} />
                     <TextField label="Description (Optional)" defaultValue={this.props.desc} multiline rows={4}
                                onBlur={(e) => this.props.updateDesc(e.target.value)} />
                     <DatePicker label="Model Start" value={this.props.date}

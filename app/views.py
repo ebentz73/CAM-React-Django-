@@ -41,7 +41,9 @@ from app.serializers import (
     NodeSerializer,
     ScenarioSerializer,
     ScenarioEvaluateSerializer,
-    NodeDataSerializer
+    FilterCategoryOptionsSerializer,
+    NodeDataSerializer,
+    PolyNodeDataSerializer,
 )
 from app.utils import PowerBI, run_eval_engine
 
@@ -77,12 +79,26 @@ class NodeViewSet(ModelViewSet):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
     filter_backends = (DjangoObjectPermissionsFilter,)
 
+    '''
+    def create(self, request):
+        return super().create(request)
+
+    def update(self, request, pk=None):
+        super().update(request)
+
+    def partial_update(self, request, pk=None):
+        super().partial_update(request)
+    '''
+
     def get_queryset(self):
-        return Node.objects.filter(model=self.kwargs['model_pk'])
+        if 'model_pk' in self.kwargs:
+            return Node.objects.filter(model=self.kwargs['model_pk'])
+        else:
+            return Node.objects.filter(model__solution=self.kwargs['solution_pk'])
 
 
 class FilterCategoryViewSet(ModelViewSet):
-    serializer_class = FilterCategorySerializer
+    serializer_class = FilterCategoryOptionsSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
     filter_backends = (DjangoObjectPermissionsFilter,)
 
@@ -150,8 +166,10 @@ class ConstNodeDataViewSet(ModelViewSet):
 
 
 class ScenarioViewSet(ModelViewSet):
-    queryset = Scenario.objects.all()
     serializer_class = ScenarioSerializer
+
+    def get_queryset(self):
+        return Scenario.objects.filter(solution=self.kwargs['solution_pk'])
 
     def create(self, request, solution_pk=None, **kwargs):
         run_eval = request.data.pop('run_eval', False)
@@ -168,7 +186,7 @@ class ScenarioViewSet(ModelViewSet):
 
         return response
 
-    def update(self, request, solution_pk, pk, **kwargs):
+    def partial_update(self, request, solution_pk, pk, **kwargs):
         run_eval = request.data.pop('run_eval', False)
 
         if 'solution' not in request.data:
@@ -197,6 +215,23 @@ class ScenarioViewSet(ModelViewSet):
 class ScenarioEvaluateViewSet(ModelViewSet):
     queryset = Scenario.objects.all()
     serializer_class = ScenarioEvaluateSerializer
+
+
+class ScenarioNodeDataViewSet(ModelViewSet):
+    serializer_class = PolyNodeDataSerializer
+
+    def get_queryset(self):
+        return NodeData.objects.filter(scenario=self.kwargs['solution_pk'], is_model=True)
+
+
+class NodeDataViewSet(ModelViewSet):
+    serializer_class = PolyNodeDataSerializer
+
+    def get_queryset(self):
+        if 'scenario_pk' in self.kwargs:
+            return NodeData.objects.filter(scenario=self.kwargs['scenario_pk'])
+        else:
+            return NodeData.objects.filter(node__model__solution=self.kwargs['solution_pk'], is_model=True)
 
 
 class NodeResultView(APIView):

@@ -200,7 +200,7 @@ class EvalJob(models.Model):
 
 
 class NodeResult(models.Model):
-    scenario_id = models.ForeignKey(Scenario, on_delete=models.CASCADE, db_column='scenario_id')
+    scenario_id = models.ForeignKey(Scenario, on_delete=models.CASCADE)
     scenario = models.CharField(max_length=255)
     model = models.CharField(max_length=255)
     node = models.CharField(max_length=255)
