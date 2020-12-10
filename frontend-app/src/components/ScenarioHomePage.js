@@ -137,13 +137,14 @@ class ScenarioHomePage extends Component {
   }
 
   render() {
+    const path = `/frontend-app/solution/${this.props.match.params["id"]}/scenario`;
     return (
       <React.Fragment>
         <NavBar />
         <div className="ms-Grid m-t-100" dir="ltr">
           <div className="ms-Grid-row">
             <div className="ms-Grid-col ms-md3">
-              <HomePageSideBar active="overview" />
+              <HomePageSideBar path={path} />
             </div>
             <div className="ms-Grid-col ms-md6">
               <div align="right">

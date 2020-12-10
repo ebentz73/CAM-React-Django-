@@ -16,7 +16,7 @@ class HomePageSideBar extends Component {
             </span>
           </Link>
         </li>
-        {this.props.path !== "" && (
+        {!!this.props.path && (
           <li className={"ms-ListItem"}>
             <Link className="withoutUnderline" to={this.props.path}>
               <span className="ms-ListItem-secondaryText">
