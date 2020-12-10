@@ -11,7 +11,7 @@ class ModelDiffMixin:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.__initial = dict.fromkeys(self._dict.keys())
+        self.__initial = self._dict
 
     @property
     def diff(self):

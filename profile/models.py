@@ -7,5 +7,5 @@ class Role(Group):
 
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, related_name='profile', on_delete=models.CASCADE)
     roles = models.ManyToManyField(Role, blank=True)
