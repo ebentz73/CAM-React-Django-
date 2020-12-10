@@ -173,6 +173,18 @@ class ScenarioViewSet(ModelViewSet):
 
         return response
 
+    @action(detail=True, methods=['get'])
+    def reset(self, request, solution_pk, pk):
+        scenario = Scenario.objects.get(Q(pk=pk))
+        scenario.status = None
+        scenario.save()
+        serializer = ScenarioSerializer(scenario)
+
+        NodeResult.objects.filter(scenario_id=pk).delete()
+
+        return Response(serializer.data)
+
+
     @staticmethod
     def copy_scenario(pk, name):
         clone = Scenario.objects.get(Q(pk=pk))
