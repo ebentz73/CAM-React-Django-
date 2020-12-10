@@ -5,6 +5,7 @@ from functools import wraps
 import material.frontend.views as material
 import datetime
 import time
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -126,34 +127,55 @@ class ScenarioViewSet(ModelViewSet):
     @action(detail=True, methods=['post'])
     def clone(self, request, solution_pk, pk):
         body = json.loads(request.body)
-        clone = Scenario.objects.get(pk=pk)
-        clone.pk = None
-        clone.name = body['name']
+        clone = self.copy_scenario(pk, body['name'])
         serializer = ScenarioSerializer(clone)
-        clone.save()
 
-        const_node_data = ConstNodeData.objects.filter(scenario_id=pk)
-        for const_data in const_node_data:
-            const_data.id = None
-            const_data.pk = None
-            const_data.scenario_id = clone.pk
-            const_data.save()
-
-        input_node_data = InputNodeData.objects.filter(scenario_id=pk)
-        for input_data in input_node_data:
-            input_data.id = None
-            input_data.pk = None
-            input_data.scenario_id = clone.pk
-            input_data.save()
-
-        decimal_node_override = DecimalNodeOverride.objects.filter(scenario_id=pk)
-        for decimal_override in decimal_node_override:
-            decimal_override.id = None
-            decimal_override.pk = None
-            decimal_override.scenario_id = clone.pk
-            decimal_override.save()
+        self.copy_scenario_data(ConstNodeData, pk, clone.pk)
+        self.copy_scenario_data(InputNodeData, pk, clone.pk)
+        self.copy_scenario_data(DecimalNodeOverride, pk, clone.pk)
 
         return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def merge(self, request, solution_pk, pk):
+        body = json.loads(request.body)
+        clone = self.copy_scenario(pk, body['name'])
+        serializer = ScenarioSerializer(clone)
+
+        self.copy_scenario_data(ConstNodeData, pk, clone.pk)
+        self.copy_scenario_data(InputNodeData, pk, clone.pk)
+        self.copy_scenario_data(DecimalNodeOverride, pk, clone.pk)
+
+        self.copy_scenario_data(ConstNodeData, body['mergeId'], clone.pk)
+        self.copy_scenario_data(InputNodeData, body['mergeId'], clone.pk)
+        self.copy_scenario_data(DecimalNodeOverride, body['mergeId'], clone.pk)
+
+        return Response(serializer.data)
+
+    @staticmethod
+    def copy_scenario(pk, name):
+        clone = Scenario.objects.get(Q(pk=pk))
+        clone.pk = None
+        clone.name = name
+        clone.save()
+        return clone
+
+    @staticmethod
+    def copy_scenario_data(class_name, original_pk, clone_pk):
+        class_node_data = class_name.objects.filter(Q(scenario_id=original_pk))
+        duplicate_prevention_data = class_name.objects.filter(Q(scenario_id=clone_pk))
+
+        for data in class_node_data:
+            write_data = True
+            for duplicate in duplicate_prevention_data:
+                if data.node_id == duplicate.node_id:
+                    write_data = False
+                    break
+            if write_data:
+                data.id = None
+                data.pk = None
+                data.scenario_id = clone_pk
+                data.save()
 
 
 class ScenarioEvaluateViewSet(ModelViewSet):
