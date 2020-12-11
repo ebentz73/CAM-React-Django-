@@ -9,4 +9,5 @@ class MyAppConfig(ModuleMixin, AppConfig):
 
     # noinspection PyUnresolvedReferences
     def ready(self):
+        import app.money_patch
         import app.signals

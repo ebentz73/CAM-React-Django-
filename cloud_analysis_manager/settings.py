@@ -18,6 +18,12 @@ load_dotenv()
 
 EVAL_ENGINE_IMAGE = os.environ.get('EVAL_ENGINE_IMAGE', 'lonestar/trunavcore:latest')
 
+POWERBI_CLIENT_SECRET = os.environ.get('POWERBI_CLIENT_SECRET')
+
+POWERBI_CLIENT_ID = os.environ.get('POWERBI_CLIENT_ID')
+
+POWERBI_TENANT_ID = os.environ.get('POWERBI_TENANT_ID')
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -50,6 +56,7 @@ INSTALLED_APPS = [
     'material',
     'material.frontend',
     'app',
+    'profile',
     'frontend-app',
 ]
 

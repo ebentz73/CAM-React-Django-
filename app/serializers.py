@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from app.models import AnalyticsSolution, EvalJob, NodeResult, \
@@ -69,61 +70,122 @@ class EvalJobSerializer(serializers.ModelSerializer):
         return evaljob_json
 
 
-class AnalyticsSolutionSerializer(serializers.ModelSerializer):
+def generic_serializer(cls, **kwargs):
+    """Create a generic serializer for the given model."""
+    fields_ = kwargs.pop('fields', '__all__')
+
+    class Serializer(serializers.ModelSerializer):
+        class Meta:
+            model = cls
+            fields = fields_
+
+        for k, v in kwargs.items():
+            setattr(Meta, k, v)
+
+    return Serializer
+
+
+AnalyticsSolutionSerializer = generic_serializer(AnalyticsSolution)
+NodeResultSerializer = generic_serializer(NodeResult)
+NodeDataSerializer = generic_serializer(NodeData)
+InputNodeDataSerializer = generic_serializer(InputNodeData)
+ConstNodeDataSerializer = generic_serializer(ConstNodeData)
+# ScenarioSerializer = generic_serializer(Scenario, depth=1)
+NodeSerializer = generic_serializer(Node)
+FilterCategorySerializer = generic_serializer(FilterCategory)
+FilterOptionSerializer = generic_serializer(FilterOption)
+ModelSerializer = generic_serializer(Model)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()  # implicitly-generated ``id`` field is read-only
+
     class Meta:
-        model = AnalyticsSolution
-        fields = '__all__'
-
-
-class NodeResultSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = NodeResult
-        fields = '__all__'
-
-
-class NodeDataSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = NodeData
-        fields = '__all__'
-
-
-class InputNodeDataSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = InputNodeData
-        fields = '__all__'
-
-
-class ConstNodeDataSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ConstNodeData
-        fields = '__all__'
+        model = User
+        fields = ('id', 'username', 'first_name', 'last_name')
 
 
 class ScenarioSerializer(serializers.ModelSerializer):
+    shared = UserSerializer(many=True)
+
     class Meta:
         model = Scenario
         fields = '__all__'
 
+    @staticmethod
+    def add_shared(instance, shared):
+        for user_data in shared:
+            user = User.objects.get(pk=user_data.get('id'))
+            instance.shared.add(user)
 
-class NodeSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        shared = validated_data.pop('shared', [])
+        instance = super().create(validated_data)
+        self.add_shared(instance, shared)
+        return instance
+
+    def update(self, instance, validated_data):
+        shared = validated_data.pop('shared', [])
+        instance = super().update(instance, validated_data)
+        self.add_shared(instance, shared)
+        return instance
+
+
+class ScenarioEvaluateSerializer(serializers.ModelSerializer):
+    tam_model_url = serializers.SerializerMethodField()
+    results_url = serializers.SerializerMethodField()
+    time_start = serializers.ReadOnlyField(source='layer_date_start')
+    time_increment_unit = serializers.ReadOnlyField(
+        source='solution.layer_time_increment'
+    )
+    scenario = serializers.SerializerMethodField()
+
     class Meta:
-        model = Node
-        fields = '__all__'
+        model = Scenario
+        fields = (
+            'tam_model_url',
+            'results_url',
+            'time_start',
+            'time_increment_unit',
+            'scenario',
+        )
 
+    @staticmethod
+    def get_tam_model_url(obj: Scenario):
+        return StorageHelper.get_url(str(obj.solution.tam_file), expire=600)
 
-class FilterCategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FilterCategory
-        fields = '__all__'
+    @staticmethod
+    def get_results_url(_):
+        # Get the hostname the eval engine will use to call Django
+        callback_url = (
+            f'https://{settings.AZ_CUSTOM_DOMAIN}'
+            if is_cloud()
+            else 'http://host.docker.internal:8000'
+        )
+        return f'{callback_url}/api/results/'
 
-
-class FilterOptionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FilterOption
-        fields = '__all__'
-
-
-class ModelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Model
-        fields = '__all__'
+    @staticmethod
+    def get_scenario(obj: Scenario):
+        model_json = []
+        for model in obj.solution.models:
+            nodes_json = list(
+                map(
+                    lambda node_data: {
+                        'id': node_data.node.tam_id,
+                        'value': node_data.default_data,
+                    },
+                    obj.node_data.filter(node__model=model),
+                )
+            )
+            model_json.append(
+                {
+                    'id': model.tam_id,
+                    'input_data_sets': [],
+                    'nodes': nodes_json,
+                }
+            )
+        return {
+            'pk': obj.pk,
+            'name': obj.name,
+            'models': model_json,
+        }

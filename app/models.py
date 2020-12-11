@@ -1,6 +1,7 @@
 import uuid
 import datetime
 
+from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
 from django.db.models import Q
@@ -35,7 +36,26 @@ __all__ = [
 ]
 
 
+def NON_POLYMORPHIC_CASCADE(collector, field, sub_objs, using):
+    return models.CASCADE(collector, field, sub_objs.non_polymorphic(), using)
+
+
 class AnalyticsSolution(models.Model, ModelDiffMixin):
+    TIME_OPTIONS = (
+        ('day', 'Day'),
+        ('week', 'Week'),
+        ('month', 'Month'),
+        ('year', 'Year'),
+    )
+    ITERATIONS_OPTIONS = (
+        (100, 100), 
+        (1000, 1000), 
+        (5000, 5000), 
+        (10000, 10000), 
+        (25000, 25000), 
+        (50000, 50000)
+    )
+
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=2048, null=True, blank=True)
     upload_date = models.DateTimeField(auto_now=True)
@@ -44,6 +64,8 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
     dashboard_url = models.CharField(max_length=255, editable=False, default='')
     report_id = models.CharField(max_length=128, null=True, blank=True)
     workspace_id = models.CharField(max_length=128, null=True, blank=True)
+    layer_time_increment = models.TextField(choices=TIME_OPTIONS)
+    iterations = models.IntegerField(choices=ITERATIONS_OPTIONS, null=True)
 
     def __str__(self):
         return f'Analytics Solution ({self.id}) - {self.name}'
@@ -62,8 +84,9 @@ class Scenario(models.Model):
     name = models.CharField(max_length=255)
     is_adhoc = models.BooleanField(default=False)
     is_in_progress = models.BooleanField(default=False)
-    date = models.DateField(default=datetime.date.today())
     status = models.CharField(max_length=256, null=True, blank=True)
+    layer_date_start = models.DateField()
+    shared = models.ManyToManyField(User, blank=True)
 
     def __str__(self):
         return self.name
@@ -77,8 +100,12 @@ class Scenario(models.Model):
         return self.nodeoverride_set.all()
 
     @property
-    def scenario_node_data(self) -> ModelType['ScenarioNodeData']:
-        return self.scenarionodedata_set.all()
+    def node_data(self) -> ModelType['NodeData']:
+        return self.nodedata_set.all()
+
+    @property
+    def node_results(self) -> ModelType['NodeResult']:
+        return self.noderesult_set.all()
 
 
 class Model(models.Model):
@@ -175,26 +202,32 @@ class EvalJob(models.Model):
     def __str__(self):
         return self.name
 
-    @property
-    def node_results(self) -> ModelType['NodeResult']:
-        return self.noderesult_set.all()
-
     def is_complete(self):
         return self.status == 'Complete.'
 
 
 class NodeResult(models.Model):
-    eval_job = models.ForeignKey(EvalJob, on_delete=models.CASCADE)
+    scenario_id = models.ForeignKey(Scenario, on_delete=models.CASCADE, db_column='scenario_id')
     scenario = models.CharField(max_length=255)
     model = models.CharField(max_length=255)
     node = models.CharField(max_length=255)
     layer = models.DateField()
     node_tags = JSONField()
+    role = models.CharField(max_length=255, null=True, editable=False)
     result_10 = models.FloatField()
     result_30 = models.FloatField()
     result_50 = models.FloatField()
     result_70 = models.FloatField()
     result_90 = models.FloatField()
+
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        self.role = next(
+            (tag.split('==')[1] for tag in self.node_tags if tag.startswith('CAM_ROLE==')),
+            None,
+        )
+        super().save(force_insert, force_update, using, update_fields)
 
 
 class ExecutiveView(models.Model):
@@ -269,9 +302,9 @@ class DecimalNodeOverride(NodeOverride):
 
 
 class NodeData(PolymorphicModel):
-    node = models.ForeignKey(Node, on_delete=models.CASCADE, default=None)
+    node = models.ForeignKey(Node, on_delete=NON_POLYMORPHIC_CASCADE, default=None)
     is_model = models.BooleanField(default=True)
-    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE, default=None, null=True)
+    scenario = models.ForeignKey(Scenario, on_delete=NON_POLYMORPHIC_CASCADE, default=None, null=True)
 
 
 class InputNodeData(NodeData):

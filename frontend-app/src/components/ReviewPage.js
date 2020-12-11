@@ -8,7 +8,17 @@ initializeIcons();
 class ReviewPage extends Component {
     constructor(props) {
         super(props);
+        this.state = {
+            date: props.date
+        }
     }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        if (this.props.date !== prevProps.date) {
+            //
+        }
+    }
+
 
     render(){
         return (
