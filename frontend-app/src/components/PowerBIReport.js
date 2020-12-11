@@ -66,7 +66,13 @@ class PowerBIReport extends Component {
           <div align="left">
             <ActionButton
               iconProps={{ iconName: "ChevronLeft" }}
-              onClick={() => {}}
+              onClick={() => {
+                this.props.history.push(
+                  "/frontend-app/solution/" +
+                    this.props.solutionId +
+                    "/scenario"
+                );
+              }}
             >
               Back to Scenarios
             </ActionButton>
