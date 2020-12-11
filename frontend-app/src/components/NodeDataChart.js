@@ -36,13 +36,33 @@ class NodeDataChart extends Component {
       }
       let datasets = [
         {
-          label: node.name,
+          label: 'Nominal',
           data:
             node.type === "input"
               ? node.data.map((layer) => layer[2])
               : node.data.map((data) => data),
           fill: false,
+          borderColor: "#50BFAF",
+          lineTension: 0,
+        },
+        {
+          label: 'Lower',
+          data:
+            node.type === "input"
+              ? node.data.map((layer) => layer[0])
+              : node.data.map((data) => data),
+          fill: false,
           borderColor: "#742774",
+          lineTension: 0,
+        },
+        {
+          label: 'Upper',
+          data:
+            node.type === "input"
+              ? node.data.map((layer) => layer[4])
+              : node.data.map((data) => data),
+          fill: false,
+          borderColor: "#BF2EBF",
           lineTension: 0,
         },
       ];
