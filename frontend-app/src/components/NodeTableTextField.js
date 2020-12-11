@@ -6,7 +6,7 @@ class NodeTableTextField extends Component {
         super(props);
 
         this.state = {
-            value: props.data.toString(),
+            value: this.formatFloat(parseFloat(props.data)),
             data: props.data
         }
 
@@ -17,12 +17,22 @@ class NodeTableTextField extends Component {
     setData(e) {
         let val = parseFloat(this.state.value);
         if (!isNaN(val) && this.props.data !== val) {
+            let formatted = this.formatFloat(val);
             if (this.props.type === 'const') {
-                this.props.updateData(this.props.nodeId, this.props.layerIdx, val);
+                this.props.updateData(this.props.nodeId, this.props.layerIdx, formatted);
             } else {
-                this.props.updateData(this.props.nodeId, this.props.layerIdx, this.props.nomIdx, val);
+                this.props.updateData(this.props.nodeId, this.props.layerIdx, this.props.nomIdx, formatted);
             }
+            this.state.value = formatted;
         }
+    }
+
+    formatFloat(val) {
+        let formattedValue = val.toFixed(2);
+        if (formattedValue.endsWith(".00")) {
+            formattedValue = val.toFixed();
+        }
+        return formattedValue;
     }
 
     handleKeyPress(e) {
@@ -39,7 +49,8 @@ class NodeTableTextField extends Component {
 
     render(){
         return (
-            <TextField value={this.state.value} className="table-input"
+            <TextField value={this.state.value}
+                       className="table-input"
                        onChange={(e, val) => {this.setState({value: val})}}
                        onBlur={this.setData}
                        onKeyPress={this.handleKeyPress} />

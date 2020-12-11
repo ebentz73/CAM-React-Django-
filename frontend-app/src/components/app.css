@@ -22,8 +22,9 @@
   display: block;
 }
 .is-unread {
-  border-left: "3px solid blue" !important;
+  border-left: 3px solid blue !important;
 }
+
 .blue {
   color: blue;
 }
@@ -222,17 +223,15 @@
   display: flex;
   align-items: center;
 }
-
 .progress-circle-text {
+  width: 50%;
   font-family: "Segoe UI";
   display: inline-block;
   font-size: 1em;
   vertical-align: middle;
   margin-left: 15px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   flex: 1;
+  overflow-wrap: break-word;
 }
 
 .active-step {
@@ -283,7 +282,7 @@
 
 /* Login Page */
 .width-450 {
-  width: 450 px !important;
+  width: 450px !important;
 }
 
 .ms-Dialog-title {
