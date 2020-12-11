@@ -12,10 +12,43 @@ class PowerBIReport extends Component {
       ReportId: "",
     };
     this.fetchReportEmbedData = this.fetchReportEmbedData.bind(this);
+    this.downloadResults = this.downloadResults.bind(this);
+    this.downloadInputs = this.downloadInputs.bind(this);
+    this.clearResults = this.clearResults.bind(this);
   }
 
-  _onMenuClick(ev) {
-    console.log("=========", ev);
+  downloadResults() {
+    fetch(
+      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.props.solutionId}/scenarios/${this.props.scenarioId}/export/`
+    )
+      .then((response) => {
+        return response.json();
+      })
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+
+  downloadInputs() {
+    console.log("DownloadInputs");
+  }
+
+  clearResults() {
+    fetch(
+      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.props.solutionId}/scenarios/${this.props.scenarioId}/reset/`
+    )
+      .then((response) => {
+        return response.json();
+      })
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 
   fetchReportEmbedData(solution_id) {
@@ -47,14 +80,17 @@ class PowerBIReport extends Component {
         {
           key: "downloadInputs",
           text: "Download Inputs",
+          onClick: this.downloadInputs,
         },
         {
           key: "downloadResults",
           text: "Download Results",
+          onClick: this.downloadResults,
         },
         {
           key: "clearResults",
           text: "Clear Results",
+          onClick: this.clearResults,
         },
       ],
       directionalHintFixed: true,
@@ -81,7 +117,6 @@ class PowerBIReport extends Component {
             <DefaultButton
               text="Action"
               menuProps={menuProps}
-              onMenuClick={this._onMenuClick}
               allowDisabledFocus
             />
           </div>
