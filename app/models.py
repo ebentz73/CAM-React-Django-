@@ -57,7 +57,7 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
     report_id = models.CharField(max_length=128, null=True, blank=True)
     workspace_id = models.CharField(max_length=128, null=True, blank=True)
     layer_time_increment = models.TextField(choices=TIME_OPTIONS)
-    layer_offset = models.IntegerField(default=0)
+    layer_offset = models.IntegerField(default=0, null=True)
 
     def __str__(self):
         return f'Analytics Solution ({self.id}) - {self.name}'
