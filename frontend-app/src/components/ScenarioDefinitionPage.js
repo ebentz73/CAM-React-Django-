@@ -527,7 +527,11 @@ class ScenarioDefinitionPage extends Component {
               </NodesContext.Provider>
             </PivotItem>
             <PivotItem headerText="Results">
-              <PowerBIReport solutionId={this.solution_id} />
+              <PowerBIReport
+                history={this.props.history}
+                solutionId={this.solution_id}
+                scenarioId={this.scenario_id}
+              />
             </PivotItem>
           </Pivot>
         </div>

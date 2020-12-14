@@ -208,7 +208,7 @@ class ScenarioViewSet(ModelViewSet):
         
     @action(detail=True, methods=['post'])
     def clone(self, request, solution_pk, pk):
-        body = json.loads(request.body)
+        body = request.data
         clone = self.copy_scenario(pk, body['name'])
         serializer = ScenarioSerializer(clone)
 
@@ -220,7 +220,7 @@ class ScenarioViewSet(ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def merge(self, request, solution_pk, pk):
-        body = json.loads(request.body)
+        body = request.data
         clone = self.copy_scenario(pk, body['name'])
         serializer = ScenarioSerializer(clone)
 

@@ -6,6 +6,7 @@ import {
   Text,
   DefaultButton,
 } from "@fluentui/react";
+import { SearchBox } from "office-ui-fabric-react/lib/SearchBox";
 import { Spinner, SpinnerSize } from "office-ui-fabric-react/lib/Spinner";
 import Node from "./Node";
 import NodeDataChart from "./NodeDataChart";
@@ -19,6 +20,7 @@ class InputCategoryPage extends Component {
       nodes: props.nodes,
       filters: props.filters,
       categoryNodes: [],
+      filteredCategoryNodes: [],
       chartData: {},
       nodeOnChart: "none",
       toggleFiltersBox: false,
@@ -50,6 +52,9 @@ class InputCategoryPage extends Component {
 
   setInputCategoryNodes(categoryNodes) {
     this.setState({ categoryNodes: categoryNodes.map((a) => a.toString()) });
+    this.setState({
+      filteredCategoryNodes: categoryNodes.map((a) => a.toString()),
+    });
   }
 
   componentWillReceiveProps(nextProps, nextContext) {
@@ -180,7 +185,24 @@ class InputCategoryPage extends Component {
             <div className="">
               <div className="nodes">
                 {/* Input Nodes */}
-                {this.state.categoryNodes.map((node_id, index) => {
+                <SearchBox
+                  placeholder="Search nodes"
+                  onSearch={(searchStr) => {
+                    let searchResult = [];
+                    this.state.categoryNodes.map((node_id, index) => {
+                      let node = this.state.nodes[node_id];
+                      if (
+                        node.name
+                          .toLowerCase()
+                          .includes(searchStr.toLowerCase())
+                      ) {
+                        searchResult.push(node_id);
+                      }
+                    });
+                    this.setState({ filteredCategoryNodes: searchResult });
+                  }}
+                />
+                {this.state.filteredCategoryNodes.map((node_id, index) => {
                   let node = this.state.nodes[node_id];
 
                   // Filter by role
