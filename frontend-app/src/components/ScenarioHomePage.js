@@ -225,7 +225,7 @@ class ScenarioHomePage extends Component {
         <div className="ms-Grid m-t-100" dir="ltr">
           <div className="ms-Grid-row">
             <div className="ms-Grid-col ms-md3">
-              <HomePageSideBar path={path} />
+              {/* <HomePageSideBar path={path} /> */}
             </div>
             <div className="ms-Grid-col ms-md6">
               <div align="right">
