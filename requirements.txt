@@ -19,3 +19,4 @@ python-dotenv==0.14.0
 msal
 django-guardian
 django-rest-polymorphic
+django-microsoft-auth
