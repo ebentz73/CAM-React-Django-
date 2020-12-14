@@ -143,6 +143,7 @@ class Node(models.Model):
     name = models.CharField(max_length=255)
     tags = ArrayField(models.CharField(max_length=255), default=list)
     tam_id = models.UUIDField(editable=False)
+    notes = models.CharField(max_length=255, null=True, default=None)
 
     def __str__(self):
         return self.name

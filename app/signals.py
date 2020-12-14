@@ -78,7 +78,7 @@ def update_model(sender, **kwargs):
 
                     # Save all nodes
                     cursor.execute(
-                        "SELECT n.NodeId, NodeName, NodeType, TagList, NodeInputData "
+                        "SELECT n.NodeId, NodeName, NodeNotes, NodeType, TagList, NodeInputData "
                         "FROM Node AS n, NodeScenarioData AS d "
                         "WHERE n.NodeId = d.NodeId "
                         "   AND n.ModelId=? "
@@ -88,6 +88,7 @@ def update_model(sender, **kwargs):
                     for (
                         node_id,
                         node_name,
+                        node_notes,
                         node_type,
                         tag_list_blob,
                         node_data_blob,
@@ -108,6 +109,7 @@ def update_model(sender, **kwargs):
                                 tags=tag_list,
                                 tam_id=node_id,
                                 defaults={'name': node_name},
+                                notes=node_notes,
                             )
 
                             # Create InputNodeData model
