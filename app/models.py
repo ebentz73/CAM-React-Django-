@@ -48,6 +48,14 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
         ('month', 'Month'),
         ('year', 'Year'),
     )
+    ITERATIONS_OPTIONS = (
+        (100, 100), 
+        (1000, 1000), 
+        (5000, 5000), 
+        (10000, 10000), 
+        (25000, 25000), 
+        (50000, 50000)
+    )
 
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=2048, null=True, blank=True)
@@ -58,6 +66,7 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
     report_id = models.CharField(max_length=128, null=True, blank=True)
     workspace_id = models.CharField(max_length=128, null=True, blank=True)
     layer_time_increment = models.TextField(choices=TIME_OPTIONS)
+    iterations = models.IntegerField(choices=ITERATIONS_OPTIONS, null=True)
 
     def __str__(self):
         return f'Analytics Solution ({self.id}) - {self.name}'

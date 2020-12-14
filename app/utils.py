@@ -207,23 +207,27 @@ class PowerBI:
 
     @property
     def roles(self):
-        return [role.name for role in self.user.profile.roles.all()]
+        return (
+            []
+            if self.user.is_anonymous
+            else [role.name for role in self.user.profile.roles.all()]
+        )
 
     @property
     def username(self):
-        return self.user.email
+        return '' if self.user.is_anonymous else self.user.email
 
     @property
     def client_secret(self):
-        return os.environ.get('POWERBI_CLIENT_SECRET')
+        return settings.POWERBI_CLIENT_SECRET
 
     @property
     def client_id(self):
-        return os.environ.get('POWERBI_CLIENT_ID')
+        return settings.POWERBI_CLIENT_ID
 
     @property
     def tenant_id(self):
-        return os.environ.get('POWERBI_TENANT_ID')
+        return settings.POWERBI_TENANT_ID
 
     @property
     def authority(self):
@@ -233,7 +237,7 @@ class PowerBI:
     def headers(self):
         return {
             'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self.access_token}'
+            'Authorization': f'Bearer {self.access_token}',
         }
 
     @property
@@ -284,6 +288,9 @@ class PowerBI:
     def get_embed_token(self):
         """Returns Embed token and Embed URL."""
 
+        if not self.workspace_id or not self.report_id:
+            return ''
+
         report = self.report
         embed_url = report['embed_url']
         dataset_id = report['dataset_id']
@@ -300,18 +307,13 @@ class PowerBI:
                 }
             )
 
-        if self.report_id:
-            body['reports'] = [{'id': self.report_id}]
-
-        if self.workspace_id:
-            body['targetWorkspaces'] = [{'id': self.workspace_id}]
+        body['reports'] = [{'id': self.report_id}]
+        body['targetWorkspaces'] = [{'id': self.workspace_id}]
 
         # Generate Embed token for multiple workspaces, datasets, and reports.
         # Refer https://aka.ms/MultiResourceEmbedToken
         embed_token_url = 'https://api.powerbi.com/v1.0/myorg/GenerateToken'
-        response = requests.post(
-            embed_token_url, json=body, headers=self.headers
-        )
+        response = requests.post(embed_token_url, json=body, headers=self.headers)
         response.raise_for_status()
 
         body = response.json()
