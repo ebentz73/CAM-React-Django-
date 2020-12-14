@@ -163,7 +163,7 @@ def update_model(sender, **kwargs):
                                         codename='view_node',
                                         content_type=ContentType.objects.get_for_model(Node),
                                     )
-                                    #node_role.permissions.add(permission)
+                                    node_role.permissions.add(permission)
                                     tag_roles[cam_role] = node_role
                                 assign_perm('view_node', node_role, node)
 
