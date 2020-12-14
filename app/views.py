@@ -5,17 +5,19 @@ from functools import wraps
 
 import material.frontend.views as material
 import datetime
-import time
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
+
+from app.permissions import CustomObjectPermissions
+from app.filters import DjangoObjectPermissionsFilter
 
 from app.forms import CreateEvalJobForm
 from app.models import (
@@ -31,6 +33,7 @@ from app.models import (
     Node,
     NodeResult,
     Scenario,
+    NodeData
 )
 from app.serializers import (
     AnalyticsSolutionSerializer,
@@ -44,8 +47,13 @@ from app.serializers import (
     NodeSerializer,
     ScenarioSerializer,
     ScenarioEvaluateSerializer,
+    FilterCategoryOptionsSerializer,
+    NodeDataSerializer,
+    PolyNodeDataSerializer,
 )
 from app.utils import PowerBI, run_eval_engine
+
+from profile.models import Role, UserProfile
 
 
 # region REST Framework Api
@@ -64,13 +72,58 @@ def validate_api(serializer_cls, many=False):
 
 
 class EvalJobDefinitionViewSet(ModelViewSet):
-    queryset = EvalJob.objects.all()
     serializer_class = EvalJobSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
+    filter_backends = (DjangoObjectPermissionsFilter,)
+
+    def get_queryset(self):
+        return EvalJob.objects.filter(solution=self.kwargs['solution_pk'])
+
+
+class NodeViewSet(ModelViewSet):
+    serializer_class = NodeSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
+    filter_backends = (DjangoObjectPermissionsFilter,)
+
+    def get_queryset(self):
+        if 'model_pk' in self.kwargs:
+            return Node.objects.filter(model=self.kwargs['model_pk'])
+        else:
+            return Node.objects.filter(model__solution=self.kwargs['solution_pk'])
+
+
+class FilterCategoryViewSet(ModelViewSet):
+    serializer_class = FilterCategoryOptionsSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
+    filter_backends = (DjangoObjectPermissionsFilter,)
+
+    def get_queryset(self):
+        return FilterCategory.objects.filter(solution=self.kwargs['solution_pk'])
+
+
+class FilterOptionViewSet(ModelViewSet):
+    serializer_class = FilterOptionSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
+    filter_backends = (DjangoObjectPermissionsFilter,)
+
+    def get_queryset(self):
+        return FilterOption.objects.filter(category=self.kwargs['filtercategory_pk'])
+
+
+class AnalyticsModelViewSet(ModelViewSet):
+    serializer_class = ModelSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
+    filter_backends = (DjangoObjectPermissionsFilter,)
+
+    def get_queryset(self):
+        return Model.objects.filter(solution=self.kwargs['solution_pk'])
 
 
 class AnalyticsSolutionViewSet(ModelViewSet):
     queryset = AnalyticsSolution.objects.all()
     serializer_class = AnalyticsSolutionSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
+    filter_backends = (DjangoObjectPermissionsFilter,)
 
     @action(detail=True)
     def report(self, request, pk):
@@ -83,9 +136,35 @@ class AnalyticsSolutionViewSet(ModelViewSet):
             return Response({'errorMsg': str(e)}, 500)
 
 
+class InputNodeDataViewSet(ModelViewSet):
+    serializer_class = InputNodeDataSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
+    filter_backends = (DjangoObjectPermissionsFilter,)
+
+    def get_queryset(self):
+        if 'scenario_pk' in self.kwargs:
+            return InputNodeData.objects.filter(scenario=self.kwargs['scenario_pk'])
+        else:
+            return InputNodeData.objects.filter(node=self.kwargs['node_pk'])
+
+
+class ConstNodeDataViewSet(ModelViewSet):
+    serializer_class = ConstNodeDataSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
+    filter_backends = (DjangoObjectPermissionsFilter,)
+
+    def get_queryset(self):
+        if 'scenario_pk' in self.kwargs:
+            return ConstNodeData.objects.filter(scenario=self.kwargs['scenario_pk'])
+        else:
+            return ConstNodeData.objects.filter(node=self.kwargs['node_pk'])
+
+
 class ScenarioViewSet(ModelViewSet):
-    queryset = Scenario.objects.all()
     serializer_class = ScenarioSerializer
+
+    def get_queryset(self):
+        return Scenario.objects.filter(solution=self.kwargs['solution_pk'])
 
     def create(self, request, solution_pk=None, **kwargs):
         run_eval = request.data.pop('run_eval', False)
@@ -102,7 +181,7 @@ class ScenarioViewSet(ModelViewSet):
 
         return response
 
-    def update(self, request, solution_pk, pk, **kwargs):
+    def partial_update(self, request, solution_pk, pk, **kwargs):
         run_eval = request.data.pop('run_eval', False)
 
         if 'solution' not in request.data:
@@ -214,6 +293,23 @@ class ScenarioViewSet(ModelViewSet):
 class ScenarioEvaluateViewSet(ModelViewSet):
     queryset = Scenario.objects.all()
     serializer_class = ScenarioEvaluateSerializer
+
+
+class ScenarioNodeDataViewSet(ModelViewSet):
+    serializer_class = PolyNodeDataSerializer
+
+    def get_queryset(self):
+        return NodeData.objects.filter(scenario=self.kwargs['solution_pk'], is_model=True)
+
+
+class NodeDataViewSet(ModelViewSet):
+    serializer_class = PolyNodeDataSerializer
+
+    def get_queryset(self):
+        if 'scenario_pk' in self.kwargs:
+            return NodeData.objects.filter(scenario=self.kwargs['scenario_pk'])
+        else:
+            return NodeData.objects.filter(node__model__solution=self.kwargs['solution_pk'], is_model=True)
 
 
 class NodeResultView(APIView):
@@ -402,7 +498,16 @@ class AllNodeDataByModelAPIView(generics.ListAPIView):
 
 class AnalyticsSolutionAPIView(generics.ListAPIView):
     queryset = AnalyticsSolution.objects.all()
-    serializer_class = AnalyticsSolutionSerializer
+
+    def get(self, request, format=None, **kwargs):
+        if request.user.is_superuser:
+            solutions = AnalyticsSolution.objects.all()
+        else:
+            profile = UserProfile.objects.get(user=request.user)
+            solutions = AnalyticsSolution.objects.filter(role__in=profile.roles.all())
+
+        serializer = AnalyticsSolutionSerializer(solutions, many=True)
+        return Response(serializer.data)
 
 
 class ModelAPIView(generics.ListAPIView):

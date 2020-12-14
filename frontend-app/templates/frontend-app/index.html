@@ -6,10 +6,16 @@
   <title>Cloud Analysis Manager</title>
 </head>
 <body>
-<div id="app">
-    <!-- React will load here -->
-</div>
+{% if user.is_authenticated %}
+    <div id="app" />
+{% else %}
+    <div>Please log in.</div>
+{% endif %}
 </body>
-{% load static %}
-<script src="{% static "frontend-app/main.js" %}"></script>
+
+{% if user.is_authenticated %}
+    {% load static %}
+    <script src="{% static "frontend-app/main.js" %}"></script>
+{% endif %}
+
 </html>

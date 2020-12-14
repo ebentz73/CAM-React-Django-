@@ -39,7 +39,7 @@ class AnalyticsSolutionPage extends Component {
   }
 
   fetchAnalyticsSolutionsData() {
-    fetch(`${window.location.protocol}//${window.location.host}/api/solution/`)
+    fetch(`${window.location.protocol}//${window.location.host}/api/v1/solutions/`)
       .then((response) => {
         return response.json();
       })
