@@ -12,8 +12,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
-from .permissions import CustomObjectPermissions
-from .filters import DjangoObjectPermissionsFilter
+from app.permissions import CustomObjectPermissions
+from app.filters import DjangoObjectPermissionsFilter
 
 from app.forms import CreateEvalJobForm
 from app.models import (
@@ -79,17 +79,6 @@ class NodeViewSet(ModelViewSet):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
     filter_backends = (DjangoObjectPermissionsFilter,)
 
-    '''
-    def create(self, request):
-        return super().create(request)
-
-    def update(self, request, pk=None):
-        super().update(request)
-
-    def partial_update(self, request, pk=None):
-        super().partial_update(request)
-    '''
-
     def get_queryset(self):
         if 'model_pk' in self.kwargs:
             return Node.objects.filter(model=self.kwargs['model_pk'])
@@ -130,6 +119,16 @@ class AnalyticsSolutionViewSet(ModelViewSet):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
     filter_backends = (DjangoObjectPermissionsFilter,)
 
+    @action(detail=True)
+    def report(self, request, pk):
+        instance = self.get_object()
+        powerbi = PowerBI(instance, request.user)
+        try:
+            return Response(powerbi.get_embed_token())
+        except Exception as e:
+            logging.error(e, exc_info=True)
+            return Response({'errorMsg': str(e)}, 500)
+
 
 class InputNodeDataViewSet(ModelViewSet):
     serializer_class = InputNodeDataSerializer
@@ -153,16 +152,6 @@ class ConstNodeDataViewSet(ModelViewSet):
             return ConstNodeData.objects.filter(scenario=self.kwargs['scenario_pk'])
         else:
             return ConstNodeData.objects.filter(node=self.kwargs['node_pk'])
-
-    @action(detail=True)
-    def report(self, request, pk):
-        instance = self.get_object()
-        powerbi = PowerBI(instance, request.user)
-        try:
-            return Response(powerbi.get_embed_token())
-        except Exception as e:
-            logging.error(e, exc_info=True)
-            return Response({'errorMsg': str(e)}, 500)
 
 
 class ScenarioViewSet(ModelViewSet):

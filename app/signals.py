@@ -32,7 +32,8 @@ from profile.models import Role
 from guardian.shortcuts import assign_perm, get_objects_for_group, get_group_perms
 
 
-def assign_model_and_object_perms(cls, instance, role, codename):
+def assign_model_and_object_perms(instance, role, codename):
+    cls = instance.__class__
     content_type = ContentType.objects.get_for_model(cls)
     permission = Permission.objects.get(
         codename=codename,
@@ -80,7 +81,7 @@ def update_model(sender, **kwargs):
                     category, _ = FilterCategory.objects.update_or_create(
                         solution=solution, name=category_name
                     )
-                    assign_model_and_object_perms(FilterCategory, category, role, 'view_filtercategory')
+                    assign_model_and_object_perms(category, role, 'view_filtercategory')
 
                     blob_model = TagFilterOption_pb2.List_TagFilterOption()
                     blob_model.ParseFromString(filter_blob)
@@ -90,7 +91,7 @@ def update_model(sender, **kwargs):
                             tag=option.Tag,
                             display_name=option.DisplayName,
                         )
-                        assign_model_and_object_perms(FilterOption, filter_option, role, 'view_filteroption')
+                        assign_model_and_object_perms(filter_option, role, 'view_filteroption')
 
                 # Save all models
                 cursor.execute("SELECT ModelId, ModelName FROM TruNavModel")
@@ -100,7 +101,7 @@ def update_model(sender, **kwargs):
                         tam_id=model_id,
                         defaults={'name': model_name},
                     )
-                    assign_model_and_object_perms(Model, model, role, 'view_model')
+                    assign_model_and_object_perms(model, role, 'view_model')
 
                     # Save all input pages
                     cursor.execute(
@@ -113,7 +114,7 @@ def update_model(sender, **kwargs):
                         page, _ = InputPage.objects.update_or_create(
                             model=model, tam_id=page_id, defaults={'name': page_name}
                         )
-                        assign_model_and_object_perms(InputPage, page, role, 'view_inputpage')
+                        assign_model_and_object_perms(page, role, 'view_inputpage')
 
                     # Save all nodes
                     tag_roles = {}
@@ -162,7 +163,7 @@ def update_model(sender, **kwargs):
                                         codename='view_node',
                                         content_type=ContentType.objects.get_for_model(Node),
                                     )
-                                    node_role.permissions.add(permission)
+                                    #node_role.permissions.add(permission)
                                     tag_roles[cam_role] = node_role
                                 assign_perm('view_node', node_role, node)
 
@@ -183,7 +184,7 @@ def update_model(sender, **kwargs):
                                 ind, _ = InputNodeData.objects.update_or_create(
                                     node=node, default_data=node_data, is_model=True
                                 )
-                                assign_model_and_object_perms(InputNodeData, ind, node_role, 'view_inputnodedata')
+                                assign_model_and_object_perms(ind, node_role, 'view_inputnodedata')
 
                             # Create ConstNodeData model
                             elif node_type == 'constnode':
@@ -196,7 +197,7 @@ def update_model(sender, **kwargs):
                                 cnd, _ = ConstNodeData.objects.update_or_create(
                                     node=node, default_data=node_data, is_model=True
                                 )
-                                assign_model_and_object_perms(ConstNodeData, cnd, node_role, 'view_constnodedata')
+                                assign_model_and_object_perms(cnd, node_role, 'view_constnodedata')
 
         finally:
             os.remove(filename)

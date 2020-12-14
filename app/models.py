@@ -57,7 +57,6 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
     dashboard_url = models.CharField(max_length=255, editable=False, default='')
     report_id = models.CharField(max_length=128, null=True, blank=True)
     workspace_id = models.CharField(max_length=128, null=True, blank=True)
-    role = models.ForeignKey(Role, on_delete=models.CASCADE, null=True, default=None)
     layer_time_increment = models.TextField(choices=TIME_OPTIONS)
 
     def __str__(self):
@@ -200,7 +199,7 @@ class EvalJob(models.Model):
 
 
 class NodeResult(models.Model):
-    scenario_id = models.ForeignKey(Scenario, on_delete=models.CASCADE)
+    scenario_id = models.ForeignKey(Scenario, on_delete=models.CASCADE, db_column='scenario_id')
     scenario = models.CharField(max_length=255)
     model = models.CharField(max_length=255)
     node = models.CharField(max_length=255)
