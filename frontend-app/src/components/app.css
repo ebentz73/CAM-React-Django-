@@ -192,7 +192,7 @@
 /* PowerBI Report */
 
 .report-style-class {
-  height: 100vh;
+  height: 80vh;
 }
 
 /* Scenario Definition Page Layout */
@@ -291,4 +291,9 @@
 
 .withoutUnderline {
   text-decoration: none;
+}
+
+.result-item {
+  display: flex;
+  justify-content: space-between;
 }
