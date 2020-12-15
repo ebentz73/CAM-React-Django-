@@ -60,6 +60,8 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
     description = models.CharField(max_length=2048, null=True, blank=True)
     upload_date = models.DateTimeField(auto_now=True)
     tam_file = models.FileField(upload_to='tam_models/')
+    user_guide_file = models.FileField(upload_to='user_guides/', blank=True)
+    support_contact = models.CharField(max_length=255, editable=True, blank=True, default='')
     dashboard_uid = models.CharField(max_length=40, editable=False, default='')
     dashboard_url = models.CharField(max_length=255, editable=False, default='')
     report_id = models.CharField(max_length=128, null=True, blank=True)
