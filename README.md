@@ -4,17 +4,20 @@
 
 ### Env Variables
 
-| ENV                    | Default                         | Description                                                                               |
-|------------------------|---------------------------------|-------------------------------------------------------------------------------------------|
-| DJANGO_SETTINGS_MODULE | cloud_analysis_manager.settings | Django settings path. NOTE: This will need to be set through PyCharm's run configuration. |
-| DB_USER                |                                 | PostgreSQL User                                                                           |
-| DB_PASSWORD            |                                 | PostgreSQL Password                                                                       |
-| DB_HOST                |                                 | PostgreSQL Host                                                                           |
-| DB_PORT                |                                 | PostgreSQL Port                                                                           |
-| EVAL_ENGINE_IMAGE      | lonestar/trunavcore:latest      | The eval engine docker image.                                                             |
-| POWERBI_CLIENT_ID      |                                 | Azure service principal client id.                                                        |
-| POWERBI_CLIENT_SECRET  |                                 | Azure service principal client secret.                                                    |
-| POWERBI_TENANT_ID      |                                 | Azure service principal tenant id.                                                        |
+| ENV                          | Default                         | Description                                                                               |
+|------------------------------|---------------------------------|-------------------------------------------------------------------------------------------|
+| DJANGO_SETTINGS_MODULE       | cloud_analysis_manager.settings | Django settings path. NOTE: This will need to be set through PyCharm's run configuration. |
+| DB_USER                      |                                 | PostgreSQL User                                                                           |
+| DB_PASSWORD                  |                                 | PostgreSQL Password                                                                       |
+| DB_HOST                      |                                 | PostgreSQL Host                                                                           |
+| DB_PORT                      |                                 | PostgreSQL Port                                                                           |
+| EVAL_ENGINE_IMAGE            | lonestar/trunavcore:latest      | The eval engine docker image.                                                             |
+| POWERBI_CLIENT_ID            |                                 | Azure service principal client id.                                                        |
+| POWERBI_CLIENT_SECRET        |                                 | Azure service principal client secret.                                                    |
+| POWERBI_TENANT_ID            |                                 | Azure service principal tenant id.                                                        |
+| MICROSOFT_AUTH_TENANT_ID     |                                 | Azure AD B2C tenant id.                                                                   |
+| MICROSOFT_AUTH_CLIENT_ID     |                                 | Azure AD B2C App registration client id.                                                  |
+| MICROSOFT_AUTH_CLIENT_SECRET |                                 | Azure AD B2C App registration client secret.                                              |
 
 The `cloud_analysis_manager/.env` file can created to set necessary environment variables. It is ignored by git.
 

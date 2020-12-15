@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.models import User
 from rest_framework import serializers
+from rest_polymorphic import serializers as polymorphic_serializers
 
 from app.models import AnalyticsSolution, EvalJob, NodeResult, \
     Scenario, NodeData, Node, Model, InputNodeData, ConstNodeData, FilterOption, FilterCategory
@@ -92,7 +93,7 @@ InputNodeDataSerializer = generic_serializer(InputNodeData)
 ConstNodeDataSerializer = generic_serializer(ConstNodeData)
 # ScenarioSerializer = generic_serializer(Scenario, depth=1)
 NodeSerializer = generic_serializer(Node)
-FilterCategorySerializer = generic_serializer(FilterCategory)
+FilterCategorySerializer = generic_serializer(FilterCategory, depth=1)
 FilterOptionSerializer = generic_serializer(FilterOption)
 ModelSerializer = generic_serializer(Model)
 
@@ -129,6 +130,22 @@ class ScenarioSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         self.add_shared(instance, shared)
         return instance
+
+
+class FilterCategoryOptionsSerializer(serializers.ModelSerializer):
+    filteroption_set = FilterOptionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = FilterCategory
+        fields = '__all__'
+
+
+class PolyNodeDataSerializer(polymorphic_serializers.PolymorphicSerializer):
+    model_serializer_mapping = {
+        NodeData: NodeDataSerializer,
+        InputNodeData: InputNodeDataSerializer,
+        ConstNodeData: ConstNodeDataSerializer
+    }
 
 
 class ScenarioEvaluateSerializer(serializers.ModelSerializer):

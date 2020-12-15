@@ -10,6 +10,7 @@ from polymorphic.models import PolymorphicModel
 from app.mixins import ModelDiffMixin
 from app.validators import validate_input_date_set_file
 from app.utils import ModelType
+from profile.models import Role
 
 __all__ = [
     'AnalyticsSolution',
@@ -47,6 +48,14 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
         ('month', 'Month'),
         ('year', 'Year'),
     )
+    ITERATIONS_OPTIONS = (
+        (100, 100), 
+        (1000, 1000), 
+        (5000, 5000), 
+        (10000, 10000), 
+        (25000, 25000), 
+        (50000, 50000)
+    )
 
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=2048, null=True, blank=True)
@@ -58,6 +67,7 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
     workspace_id = models.CharField(max_length=128, null=True, blank=True)
     layer_time_increment = models.TextField(choices=TIME_OPTIONS)
     layer_offset = models.IntegerField(default=0, null=True)
+    iterations = models.IntegerField(choices=ITERATIONS_OPTIONS, null=True)
 
     def __str__(self):
         return f'Analytics Solution ({self.id}) - {self.name}'
