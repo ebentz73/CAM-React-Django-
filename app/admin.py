@@ -48,7 +48,16 @@ class HideModelBase(admin.ModelAdmin):
 
 
 class HideModelAdmin(ModelAdminBase, HideModelBase):
-    ...
+    pass
+
+
+class InputAdminMixin:
+    change_form_template = 'admin/app/add_input_change_form.html'
+
+
+@admin.register(models.AnalyticsSolution)
+class AnalyticsSolutionAdmin(InputAdminMixin, ModelAdminBase):
+    pass
 
 
 @admin.register(models.Scenario)
@@ -112,7 +121,6 @@ class InputAdmin(PolymorphicParentModelAdmin, HideModelBase):
         return [relation.related_model for relation in self.model._meta.related_objects]
 
 
-admin.site.register(models.AnalyticsSolution, ModelAdminBase)
 admin.site.register(models.Model, HideModelAdmin)
 admin.site.register(models.InputPage, HideModelAdmin)
 admin.site.register(models.InputDataSet, HideModelAdmin)
@@ -122,3 +130,5 @@ admin.site.register(models.Node, HideModelAdmin)
 admin.site.register(models.InputDataSetInput, InputChildAdmin)
 admin.site.register(models.NumericInput, InputChildAdmin)
 admin.site.register(models.SliderInput, InputChildAdmin)
+admin.site.register(models.FilterCategory, HideModelAdmin)
+admin.site.register(models.FilterOption, HideModelAdmin)

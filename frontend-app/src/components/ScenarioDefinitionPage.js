@@ -32,6 +32,7 @@ class ScenarioDefinitionPage extends Component {
       scenario_name: "",
       model_date: "",
       description: "",
+      input_values: {},
       nodes_changed: 0,
       roles: {},
       activeRoles: [],
@@ -59,6 +60,8 @@ class ScenarioDefinitionPage extends Component {
     this.changeScenarioDesc = this.changeScenarioDesc.bind(this);
     this.changeModelDate = this.changeModelDate.bind(this);
     this.changeRole = this.changeRole.bind(this);
+    this.changeInputs = this.changeInputs.bind(this);
+    this.changeInputDataSet = this.changeInputDataSet.bind(this);
 
     this.setupProps = {
       updateName: this.changeScenarioName,
@@ -80,6 +83,50 @@ class ScenarioDefinitionPage extends Component {
 
   changeModelDate(val) {
     this.setState({ model_date: val });
+  }
+
+  changeInputs(input_id, node_id, val) {
+    let inputValues = {...this.state.input_values};
+    if (!inputValues.hasOwnProperty(input_id)) {
+      inputValues[input_id] = {};
+    }
+    inputValues[input_id].value = val;
+    inputValues[input_id].isIds = false;
+
+    let nodes = {...this.state.nodes};
+    let node = nodes[node_id];
+    let dirty = this.state.nodes_changed;
+
+    for (let layer = 0; layer < node.data.length; layer++) {
+      const isArray = Array.isArray(node.data[layer]);
+      if (isArray) {
+        // Assume input node
+        node.data[layer].forEach((part, index) => {
+          node.data[index] = val;
+        });
+      } else {
+        // Otherwise assume constant node
+        node.data[layer] = val;
+      }
+    }
+
+    if (!node.dirty) {
+      dirty++;
+    }
+    node.dirty = true;
+
+    this.setState({nodes: nodes, nodes_changed: dirty, input_values: inputValues});
+  }
+
+  changeInputDataSet(input_id, val) {
+    let inputValues = {...this.state.input_values};
+    if (!inputValues.hasOwnProperty(input_id)) {
+      inputValues[input_id] = {};
+    }
+    inputValues[input_id].value = val;
+    inputValues[input_id].isIds = true;
+
+    this.setState({input_values: inputValues});
   }
 
   changeRole(e, role) {
@@ -121,11 +168,23 @@ class ScenarioDefinitionPage extends Component {
       return `${year}-${month}-${day}`;
     };
 
+    const input_data_sets = Object.values(this.state.input_values)
+      .map(input => {if (input.isIds) return input.value})
+      .filter(value => value !== undefined);
+
     let url = `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.solution_id}/scenarios/`;
     let method = "POST";
+    let body = {
+      name: this.state.scenario_name,
+      is_adhoc: true,
+      layer_date_start: formatDate(this.state.model_date),
+      input_data_sets: input_data_sets,
+      run_eval: false
+    }
     if (this.scenario_id) {
       url += `${this.scenario_id}/`;
-      method = "PUT";
+      method = "PATCH";
+      body.id = parseInt(this.scenario_id);
     }
     return fetch(url, {
       method: method,
@@ -134,13 +193,7 @@ class ScenarioDefinitionPage extends Component {
         "Content-Type": "application/json",
         "X-CSRFToken": csrf_token,
       },
-      body: JSON.stringify({
-        // scenario_id: this.scenario_id,
-        name: this.state.scenario_name,
-        is_adhoc: true,
-        layer_date_start: formatDate(this.state.model_date),
-        run_eval: true,
-      }),
+      body: JSON.stringify(body),
     })
       .then((resp) => {
         return resp.json();
@@ -161,22 +214,30 @@ class ScenarioDefinitionPage extends Component {
       .filter((node_id) => this.state.nodes[node_id].dirty)
       .map((node_id) => {
         let node = this.state.nodes[node_id];
+        let method = "POST";
+        let body = {
+          node: node_id,
+          default_data: this.state.nodes[node_id].data,
+          scenario: parseInt(this.scenario_id),
+          is_model: false,
+          resourcetype: node.type === 'input' ? 'InputNodeData' : 'ConstNodeData'
+        };
+        let url = `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.solution_id}/scenarios/${this.scenario_id}/nodedatas/`;
+        if (node.hasOwnProperty("id")) {
+          method = "PUT";
+          body.id = node.id;
+          url += node.id + "/";
+        }
         fetch(
-          `${window.location.protocol}//${window.location.host}/api/node-data/scenario`,
+          url,
           {
-            method: "POST",
+            method: method,
             headers: {
               Accept: "application/json",
               "Content-Type": "application/json",
               "X-CSRFToken": csrf_token,
             },
-            body: JSON.stringify({
-              node: node_id,
-              default_data: this.state.nodes[node_id].data,
-              scenario_id: this.scenario_id,
-              is_model: false,
-              type: node.type,
-            }),
+            body: JSON.stringify(body),
           }
         ).catch((err) => {
           console.error(err);
@@ -219,23 +280,17 @@ class ScenarioDefinitionPage extends Component {
 
   fetchNodeDataByScenario(scenario_id) {
     fetch(
-      `${window.location.protocol}//${window.location.host}/api/scenario/${scenario_id}/node-data/`
+      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.solution_id}/scenarios/${scenario_id}/nodedatas/`
     )
       .then((response) => {
         return response.json();
       })
       .then((response) => {
         let nodes = { ...this.state.nodes };
-        // Retrieve Input Nodes
-        response.input_nodes.forEach((node) => {
+        response.forEach((node) => {
           if (nodes[node.node] !== undefined) {
             nodes[node.node].data = node.default_data;
-          }
-        });
-        // Retrieve Const Nodes
-        response.const_nodes.forEach((node) => {
-          if (nodes[node.node] !== undefined) {
-            nodes[node.node].data = node.default_data;
+            nodes[node.node].id = node.id;
           }
         });
         this.setState({ nodes: nodes, isLoading: false });
@@ -245,7 +300,7 @@ class ScenarioDefinitionPage extends Component {
   fetchNodesBySolution(solution_id) {
     // Fetching Nodes
     fetch(
-      `${window.location.protocol}//${window.location.host}/api/solution/${solution_id}/node/`
+      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${solution_id}/nodes/`
     )
       .then((response) => {
         return response.json();
@@ -306,25 +361,20 @@ class ScenarioDefinitionPage extends Component {
 
     // Fetching NodeDatas for corresponding Nodes
     fetch(
-      `${window.location.protocol}//${window.location.host}/api/solution/${solution_id}/model-node-data/`
+      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${solution_id}/modelnodedatas/`
     )
       .then((response) => {
         return response.json();
       })
       .then((response) => {
         let nodes = { ...this.state.nodes };
-        // Retrieve Input Nodes
-        response.input_nodes.forEach((node) => {
+        response.forEach((node) => {
           if (nodes[node.node] !== undefined) {
             nodes[node.node].data = node.default_data;
-            nodes[node.node].type = "input";
-          }
-        });
-        // Retrieve Const Nodes
-        response.const_nodes.forEach((node) => {
-          if (nodes[node.node] !== undefined) {
-            nodes[node.node].data = node.default_data;
-            nodes[node.node].type = "const";
+            if (node.resourcetype === "InputNodeData")
+              nodes[node.node].type = "input";
+            else
+              nodes[node.node].type = "const";
           }
         });
         this.setState({ nodes: nodes });
@@ -341,26 +391,27 @@ class ScenarioDefinitionPage extends Component {
 
   filtersBySolution(solution_id) {
     fetch(
-      `${window.location.protocol}//${window.location.host}/api/solution/${solution_id}/filters/`
+      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${solution_id}/filtercategories/`
     )
       .then((response) => {
         return response.json();
       })
       .then((response) => {
         let filters = {};
-        response.categories.forEach((category) => {
+        response.forEach((category) => {
           filters[category.id] = {
             name: category.name,
             options: {},
             selected: -1,
           };
+          category.filteroption_set.forEach((option) => {
+            filters[category.id].options[option.id] = {
+              display_name: option.display_name,
+              tag: option.tag,
+            };
+          });
         });
-        response.options.forEach((option) => {
-          filters[option.category].options[option.id] = {
-            display_name: option.display_name,
-            tag: option.tag,
-          };
-        });
+
         this.setState({ filters: filters });
       })
       .catch((err) => {
@@ -370,15 +421,15 @@ class ScenarioDefinitionPage extends Component {
 
   fetchScenarioMetadata() {
     fetch(
-      `${window.location.protocol}//${window.location.host}/api/scenario/${scenario_id}/`
+      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.solution_id}/scenarios/${this.scenario_id}/`
     )
       .then((resp) => {
         return resp.json();
       })
       .then((resp) => {
         this.setState({
-          scenario_name: resp[0].name,
-          model_date: resp[0].date,
+          scenario_name: resp.name,
+          model_date: new Date(resp.layer_date_start),
           description: "",
         });
       });
@@ -485,13 +536,17 @@ class ScenarioDefinitionPage extends Component {
                     {/* Input Category Pages */}
                     {this.state.tab === "setup" && (
                       <SetupPage
+                        solutionId={this.solution_id}
                         index={0}
                         changeScenarioName={this.changeScenarioName}
                         changeTab={this.changeTab}
+                        changeInputs={this.changeInputs}
+                        changeInputDataSet={this.changeInputDataSet}
                         {...this.setupProps}
                         name={this.state.scenario_name}
                         desc={this.state.description}
                         date={this.state.model_date}
+                        inputValues={this.state.input_values}
                       />
                     )}
                     {this.state.tab === "category" && !this.state.isLoading && (
@@ -527,7 +582,11 @@ class ScenarioDefinitionPage extends Component {
               </NodesContext.Provider>
             </PivotItem>
             <PivotItem headerText="Results">
-              <PowerBIReport solutionId={this.solution_id} />
+              <PowerBIReport
+                history={this.props.history}
+                solutionId={this.solution_id}
+                scenarioId={this.scenario_id}
+              />
             </PivotItem>
           </Pivot>
         </div>

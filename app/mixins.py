@@ -39,3 +39,24 @@ class ModelDiffMixin:
     @property
     def _dict(self):
         return model_to_dict(self, fields=[field.name for field in self._meta.fields])
+
+
+class NestedViewSetMixin:
+    # Slightly modified from `rest_framework_nested.viewsets.NestedViewSetMixin`.
+
+    def get_queryset(self):
+        """
+        Filter the `QuerySet` based on its parents as defined in the
+        `serializer_class.parent_lookup_kwargs`.
+        """
+        queryset = super().get_queryset()
+        serializer_class = self.get_serializer_class()
+        if hasattr(serializer_class, 'parent_lookup_kwargs') and hasattr(self, 'kwargs') and self.kwargs:
+            orm_filters = {}
+            for query_param, field_name in serializer_class.parent_lookup_kwargs.items():
+                # Use Google's design pattern to handle searches across all sub-collections
+                # https://cloud.google.com/apis/design/design_patterns#list_sub-collections
+                if self.kwargs[query_param] != '-':
+                    orm_filters[field_name] = self.kwargs[query_param]
+            return queryset.filter(**orm_filters)
+        return queryset
