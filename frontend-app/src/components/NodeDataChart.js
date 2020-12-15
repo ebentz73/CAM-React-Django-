@@ -46,20 +46,20 @@ class NodeDataChart extends Component {
           lineTension: 0,
         },
         {
-          label: 'Lower',
+          label: 'Low',
           data:
             node.type === "input"
-              ? node.data.map((layer) => layer[0])
+              ? node.data.map((layer) => layer[1])
               : node.data.map((data) => data),
           fill: false,
           borderColor: "#742774",
           lineTension: 0,
         },
         {
-          label: 'Upper',
+          label: 'High',
           data:
             node.type === "input"
-              ? node.data.map((layer) => layer[4])
+              ? node.data.map((layer) => layer[3])
               : node.data.map((data) => data),
           fill: false,
           borderColor: "#BF2EBF",
