@@ -1,8 +1,12 @@
 from django.contrib import admin
 from django.db.models import ManyToManyRel
 from django.urls import resolve
-from polymorphic.admin import StackedPolymorphicInline, PolymorphicInlineSupportMixin, PolymorphicParentModelAdmin, \
-    PolymorphicChildModelAdmin
+from guardian.admin import GuardedModelAdminMixin
+from polymorphic.admin import (
+    PolymorphicChildModelAdmin,
+    PolymorphicParentModelAdmin,
+    StackedPolymorphicInline,
+)
 
 from app import models
 
@@ -21,7 +25,7 @@ class InlineBase(admin.StackedInline):
         return False
 
 
-class ModelAdminBase(admin.ModelAdmin):
+class ModelAdminBase(GuardedModelAdminMixin, admin.ModelAdmin):
 
     def __new__(cls, model, admin_site):
         instance = super().__new__(cls)
@@ -51,13 +55,9 @@ class HideModelAdmin(ModelAdminBase, HideModelBase):
     pass
 
 
-class InputAdminMixin:
-    change_form_template = 'admin/app/add_input_change_form.html'
-
-
 @admin.register(models.AnalyticsSolution)
-class AnalyticsSolutionAdmin(InputAdminMixin, ModelAdminBase):
-    pass
+class AnalyticsSolutionAdmin(ModelAdminBase):
+    change_form_template = 'admin/app/add_input_change_form.html'
 
 
 @admin.register(models.Scenario)
