@@ -7,6 +7,7 @@ from polymorphic.models import PolymorphicModel
 from app.mixins import ModelDiffMixin
 from app.utils import ModelType
 from app.validators import validate_input_date_set_file
+from profile.models import Role
 
 __all__ = [
     'AnalyticsSolution',

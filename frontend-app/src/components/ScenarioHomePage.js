@@ -7,12 +7,31 @@ import {
   Selection,
 } from "@fluentui/react/lib/DetailsList";
 import { Facepile, OverflowButtonType } from "@fluentui/react/lib/Facepile";
+import {
+  Dialog,
+  DialogType,
+  DialogFooter,
+} from "office-ui-fabric-react/lib/Dialog";
 import { PersonaSize } from "@fluentui/react/lib/Persona";
-import { ActionButton, IIconProps } from "@fluentui/react";
+import {
+  TextField,
+  ActionButton,
+  PrimaryButton,
+  IIconProps,
+} from "@fluentui/react";
 
 const overflowButtonProps = {
   ariaLabel: "More users",
 };
+
+function getCookie(name) {
+  return (
+    (name = (document.cookie + ";").match(new RegExp(name + "=.*;"))) &&
+    name[0].split(/=|;/)[1]
+  );
+}
+
+const csrf_token = getCookie("csrftoken");
 
 class ScenarioHomePage extends Component {
   constructor(props) {
@@ -22,25 +41,76 @@ class ScenarioHomePage extends Component {
       columns: [],
       solution_id: null,
       countSelected: 0,
+      hideDialog: true,
+      firstCheckedScenarioId: null,
+      newScenarioName: "",
     };
+
     this._selection = new Selection({
-      onSelectionChanged: (v) => this.selectScenario(),
+      onSelectionChanged: (v) => {
+        this.selectScenario();
+      },
     });
     this._onItemInvoked = (item) => {
       this.props.history.push(
         "/frontend-app/solution/" +
-          item["id"].toString() +
+          this.state.solution_id +
           "/scenario/" +
           item["id"].toString()
       );
     };
     this.fetchScenariosData = this.fetchScenariosData.bind(this);
     this._renderItemColumn = this._renderItemColumn.bind(this);
+    this.toggleHideDialog = this.toggleHideDialog.bind(this);
+    this.onCloneOrMerge = this.onCloneOrMerge.bind(this);
+  }
+  onCloneOrMerge() {
+    if (this.state.countSelected === 1) {
+      fetch(
+        `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.state.solution_id}/scenarios/${this.state.firstCheckedScenarioId}/clone/`,
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrf_token,
+          },
+          body: JSON.stringify({
+            name: this.state.newScenarioName,
+          }),
+        }
+      ).catch((err) => {
+        console.error(err);
+      });
+    }
+    if (this.state.countSelected === 2) {
+      fetch(
+        `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.state.solution_id}/scenarios/${this.state.firstCheckedScenarioId}/merge/`,
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrf_token,
+          },
+          body: JSON.stringify({
+            name: this.state.newScenarioName,
+            mergeId: this.state.firstCheckedScenarioId,
+          }),
+        }
+      ).catch((err) => {
+        console.error(err);
+      });
+    }
+  }
+
+  toggleHideDialog() {
+    this.setState((prevState) => ({ hideDialog: !prevState.hideDialog }));
   }
 
   fetchScenariosData() {
     fetch(
-      `${window.location.protocol}//${window.location.host}/api/solution/${this.props.match.params["id"]}/scenario`
+      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.props.match.params["id"]}/scenarios`
     )
       .then((response) => {
         return response.json();
@@ -105,6 +175,8 @@ class ScenarioHomePage extends Component {
 
   selectScenario() {
     const countSelected = this._selection.getSelectedCount();
+    const selectedItem = this._selection.getSelectedIndices();
+    this.setState({ firstCheckedScenarioId: selectedItem[0] + 1 });
     this.setState({ countSelected });
   }
 
@@ -138,13 +210,22 @@ class ScenarioHomePage extends Component {
 
   render() {
     const path = `/frontend-app/solution/${this.props.match.params["id"]}/scenario`;
+    const dialogContentProps = {
+      type: DialogType.normal,
+      title:
+        this.state.countSelected === 1
+          ? "Clone Scenario"
+          : this.state.countSelected === 2
+          ? "Merge Scenario"
+          : "",
+    };
     return (
       <React.Fragment>
         <NavBar />
         <div className="ms-Grid m-t-100" dir="ltr">
           <div className="ms-Grid-row">
             <div className="ms-Grid-col ms-md3">
-              <HomePageSideBar path={path} />
+              {/* <HomePageSideBar path={path} /> */}
             </div>
             <div className="ms-Grid-col ms-md6">
               <div align="right">
@@ -168,14 +249,14 @@ class ScenarioHomePage extends Component {
                 <ActionButton
                   disabled={this.state.countSelected !== 2}
                   iconProps={{ iconName: "Merge" }}
-                  onClick={() => {}}
+                  onClick={this.toggleHideDialog}
                 >
                   Merge
                 </ActionButton>
                 <ActionButton
                   disabled={this.state.countSelected !== 1}
                   iconProps={{ iconName: "Copy" }}
-                  onClick={() => {}}
+                  onClick={this.toggleHideDialog}
                 >
                   Clone
                 </ActionButton>
@@ -193,6 +274,19 @@ class ScenarioHomePage extends Component {
             </div>
           </div>
         </div>
+        <Dialog
+          hidden={this.state.hideDialog}
+          onDismiss={this.toggleHideDialog}
+          dialogContentProps={dialogContentProps}
+        >
+          <TextField
+            placeholder="Enter name"
+            onBlur={(e) => this.setState({ newScenarioName: e.target.value })}
+          />
+          <DialogFooter>
+            <PrimaryButton text="Save" onClick={this.onCloneOrMerge} />
+          </DialogFooter>
+        </Dialog>
       </React.Fragment>
     );
   }

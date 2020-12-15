@@ -39,7 +39,7 @@ class AnalyticsSolutionPage extends Component {
   }
 
   fetchAnalyticsSolutionsData() {
-    fetch(`${window.location.protocol}//${window.location.host}/api/solution/`)
+    fetch(`${window.location.protocol}//${window.location.host}/api/v1/solutions/`)
       .then((response) => {
         return response.json();
       })
@@ -80,7 +80,7 @@ class AnalyticsSolutionPage extends Component {
         <div className="ms-Grid m-t-100" dir="ltr">
           <div className="ms-Grid-row">
             <div className="ms-Grid-col ms-md3">
-              <HomePageSideBar path={this.state.path} />
+              {/* <HomePageSideBar path={this.state.path} /> */}
             </div>
             <div className="ms-Grid-col ms-md6">
               <DetailsList
