@@ -53,6 +53,7 @@ class ScenarioDefinitionPage extends Component {
 
     this.updateConstNodeData = this.updateConstNodeData.bind(this);
     this.updateInputNodeData = this.updateInputNodeData.bind(this);
+    this.updateInputRowData = this.updateInputRowData.bind(this);
     this.copyToAllLayers = this.copyToAllLayers.bind(this);
 
     this.changeScenarioName = this.changeScenarioName.bind(this);
@@ -127,13 +128,12 @@ class ScenarioDefinitionPage extends Component {
       name: this.state.scenario_name,
       is_adhoc: true,
       layer_date_start: formatDate(this.state.model_date),
-      run_eval: false
-    }
+      run_eval: false,
+    };
     if (this.scenario_id) {
       url += `${this.scenario_id}/`;
       method = "PATCH";
       body.id = parseInt(this.scenario_id);
-
     }
     return fetch(url, {
       method: method,
@@ -169,7 +169,8 @@ class ScenarioDefinitionPage extends Component {
           default_data: this.state.nodes[node_id].data,
           scenario: parseInt(this.scenario_id),
           is_model: false,
-          resourcetype: node.type === 'input' ? 'InputNodeData' : 'ConstNodeData'
+          resourcetype:
+            node.type === "input" ? "InputNodeData" : "ConstNodeData",
         };
         let url = `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.solution_id}/scenarios/${this.scenario_id}/nodedatas/`;
         if (node.hasOwnProperty("id")) {
@@ -177,18 +178,15 @@ class ScenarioDefinitionPage extends Component {
           body.id = node.id;
           url += node.id + "/";
         }
-        fetch(
-          url,
-          {
-            method: method,
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-              "X-CSRFToken": csrf_token,
-            },
-            body: JSON.stringify(body),
-          }
-        ).catch((err) => {
+        fetch(url, {
+          method: method,
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrf_token,
+          },
+          body: JSON.stringify(body),
+        }).catch((err) => {
           console.error(err);
         });
       });
@@ -201,6 +199,17 @@ class ScenarioDefinitionPage extends Component {
     if (!newNodes[node_id].dirty) newNumDirty++;
     newNodes[node_id].dirty = true;
     this.setState({ nodes: newNodes, nodes_changed: newNumDirty });
+  }
+
+  updateInputRowData(node_id, layer_idx, nom_idx, val) {
+    for (let i = 0; i < this.state.nodes[node_id].data.length; i++) {
+      let newNodes = { ...this.state.nodes };
+      let newNumDirty = this.state.nodes_changed;
+      newNodes[node_id].data[i][nom_idx] = val;
+      if (!newNodes[node_id].dirty) newNumDirty++;
+      newNodes[node_id].dirty = true;
+      this.setState({ nodes: newNodes, nodes_changed: newNumDirty });
+    }
   }
 
   updateConstNodeData(node_id, layer_idx, val) {
@@ -322,8 +331,7 @@ class ScenarioDefinitionPage extends Component {
             nodes[node.node].data = node.default_data;
             if (node.resourcetype === "InputNodeData")
               nodes[node.node].type = "input";
-            else
-              nodes[node.node].type = "const";
+            else nodes[node.node].type = "const";
           }
         });
         this.setState({ nodes: nodes });
@@ -406,6 +414,7 @@ class ScenarioDefinitionPage extends Component {
       nodes: this.state.nodes,
       updateConstNodeData: this.updateConstNodeData,
       updateInputNodeData: this.updateInputNodeData,
+      updateInputRowData: this.updateInputRowData,
       copyToAllLayers: this.copyToAllLayers,
     };
     let pivotStyles = {
