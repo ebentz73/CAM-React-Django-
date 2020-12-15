@@ -37,6 +37,7 @@ class ScenarioDefinitionPage extends Component {
       activeRoles: [],
       isLoading: true,
       layer_offset: 0,
+      layer_time_increment: "month",
     };
 
     this.onClickCategory = this.onClickCategory.bind(this);
@@ -378,7 +379,8 @@ class ScenarioDefinitionPage extends Component {
         return resp.json();
       })
       .then((resp) => {
-        this.setState({layer_offset: resp.layer_offset});
+        this.setState({layer_offset: resp.layer_offset,
+          layer_time_increment: resp.layer_time_increment});
       });
   }
 
@@ -422,6 +424,8 @@ class ScenarioDefinitionPage extends Component {
       updateConstNodeData: this.updateConstNodeData,
       updateInputNodeData: this.updateInputNodeData,
       copyToAllLayers: this.copyToAllLayers,
+      layerStartDate: this.state.model_date,
+      layerTimeIncrement: this.state.layer_time_increment,
     };
     let pivotStyles = {
       root: {
