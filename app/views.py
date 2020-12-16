@@ -1,40 +1,38 @@
 import csv
-import json
+import datetime
 import logging
 from functools import wraps
 
 import material.frontend.views as material
-import datetime
 from django.db.models import Q
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from profile.models import UserProfile
 from rest_framework import generics, status, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
-from app.permissions import CustomObjectPermissions
 from app.filters import DjangoObjectPermissionsFilter
-
-from app.forms import CreateEvalJobForm
+from app.mixins import NestedViewSetMixin
 from app.models import (
     AnalyticsSolution,
     ConstNodeData,
     DecimalNodeOverride,
     EvalJob,
-    ExecutiveView,
     FilterCategory,
     FilterOption,
+    Input,
     InputNodeData,
     Model,
     Node,
+    NodeData,
     NodeResult,
     Scenario,
-    NodeData
 )
+from app.permissions import CustomObjectPermissions
 from app.serializers import (
     AnalyticsSolutionSerializer,
     ConstNodeDataSerializer,
@@ -45,18 +43,15 @@ from app.serializers import (
     ModelSerializer,
     NodeResultSerializer,
     NodeSerializer,
+    PolyInputSerializer,
     ScenarioSerializer,
     ScenarioEvaluateSerializer,
     FilterCategoryOptionsSerializer,
-    NodeDataSerializer,
     PolyNodeDataSerializer,
 )
 from app.utils import PowerBI, run_eval_engine
 
-from profile.models import Role, UserProfile
 
-
-# region REST Framework Api
 def validate_api(serializer_cls, many=False):
     def decorator(function):
         @wraps(function)
@@ -69,15 +64,6 @@ def validate_api(serializer_cls, many=False):
         return wrapper
 
     return decorator
-
-
-class EvalJobDefinitionViewSet(ModelViewSet):
-    serializer_class = EvalJobSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
-    filter_backends = (DjangoObjectPermissionsFilter,)
-
-    def get_queryset(self):
-        return EvalJob.objects.filter(solution=self.kwargs['solution_pk'])
 
 
 class NodeViewSet(ModelViewSet):
@@ -136,6 +122,12 @@ class AnalyticsSolutionViewSet(ModelViewSet):
             return Response({'errorMsg': str(e)}, 500)
 
 
+class InputViewSet(NestedViewSetMixin, ModelViewSet):
+    queryset = Input.objects.all()
+    serializer_class = PolyInputSerializer
+    parent_lookup_kwargs = {'solution_pk': 'solution'}
+
+
 class InputNodeDataViewSet(ModelViewSet):
     serializer_class = InputNodeDataSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
@@ -166,7 +158,7 @@ class ScenarioViewSet(ModelViewSet):
     def get_queryset(self):
         return Scenario.objects.filter(solution=self.kwargs['solution_pk'])
 
-    def create(self, request, solution_pk=None, **kwargs):
+    def create_or_update(self, request, solution_pk=None, pk=None, **kwargs):
         run_eval = request.data.pop('run_eval', False)
 
         if 'solution' not in request.data:
@@ -174,27 +166,16 @@ class ScenarioViewSet(ModelViewSet):
         if 'shared' not in request.data:
             request.data['shared'] = []
 
-        response = super().create(request, **kwargs)
+        meth = super().create if pk is None else super().update
+        response = meth(request, **kwargs)
+
         if run_eval:
             response.then = run_eval_engine
-            response.then_args = (solution_pk, response.data['id'])
+            response.then_args = (solution_pk, pk or response.data['id'])
 
         return response
-
-    def partial_update(self, request, solution_pk, pk, **kwargs):
-        run_eval = request.data.pop('run_eval', False)
-
-        if 'solution' not in request.data:
-            request.data['solution'] = solution_pk
-        if 'shared' not in request.data:
-            request.data['shared'] = []
-
-        response = super().update(request, **kwargs)
-        if run_eval:
-            response.then = run_eval_engine
-            response.then_args = (solution_pk, pk)
-
-        return response
+    create = create_or_update
+    update = create_or_update
 
     @action(detail=True)
     def evaluate(self, request, solution_pk, pk):
@@ -205,7 +186,7 @@ class ScenarioViewSet(ModelViewSet):
     @evaluate.mapping.patch
     def patch_evaluate(self, request, solution_pk, pk):
         return self.update(request, solution_pk, pk, partial=True)
-        
+
     @action(detail=True, methods=['post'])
     def clone(self, request, solution_pk, pk):
         body = request.data
@@ -262,7 +243,6 @@ class ScenarioViewSet(ModelViewSet):
         NodeResult.objects.filter(scenario_id=pk).delete()
 
         return Response(serializer.data)
-
 
     @staticmethod
     def copy_scenario(pk, name):
@@ -565,10 +545,8 @@ class NodeByModelListAPIView(generics.ListAPIView):
     def get_queryset(self):
         model = self.kwargs['model']
         return Node.objects.filter(model_id=model)
-# endregion
 
 
-# region Material Design
 class EvalJobViewSet(material.ModelViewSet):
     model = EvalJob
     list_display = ('name', 'date_created', 'status')
@@ -581,26 +559,3 @@ class EvalJobViewSet(material.ModelViewSet):
 
     def has_delete_permission(self, request, obj=None):
         return False
-
-
-class ExecutiveViewViewSet(material.ModelViewSet):
-    model = ExecutiveView
-    list_display = ('name',)
-
-
-# endregion
-
-
-def render_executive(request, executiveview_id):
-    executive_view = get_object_or_404(ExecutiveView, pk=executiveview_id)
-    form = CreateEvalJobForm(executive_view=executive_view, data=request.POST or None)
-
-    if form.is_valid():
-        evaljob = form.save()
-        if evaljob:
-            return redirect(f'/app/eval-job/{evaljob.pk}/detail/')
-
-    return render(request, 'app/executiveview.html', {
-        'form': form,
-        'exec_view': executive_view,
-    })

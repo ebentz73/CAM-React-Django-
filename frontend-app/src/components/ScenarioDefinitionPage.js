@@ -32,6 +32,7 @@ class ScenarioDefinitionPage extends Component {
       scenario_name: "",
       model_date: "",
       description: "",
+      input_values: {},
       nodes_changed: 0,
       roles: {},
       activeRoles: [],
@@ -62,6 +63,8 @@ class ScenarioDefinitionPage extends Component {
     this.changeScenarioDesc = this.changeScenarioDesc.bind(this);
     this.changeModelDate = this.changeModelDate.bind(this);
     this.changeRole = this.changeRole.bind(this);
+    this.changeInputs = this.changeInputs.bind(this);
+    this.changeInputDataSet = this.changeInputDataSet.bind(this);
 
     this.setupProps = {
       updateName: this.changeScenarioName,
@@ -83,6 +86,50 @@ class ScenarioDefinitionPage extends Component {
 
   changeModelDate(val) {
     this.setState({ model_date: val });
+  }
+
+  changeInputs(input_id, node_id, val) {
+    let inputValues = {...this.state.input_values};
+    if (!inputValues.hasOwnProperty(input_id)) {
+      inputValues[input_id] = {};
+    }
+    inputValues[input_id].value = val;
+    inputValues[input_id].isIds = false;
+
+    let nodes = {...this.state.nodes};
+    let node = nodes[node_id];
+    let dirty = this.state.nodes_changed;
+
+    for (let layer = 0; layer < node.data.length; layer++) {
+      const isArray = Array.isArray(node.data[layer]);
+      if (isArray) {
+        // Assume input node
+        node.data[layer].forEach((part, index) => {
+          node.data[index] = val;
+        });
+      } else {
+        // Otherwise assume constant node
+        node.data[layer] = val;
+      }
+    }
+
+    if (!node.dirty) {
+      dirty++;
+    }
+    node.dirty = true;
+
+    this.setState({nodes: nodes, nodes_changed: dirty, input_values: inputValues});
+  }
+
+  changeInputDataSet(input_id, val) {
+    let inputValues = {...this.state.input_values};
+    if (!inputValues.hasOwnProperty(input_id)) {
+      inputValues[input_id] = {};
+    }
+    inputValues[input_id].value = val;
+    inputValues[input_id].isIds = true;
+
+    this.setState({input_values: inputValues});
   }
 
   changeRole(e, role) {
@@ -124,19 +171,23 @@ class ScenarioDefinitionPage extends Component {
       return `${year}-${month}-${day}`;
     };
 
+    const input_data_sets = Object.values(this.state.input_values)
+      .map(input => {if (input.isIds) return input.value})
+      .filter(value => value !== undefined);
+
     let url = `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.solution_id}/scenarios/`;
     let method = "POST";
     let body = {
       name: this.state.scenario_name,
       is_adhoc: true,
       layer_date_start: formatDate(this.state.model_date),
+      input_data_sets: input_data_sets,
       run_eval: false
     }
     if (this.scenario_id) {
       url += `${this.scenario_id}/`;
       method = "PATCH";
       body.id = parseInt(this.scenario_id);
-
     }
     return fetch(url, {
       method: method,
@@ -504,13 +555,17 @@ class ScenarioDefinitionPage extends Component {
                     {/* Input Category Pages */}
                     {this.state.tab === "setup" && (
                       <SetupPage
+                        solutionId={this.solution_id}
                         index={0}
                         changeScenarioName={this.changeScenarioName}
                         changeTab={this.changeTab}
+                        changeInputs={this.changeInputs}
+                        changeInputDataSet={this.changeInputDataSet}
                         {...this.setupProps}
                         name={this.state.scenario_name}
                         desc={this.state.description}
                         date={this.state.model_date}
+                        inputValues={this.state.input_values}
                       />
                     )}
                     {this.state.tab === "category" && !this.state.isLoading && (

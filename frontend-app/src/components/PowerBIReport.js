@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { ActionButton, DefaultButton, ContextualMenu } from "@fluentui/react";
+import { ActionButton, DefaultButton } from "@fluentui/react";
 import { PowerBIEmbed } from "powerbi-client-react";
 import { models } from "powerbi-client";
 
@@ -51,7 +51,7 @@ class PowerBIReport extends Component {
       });
   }
 
-  fetchReportEmbedData(solution_id) {
+  fetchReportEmbedData() {
     fetch(
       `${window.location.protocol}//${window.location.host}/api/solution/${this.props.solutionId}/report`
     )
