@@ -3,6 +3,7 @@ import logging
 import os
 import sqlite3
 import traceback
+import xlwt
 from typing import AnyStr, Generic, IO, Iterator, TypeVar
 
 import docker
@@ -382,3 +383,20 @@ class PowerBI:
         )
         response = requests.post(url, headers=self.headers)
         response.raise_for_status()
+
+class ExcelHelper:
+    @staticmethod
+    def create_worksheet(workbook, name, headers):
+        worksheet = workbook.add_sheet(name)
+        font_style = xlwt.XFStyle()
+        font_style.font.bold = True
+
+        for col_num in range(len(headers)):
+            worksheet.write(0, col_num, headers[col_num], font_style)
+
+        return worksheet
+
+    @staticmethod
+    def autofit_columns(worksheet):
+        #Implementing in future
+        pass

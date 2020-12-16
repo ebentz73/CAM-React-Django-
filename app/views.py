@@ -56,7 +56,7 @@ from app.serializers import (
     InputDataSetSerializer,
     UserSerializer,
 )
-from app.utils import PowerBI, run_eval_engine, assign_model_perm
+from app.utils import PowerBI, run_eval_engine, assign_model_perm, ExcelHelper
 
 
 def validate_api(serializer_cls, many=False):
@@ -265,16 +265,10 @@ class ScenarioViewSet(ModelViewSet):
         response['Content-Disposition'] = f'attachment; filename="{scenario.name}_results.xls"'
 
         workbook = xlwt.Workbook(encoding='utf-8')
-        worksheet = workbook.add_sheet("Results")
-        font_style = xlwt.XFStyle()
-        font_style.font.bold = True
         headers = ['Scenario', 'Model', 'Node', 'Layer',
                    'Node Tags', 'Result 10', 'Result 30',
                    'Result 50', 'Result 70', 'Result 90']
-        row_num = 0
-
-        for col_num in range(len(headers)):
-            worksheet.write(row_num, col_num, headers[col_num], font_style)
+        worksheet = ExcelHelper.create_worksheet(workbook, "Results", headers)
 
         font_style = xlwt.XFStyle()
 
