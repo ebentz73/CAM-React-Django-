@@ -20,7 +20,7 @@ class PowerBIReport extends Component {
 
   downloadResults() {
     fetch(
-      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.props.solutionId}/scenarios/${this.props.scenarioId}/export/`
+      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.props.solutionId}/scenarios/${this.props.scenarioId}/download-results/`
     )
       .then((response) => {
         return response.json();

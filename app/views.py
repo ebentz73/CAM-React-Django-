@@ -2,6 +2,7 @@ import csv
 import datetime
 import logging
 import requests
+import xlwt
 from functools import wraps
 
 import material.frontend.views as material
@@ -257,23 +258,42 @@ class ScenarioViewSet(ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=['get'])
-    def export(self, request, solution_pk, pk):
+    @action(detail=True, methods=['get'], url_path='download-results')
+    def download_results(self, request, solution_pk, pk):
         scenario = Scenario.objects.get(Q(pk=pk))
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="{scenario.name}_results.csv"'
+        response = HttpResponse(content_type='application/ms-excel')
+        response['Content-Disposition'] = f'attachment; filename="{scenario.name}_results.xls"'
 
-        writer = csv.writer(response)
-        writer.writerow(['Scenario', 'Model', 'Node', 'Layer',
-                         'Node Tags', 'Result 10', 'Result 30',
-                         'Result 50', 'Result 70', 'Result 90'])
+        workbook = xlwt.Workbook(encoding='utf-8')
+        worksheet = workbook.add_sheet("Results")
+        font_style = xlwt.XFStyle()
+        font_style.font.bold = True
+        headers = ['Scenario', 'Model', 'Node', 'Layer',
+                   'Node Tags', 'Result 10', 'Result 30',
+                   'Result 50', 'Result 70', 'Result 90']
+        row_num = 0
+
+        for col_num in range(len(headers)):
+            worksheet.write(row_num, col_num, headers[col_num], font_style)
+
+        font_style = xlwt.XFStyle()
+
         node_results = NodeResult.objects.filter(Q(scenario_id=pk)).values_list('scenario', 'model', 'node', 'layer',
                                                                                 'node_tags', 'result_10', 'result_30',
                                                                                 'result_50', 'result_70', 'result_90')
-        for node_result in node_results:
-            writer.writerow(node_result)
+        for index, node_result in enumerate(node_results, 1):
+            for i, value in enumerate(node_result):
+                worksheet.write(index, i, str(value), font_style)
 
+        workbook.save(response)
         return response
+
+    @action(detail=True, methods=['get'])
+    def download_inputs(self, request, solution_pk, pk):
+        inputs = InputNodeData.objects.filter(Q(scenario_id=pk))
+        consts = ConstNodeData.objects.filter(Q(scenario_id=pk))
+
+        pass
 
     @action(detail=True, methods=['get'])
     def reset(self, request, solution_pk, pk):
