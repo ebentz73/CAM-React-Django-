@@ -10,6 +10,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import User
 from rest_framework import generics, status, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -50,6 +51,7 @@ from app.serializers import (
     FilterCategoryOptionsSerializer,
     NodeDataSerializer,
     PolyNodeDataSerializer,
+    UserSerializer,
 )
 from app.utils import PowerBI, run_eval_engine
 
@@ -604,3 +606,7 @@ def render_executive(request, executiveview_id):
         'form': form,
         'exec_view': executive_view,
     })
+
+class UserAPIView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer

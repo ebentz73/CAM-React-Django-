@@ -18,6 +18,8 @@ import {
   ActionButton,
   PrimaryButton,
   IIconProps,
+  DefaultButton,
+  CommandBarButton,
 } from "@fluentui/react";
 
 const overflowButtonProps = {
@@ -41,9 +43,11 @@ class ScenarioHomePage extends Component {
       columns: [],
       solution_id: null,
       countSelected: 0,
-      hideDialog: true,
+      cloneOrMergeDialog: true,
+      shareDialog: true,
       firstCheckedScenarioId: null,
       newScenarioName: "",
+      users: [],
     };
 
     this._selection = new Selection({
@@ -60,10 +64,24 @@ class ScenarioHomePage extends Component {
       );
     };
     this.fetchScenariosData = this.fetchScenariosData.bind(this);
+    this.fetchAllUser = this.fetchAllUser.bind(this);
     this._renderItemColumn = this._renderItemColumn.bind(this);
-    this.toggleHideDialog = this.toggleHideDialog.bind(this);
+    this.toggleCloneOrMergeDialog = this.toggleCloneOrMergeDialog.bind(this);
+    this.toggleShareDialog = this.toggleShareDialog.bind(this);
     this.onCloneOrMerge = this.onCloneOrMerge.bind(this);
+    this.sharePeople = this.sharePeople.bind(this);
+    this.addPeople = this.addPeople.bind(this);
+    this.changeFilterPeople = this.changeFilterPeople.bind(this);
   }
+  _onColumnClickView() {}
+
+  sharePeople() {}
+
+  changeFilterPeople(e, val) {
+    console.log(val);
+    console.log("users", this.state.users);
+  }
+
   onCloneOrMerge() {
     if (this.state.countSelected === 1) {
       fetch(
@@ -104,8 +122,27 @@ class ScenarioHomePage extends Component {
     }
   }
 
-  toggleHideDialog() {
-    this.setState((prevState) => ({ hideDialog: !prevState.hideDialog }));
+  toggleCloneOrMergeDialog() {
+    this.setState((prevState) => ({
+      cloneOrMergeDialog: !prevState.cloneOrMergeDialog,
+    }));
+  }
+
+  toggleShareDialog() {
+    this.setState((prevState) => ({ shareDialog: !prevState.shareDialog }));
+  }
+
+  fetchAllUser() {
+    fetch(`${window.location.protocol}//${window.location.host}/api/user`)
+      .then((response) => {
+        return response.json();
+      })
+      .then((response) => {
+        this.setState({ users: response });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }
 
   fetchScenariosData() {
@@ -180,6 +217,11 @@ class ScenarioHomePage extends Component {
     this.setState({ countSelected });
   }
 
+  addPeople({ id, solution }) {
+    this.toggleShareDialog();
+    console.log("add people button is cliecked", id, solution);
+  }
+
   _renderItemColumn(item, index, column) {
     switch (column.key) {
       case "shared":
@@ -189,14 +231,35 @@ class ScenarioHomePage extends Component {
         }
 
         var overflowButtonType = OverflowButtonType.descriptive;
+        const menuProps = {
+          items: [
+            {
+              key: "email",
+              text: "jonny@gmail.com",
+              iconProps: { iconName: "Mail" },
+            },
+            {
+              key: "addPeople",
+              text: "Add People",
+              iconProps: { iconName: "Add" },
+              onClick: () => this.addPeople(item),
+            },
+          ],
+        };
         return (
-          <Facepile
-            personaSize={PersonaSize.size24}
-            personas={shared_data}
-            maxDisplayablePersonas={2}
-            overflowButtonProps={overflowButtonProps}
-            overflowButtonType={overflowButtonType}
-          />
+          <div className="share-people">
+            <Facepile
+              personaSize={PersonaSize.size24}
+              personas={shared_data}
+              maxDisplayablePersonas={2}
+              overflowButtonProps={overflowButtonProps}
+              overflowButtonType={overflowButtonType}
+            />
+            <CommandBarButton
+              iconProps={{ iconName: "AddFriend" }}
+              menuProps={menuProps}
+            ></CommandBarButton>
+          </div>
         );
 
       default:
@@ -206,11 +269,12 @@ class ScenarioHomePage extends Component {
 
   componentDidMount() {
     this.fetchScenariosData();
+    this.fetchAllUser();
   }
 
   render() {
     const path = `/frontend-app/solution/${this.props.match.params["id"]}/scenario`;
-    const dialogContentProps = {
+    const cloneOrMergeDialogContentProps = {
       type: DialogType.normal,
       title:
         this.state.countSelected === 1
@@ -218,6 +282,10 @@ class ScenarioHomePage extends Component {
           : this.state.countSelected === 2
           ? "Merge Scenario"
           : "",
+    };
+    const shareDialogContentProps = {
+      type: DialogType.normal,
+      title: "Sharing",
     };
     return (
       <React.Fragment>
@@ -249,14 +317,14 @@ class ScenarioHomePage extends Component {
                 <ActionButton
                   disabled={this.state.countSelected !== 2}
                   iconProps={{ iconName: "Merge" }}
-                  onClick={this.toggleHideDialog}
+                  onClick={this.togglecloneOrMergeDialog}
                 >
                   Merge
                 </ActionButton>
                 <ActionButton
                   disabled={this.state.countSelected !== 1}
                   iconProps={{ iconName: "Copy" }}
-                  onClick={this.toggleHideDialog}
+                  onClick={this.togglecloneOrMergeDialog}
                 >
                   Clone
                 </ActionButton>
@@ -275,9 +343,9 @@ class ScenarioHomePage extends Component {
           </div>
         </div>
         <Dialog
-          hidden={this.state.hideDialog}
-          onDismiss={this.toggleHideDialog}
-          dialogContentProps={dialogContentProps}
+          hidden={this.state.cloneOrMergeDialog}
+          onDismiss={this.toggleCloneOrMergeDialog}
+          dialogContentProps={cloneOrMergeDialogContentProps}
         >
           <TextField
             placeholder="Enter name"
@@ -285,6 +353,19 @@ class ScenarioHomePage extends Component {
           />
           <DialogFooter>
             <PrimaryButton text="Save" onClick={this.onCloneOrMerge} />
+          </DialogFooter>
+        </Dialog>
+        <Dialog
+          hidden={this.state.shareDialog}
+          onDismiss={this.toggleShareDialog}
+          dialogContentProps={shareDialogContentProps}
+        >
+          <TextField
+            label="Add people"
+            onChange={(e, val) => this.changeFilterPeople(e, val)}
+          />
+          <DialogFooter>
+            <PrimaryButton text="Save" onClick={this.sharePeople} />
           </DialogFooter>
         </Dialog>
       </React.Fragment>
