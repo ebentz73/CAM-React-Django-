@@ -1,6 +1,10 @@
+from django import forms
 from django.contrib import admin
+from django.contrib.admin.widgets import AutocompleteSelect
+from django.contrib.auth.models import Group, User
 from django.db.models import ManyToManyRel
 from django.urls import resolve
+from django.utils.translation import gettext_lazy as _
 from guardian.admin import GuardedModelAdminMixin
 from polymorphic.admin import (
     PolymorphicChildModelAdmin,
@@ -43,6 +47,12 @@ class ModelAdminBase(GuardedModelAdminMixin, admin.ModelAdmin):
         return [field.through if isinstance(field, ManyToManyRel) else field.related_model
                 for field in model._meta.get_fields()
                 if field.auto_created and not field.concrete]
+
+    def get_obj_perms_user_select_form(self, request):
+        return UserManage
+
+    def get_obj_perms_group_select_form(self, request):
+        return GroupManage
 
 
 class HideModelBase(admin.ModelAdmin):
@@ -132,3 +142,30 @@ admin.site.register(models.NumericInput, InputChildAdmin)
 admin.site.register(models.SliderInput, InputChildAdmin)
 admin.site.register(models.FilterCategory, HideModelAdmin)
 admin.site.register(models.FilterOption, HideModelAdmin)
+
+
+# https://stackoverflow.com/a/57968864
+class FakeRelation:
+    def __init__(self, model):
+        self.model = model
+
+
+class CustomAutocompleteSelect(AutocompleteSelect):
+    def __init__(self, model, admin_site, attrs=None, choices=(), using=None):
+        rel = FakeRelation(model)
+        super().__init__(rel, admin_site, attrs=attrs, choices=choices, using=using)
+
+
+class GroupManage(forms.Form):
+    group = forms.ModelChoiceField(
+        queryset=Group.objects.all(),
+        widget=CustomAutocompleteSelect(Group, admin.site),
+    )
+
+
+class UserManage(forms.Form):
+    user = forms.ModelChoiceField(
+        queryset=User.objects.all(),
+        widget=CustomAutocompleteSelect(User, admin.site),
+        help_text=_("Enter a user's username or email"),
+    )

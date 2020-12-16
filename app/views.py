@@ -9,13 +9,14 @@ from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from profile.models import UserProfile
-from rest_framework import generics, status, permissions, filters
+from rest_framework import generics, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
+from rest_framework_guardian.filters import ObjectPermissionsFilter
 
-from app.filters import DjangoObjectPermissionsFilter
+
 from app.mixins import NestedViewSetMixin
 from app.models import (
     AnalyticsSolution,
@@ -36,7 +37,6 @@ from app.permissions import CustomObjectPermissions
 from app.serializers import (
     AnalyticsSolutionSerializer,
     ConstNodeDataSerializer,
-    EvalJobSerializer,
     FilterCategorySerializer,
     FilterOptionSerializer,
     InputNodeDataSerializer,
@@ -68,8 +68,8 @@ def validate_api(serializer_cls, many=False):
 
 class NodeViewSet(ModelViewSet):
     serializer_class = NodeSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
-    filter_backends = (DjangoObjectPermissionsFilter,)
+    permission_classes = (permissions.IsAuthenticated, CustomObjectPermissions)
+    filter_backends = (ObjectPermissionsFilter,)
 
     def get_queryset(self):
         if 'model_pk' in self.kwargs:
@@ -80,8 +80,8 @@ class NodeViewSet(ModelViewSet):
 
 class FilterCategoryViewSet(ModelViewSet):
     serializer_class = FilterCategoryOptionsSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
-    filter_backends = (DjangoObjectPermissionsFilter,)
+    permission_classes = (permissions.IsAuthenticated, CustomObjectPermissions)
+    filter_backends = (ObjectPermissionsFilter,)
 
     def get_queryset(self):
         return FilterCategory.objects.filter(solution=self.kwargs['solution_pk'])
@@ -89,8 +89,8 @@ class FilterCategoryViewSet(ModelViewSet):
 
 class FilterOptionViewSet(ModelViewSet):
     serializer_class = FilterOptionSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
-    filter_backends = (DjangoObjectPermissionsFilter,)
+    permission_classes = (permissions.IsAuthenticated, CustomObjectPermissions)
+    filter_backends = (ObjectPermissionsFilter,)
 
     def get_queryset(self):
         return FilterOption.objects.filter(category=self.kwargs['filtercategory_pk'])
@@ -98,8 +98,8 @@ class FilterOptionViewSet(ModelViewSet):
 
 class AnalyticsModelViewSet(ModelViewSet):
     serializer_class = ModelSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
-    filter_backends = (DjangoObjectPermissionsFilter,)
+    permission_classes = (permissions.IsAuthenticated, CustomObjectPermissions)
+    filter_backends = (ObjectPermissionsFilter,)
 
     def get_queryset(self):
         return Model.objects.filter(solution=self.kwargs['solution_pk'])
@@ -108,8 +108,8 @@ class AnalyticsModelViewSet(ModelViewSet):
 class AnalyticsSolutionViewSet(ModelViewSet):
     queryset = AnalyticsSolution.objects.all()
     serializer_class = AnalyticsSolutionSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
-    filter_backends = (DjangoObjectPermissionsFilter,)
+    permission_classes = (permissions.IsAuthenticated, CustomObjectPermissions)
+    filter_backends = (ObjectPermissionsFilter,)
 
     @action(detail=True)
     def report(self, request, pk):
@@ -130,8 +130,8 @@ class InputViewSet(NestedViewSetMixin, ModelViewSet):
 
 class InputNodeDataViewSet(ModelViewSet):
     serializer_class = InputNodeDataSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
-    filter_backends = (DjangoObjectPermissionsFilter,)
+    permission_classes = (permissions.IsAuthenticated, CustomObjectPermissions)
+    filter_backends = (ObjectPermissionsFilter,)
 
     def get_queryset(self):
         if 'scenario_pk' in self.kwargs:
@@ -142,8 +142,8 @@ class InputNodeDataViewSet(ModelViewSet):
 
 class ConstNodeDataViewSet(ModelViewSet):
     serializer_class = ConstNodeDataSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, CustomObjectPermissions,)
-    filter_backends = (DjangoObjectPermissionsFilter,)
+    permission_classes = (permissions.IsAuthenticated, CustomObjectPermissions)
+    filter_backends = (ObjectPermissionsFilter,)
 
     def get_queryset(self):
         if 'scenario_pk' in self.kwargs:

@@ -2,7 +2,6 @@ from rest_framework import permissions
 
 
 class CustomObjectPermissions(permissions.DjangoObjectPermissions):
-
     perms_map = {
         'GET': ['%(app_label)s.view_%(model_name)s'],
         'OPTIONS': ['%(app_label)s.view_%(model_name)s'],
