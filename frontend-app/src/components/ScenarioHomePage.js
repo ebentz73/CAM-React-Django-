@@ -48,6 +48,7 @@ class ScenarioHomePage extends Component {
       firstCheckedScenarioId: null,
       newScenarioName: "",
       users: [],
+      filteredUsers: [],
     };
 
     this._selection = new Selection({
@@ -72,14 +73,27 @@ class ScenarioHomePage extends Component {
     this.sharePeople = this.sharePeople.bind(this);
     this.addPeople = this.addPeople.bind(this);
     this.changeFilterPeople = this.changeFilterPeople.bind(this);
+    this.removeFilteredUser = this.removeFilteredUser.bind(this);
   }
+
+  removeFilteredUser(index) {
+    let newArray = [...this.state.filteredUsers];
+    newArray.splice(index, 1);
+    this.setState({ filteredUsers: newArray });
+  }
+
   _onColumnClickView() {}
 
   sharePeople() {}
 
   changeFilterPeople(e, val) {
-    console.log(val);
-    console.log("users", this.state.users);
+    let searchResult = [];
+    this.state.users.map((user, index) => {
+      if (user.email.toLowerCase().includes(val.toLowerCase())) {
+        searchResult.push(user);
+      }
+    });
+    this.setState({ filteredUsers: searchResult });
   }
 
   onCloneOrMerge() {
@@ -364,6 +378,25 @@ class ScenarioHomePage extends Component {
             label="Add people"
             onChange={(e, val) => this.changeFilterPeople(e, val)}
           />
+          <p>Shared With</p>
+          <table>
+            <tbody>
+              {this.state.filteredUsers.map((filtered_user, index) => {
+                return (
+                  <tr key={index}>
+                    <td>{filtered_user.email}</td>
+                    <td>
+                      <ActionButton
+                        onClick={() => this.removeFilteredUser(index)}
+                      >
+                        remove
+                      </ActionButton>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
           <DialogFooter>
             <PrimaryButton text="Save" onClick={this.sharePeople} />
           </DialogFooter>
