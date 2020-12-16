@@ -36,6 +36,8 @@ class ScenarioDefinitionPage extends Component {
       roles: {},
       activeRoles: [],
       isLoading: true,
+      layer_offset: 0,
+      layer_time_increment: "month",
     };
 
     this.onClickCategory = this.onClickCategory.bind(this);
@@ -44,6 +46,7 @@ class ScenarioDefinitionPage extends Component {
     this.fetchNodesBySolution = this.fetchNodesBySolution.bind(this);
     this.fetchNodeDataByScenario = this.fetchNodeDataByScenario.bind(this);
     this.fetchScenarioMetadata = this.fetchScenarioMetadata.bind(this);
+    this.fetchSolutionMetadata = this.fetchSolutionMetadata.bind(this);
 
     this.createOrUpdateScenario = this.createOrUpdateScenario.bind(this);
     this.createOrUpdateScenNodeDatas = this.createOrUpdateScenNodeDatas.bind(
@@ -368,6 +371,19 @@ class ScenarioDefinitionPage extends Component {
       });
   }
 
+  fetchSolutionMetadata(){
+    fetch(
+      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.solution_id}/`
+    )
+      .then((resp) => {
+        return resp.json();
+      })
+      .then((resp) => {
+        this.setState({layer_offset: resp.layer_offset,
+          layer_time_increment: resp.layer_time_increment});
+      });
+  }
+
   fetchScenarioMetadata() {
     fetch(
       `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.solution_id}/scenarios/${this.scenario_id}/`
@@ -385,6 +401,7 @@ class ScenarioDefinitionPage extends Component {
   }
 
   componentDidMount() {
+    this.fetchSolutionMetadata();
     this.filtersBySolution(this.solution_id);
     this.fetchNodesBySolution(this.solution_id);
   }
@@ -407,6 +424,8 @@ class ScenarioDefinitionPage extends Component {
       updateConstNodeData: this.updateConstNodeData,
       updateInputNodeData: this.updateInputNodeData,
       copyToAllLayers: this.copyToAllLayers,
+      layerStartDate: this.state.model_date,
+      layerTimeIncrement: this.state.layer_time_increment,
     };
     let pivotStyles = {
       root: {
@@ -508,6 +527,9 @@ class ScenarioDefinitionPage extends Component {
                         postScenario={this.createOrUpdateScenario}
                         categoryNodes={
                           this.state.inputCategories[this.state.category]
+                        }
+                        layerOffset={
+                          this.state.layer_offset
                         }
                       />
                     )}

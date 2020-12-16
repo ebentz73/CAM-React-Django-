@@ -68,6 +68,7 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
     report_id = models.CharField(max_length=128, null=True, blank=True)
     workspace_id = models.CharField(max_length=128, null=True, blank=True)
     layer_time_increment = models.TextField(choices=TIME_OPTIONS)
+    layer_offset = models.IntegerField(default=0, null=True)
     iterations = models.IntegerField(choices=ITERATIONS_OPTIONS, null=True)
 
     def __str__(self):
