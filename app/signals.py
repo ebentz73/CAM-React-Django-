@@ -179,8 +179,8 @@ def update_model(sender, **kwargs):
                                         # Create role since it does not exist
                                         node_role = Role.objects.create(name=f'role_{solution.name}_{cam_role}')
                                         tag_roles[cam_role] = node_role
-                                    assign_perm('app.view_node', node, node_role)
-                                    assign_perm(node_data_codename, node_data, node_role)
+                                    assign_perm('app.view_node', node_role, node)
+                                    assign_perm(node_data_codename, node_role, node_data)
 
         finally:
             os.remove(filename)
