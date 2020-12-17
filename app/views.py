@@ -281,11 +281,11 @@ class ScenarioViewSet(ModelViewSet):
     def download_inputs(self, request, solution_pk, pk):
         solution = AnalyticsSolution.objects.get(Q(pk=solution_pk))
         scenario = Scenario.objects.get(Q(pk=pk))
-        inputs_nd = InputNodeData.objects.filter(Q(scenario_id=pk))
-        consts = ConstNodeData.objects.filter(Q(scenario_id=pk))
+        inputs_nd = InputNodeData.objects.filter(Q(scenario_id=pk)).select_related('node')
+        consts_nd = ConstNodeData.objects.filter(Q(scenario_id=pk)).select_related('node')
 
         response = HttpResponse(content_type='application/ms-excel')
-        response['Content-Disposition'] = f'attachment; filename="PLACEHOLDER_results.xls"'
+        response['Content-Disposition'] = f'attachment; filename="{scenario.name}_inputs.xls"'
 
         wb = xlwt.Workbook(encoding='utf-8')
 
@@ -295,14 +295,20 @@ class ScenarioViewSet(ModelViewSet):
         const_ws = ExcelHelper.create_worksheet(wb, 'Constant Nodes', ['Node', 'Scenario', 'Model', 'Layer', 'Value'])
 
         input_data = []
+        for input_nd in inputs_nd:
+            for idx, data in enumerate(input_nd.default_data, 0):
+                input_data.append([input_nd.node.name, scenario.name, solution.name, 'T' + str(idx).zfill(2),
+                                  data[1], data[2], data[3], data[0], data[4]])
+
         const_data = []
+        for const_nd in consts_nd:
+            for idx, data in enumerate(const_nd.default_data, 0):
+                const_data.append([const_nd.node.name, scenario.name, solution.name,
+                                   'T' + str(idx).zfill(2), data])
 
-        for idx, input_nd in enumerate(inputs_nd, 0):
-            input_data.append(['', scenario.name, solution.name, 'T' + str(idx).zfill(2)])
-
-        ExcelHelper.write_rows(metadata_ws, [scenario.name, solution.name, datetime.datetime.now()], xlwt.XFStyle())
-        ExcelHelper.write_rows(input_ws, [], xlwt.XFStyle())
-        ExcelHelper.write_rows(const_ws, [], xlwt.XFStyle())
+        ExcelHelper.write_rows(metadata_ws, [[scenario.name, solution.name, str(datetime.datetime.now())]], xlwt.XFStyle())
+        ExcelHelper.write_rows(input_ws, input_data, xlwt.XFStyle())
+        ExcelHelper.write_rows(const_ws, const_data, xlwt.XFStyle())
 
         wb.save(response)
         return response

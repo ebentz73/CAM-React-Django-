@@ -399,10 +399,8 @@ class ExcelHelper:
     @staticmethod
     def write_rows(worksheet, row_data, font_style):
         for row_idx, row in enumerate(row_data, 1):
-            for col_idx, value in enumerate(row):
+            for col_idx, value in enumerate(row, 0):
+                biggest_width = worksheet.col(col_idx).width
+                if (len(str(value)) * 367) > biggest_width:
+                    worksheet.col(col_idx).width = (len(str(value)) * 367)
                 worksheet.write(row_idx, col_idx, str(value), font_style)
-
-    @staticmethod
-    def autofit_columns(worksheet):
-        #Implementing in future
-        pass
