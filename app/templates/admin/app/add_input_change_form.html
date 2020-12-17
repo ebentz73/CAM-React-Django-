@@ -1,0 +1,11 @@
+{% extends "admin/guardian/model/change_form.html" %}
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+<li>
+    <a href="{% url 'admin:app_input_add' %}?solution={{ original.pk }}">
+        {% trans "Add Input" %}
+    </a>
+</li>
+{{ block.super }}
+{% endblock %}

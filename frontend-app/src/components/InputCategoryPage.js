@@ -183,7 +183,7 @@ class InputCategoryPage extends Component {
         <div className="ms-Grid-row">
           <div className="ms-Grid-col ms-md12">
             {/* {this.state.nodeOnChart !== "none" ? ( */}
-            <NodeDataChart node={this.state.nodeOnChart} />
+            <NodeDataChart node={this.state.nodeOnChart} layerOffset={this.props.layerOffset} />
             {/* ) : (
             <Spinner size={SpinnerSize.large} />
             )} */}
@@ -255,6 +255,7 @@ class InputCategoryPage extends Component {
               nodeId={this.state.currentNodeID}
               data={this.state.currentNodeData}
               constantNodes={this.state.filteredCategoryNodes.filter(node_id => this.state.nodes[node_id].type === 'const')}
+              layerOffset={this.props.layerOffset}
             />
             {/* ) : (
               <Spinner size={SpinnerSize.large} />
