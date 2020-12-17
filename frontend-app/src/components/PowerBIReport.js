@@ -20,21 +20,32 @@ class PowerBIReport extends Component {
 
   downloadResults() {
     fetch(
-      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.props.solutionId}/scenarios/${this.props.scenarioId}/download-results/`
+`${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.props.solutionId}/scenarios/${this.props.scenarioId}/download-results/`
     )
-      .then((response) => {
-        return response.json();
-      })
-      .then((response) => {
-        console.log(response);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    .then((response) => {
+      return response.json();
+    })
+    .then((response) => {
+      console.log(response);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
   }
 
   downloadInputs() {
-    console.log("DownloadInputs");
+    fetch(
+`${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.props.solutionId}/scenarios/${this.props.scenarioId}/download-inputs/`
+    )
+    .then((response) => {
+      return response.json();
+    })
+    .then((response) => {
+      console.log(response);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
   }
 
   clearResults() {

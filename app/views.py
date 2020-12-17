@@ -264,30 +264,48 @@ class ScenarioViewSet(ModelViewSet):
         response = HttpResponse(content_type='application/ms-excel')
         response['Content-Disposition'] = f'attachment; filename="{scenario.name}_results.xls"'
 
-        workbook = xlwt.Workbook(encoding='utf-8')
+        wb = xlwt.Workbook(encoding='utf-8')
         headers = ['Scenario', 'Model', 'Node', 'Layer',
                    'Node Tags', 'Result 10', 'Result 30',
                    'Result 50', 'Result 70', 'Result 90']
-        worksheet = ExcelHelper.create_worksheet(workbook, "Results", headers)
-
-        font_style = xlwt.XFStyle()
-
+        ws = ExcelHelper.create_worksheet(wb, "Results", headers)
         node_results = NodeResult.objects.filter(Q(scenario_id=pk)).values_list('scenario', 'model', 'node', 'layer',
                                                                                 'node_tags', 'result_10', 'result_30',
                                                                                 'result_50', 'result_70', 'result_90')
-        for index, node_result in enumerate(node_results, 1):
-            for i, value in enumerate(node_result):
-                worksheet.write(index, i, str(value), font_style)
 
-        workbook.save(response)
+        ExcelHelper.write_rows(ws, node_results, xlwt.XFStyle())
+        wb.save(response)
         return response
 
-    @action(detail=True, methods=['get'])
+    @action(detail=True, methods=['get'], url_path='download-inputs')
     def download_inputs(self, request, solution_pk, pk):
-        inputs = InputNodeData.objects.filter(Q(scenario_id=pk))
+        solution = AnalyticsSolution.objects.get(Q(pk=solution_pk))
+        scenario = Scenario.objects.get(Q(pk=pk))
+        inputs_nd = InputNodeData.objects.filter(Q(scenario_id=pk))
         consts = ConstNodeData.objects.filter(Q(scenario_id=pk))
 
-        pass
+        response = HttpResponse(content_type='application/ms-excel')
+        response['Content-Disposition'] = f'attachment; filename="PLACEHOLDER_results.xls"'
+
+        wb = xlwt.Workbook(encoding='utf-8')
+
+        metadata_ws = ExcelHelper.create_worksheet(wb, 'Export Info', ['Scenario', 'Model', 'Date Created'])
+        input_ws = ExcelHelper.create_worksheet(wb, 'Input Nodes', ['Node', 'Scenario', 'Model', 'Layer',
+                                                                    '10', 'Base', '90', 'Low Bound', 'High Bound'])
+        const_ws = ExcelHelper.create_worksheet(wb, 'Constant Nodes', ['Node', 'Scenario', 'Model', 'Layer', 'Value'])
+
+        input_data = []
+        const_data = []
+
+        for idx, input_nd in enumerate(inputs_nd, 0):
+            input_data.append(['', scenario.name, solution.name, 'T' + str(idx).zfill(2)])
+
+        ExcelHelper.write_rows(metadata_ws, [scenario.name, solution.name, datetime.datetime.now()], xlwt.XFStyle())
+        ExcelHelper.write_rows(input_ws, [], xlwt.XFStyle())
+        ExcelHelper.write_rows(const_ws, [], xlwt.XFStyle())
+
+        wb.save(response)
+        return response
 
     @action(detail=True, methods=['get'])
     def reset(self, request, solution_pk, pk):
