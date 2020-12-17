@@ -8,6 +8,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from guardian.shortcuts import assign_perm
 from profile.models import UserProfile
 from rest_framework import generics, status, permissions
 from rest_framework.decorators import action
@@ -174,8 +175,16 @@ class ScenarioViewSet(ModelViewSet):
             response.then_args = (solution_pk, pk or response.data['id'])
 
         return response
-    create = create_or_update
     update = create_or_update
+
+    def create(self, request, solution_pk=None, **kwargs):
+        response = self.create_or_update(request, solution_pk, **kwargs)
+        obj = Scenario.objects.get(pk=response.data['id'])
+        assign_perm('app.add_scenario', request.user, obj)
+        assign_perm('app.change_scenario', request.user, obj)
+        assign_perm('app.delete_scenario', request.user, obj)
+        assign_perm('app.view_scenario', request.user, obj)
+        return response
 
     @action(detail=True)
     def evaluate(self, request, solution_pk, pk):
