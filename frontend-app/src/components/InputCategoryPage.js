@@ -12,6 +12,7 @@ import Node from "./Node";
 import NodeDataChart from "./NodeDataChart";
 import { ChevronDownIcon, ChevronUpIcon } from "@fluentui/react-icons";
 import NodeTable from "./NodeTable";
+import ConstantsListNode from "./ConstantsListNode";
 
 class InputCategoryPage extends Component {
   constructor(props) {
@@ -37,12 +38,22 @@ class InputCategoryPage extends Component {
   }
 
   setCurrentNode(nodeId) {
-    this.setState({
-      currentNodeID: nodeId,
-      currentNodeData: this.state.nodes[nodeId].data,
-      currentNodeType: this.state.nodes[nodeId].type,
-      nodeOnChart: this.state.nodes[nodeId],
-    });
+    if (nodeId === "const") {
+      this.setState({
+        currentNodeID: "const",
+        currentNodeData: {},
+        currentNodeType: "const",
+        nodeOnChart: "none",
+      });
+    } else {
+      this.setState({
+        currentNodeID: nodeId,
+        currentNodeData: this.state.nodes[nodeId].data,
+        currentNodeType: this.state.nodes[nodeId].type,
+        nodeOnChart: this.state.nodes[nodeId],
+      });
+    }
+
   }
 
   changeNodeShownOnChart(e, node_id) {
@@ -199,7 +210,12 @@ class InputCategoryPage extends Component {
                         searchResult.push(node_id);
                       }
                     });
-                    this.setState({ filteredCategoryNodes: searchResult });
+                    this.setState({
+                      filteredCategoryNodes: searchResult,
+                      currentNodeID: "",
+                      currentNodeData: {},
+                      currentNodeType: "",
+                      nodeOnChart: "none",  });
                   }}
                 />
                 {this.state.filteredCategoryNodes.map((node_id, index) => {
@@ -212,7 +228,7 @@ class InputCategoryPage extends Component {
                       inRole |= tag.includes("CAM_ROLE==" + role);
                     });
                   });
-                  if (!node.visible | !inRole) return;
+                  if (!node.visible | !inRole | node.type === "const") return;
                   return (
                     <Node
                       className="highlight"
@@ -225,6 +241,10 @@ class InputCategoryPage extends Component {
                     />
                   );
                 })}
+                <ConstantsListNode
+                    constantNodes={this.state.filteredCategoryNodes.filter(node_id => this.state.nodes[node_id].type === 'const')}
+                    onClick={() => this.setCurrentNode("const")}
+                    isSelected={this.state.currentNodeID === "const"} />
               </div>
             </div>
           </div>
@@ -234,6 +254,7 @@ class InputCategoryPage extends Component {
               type={this.state.currentNodeType}
               nodeId={this.state.currentNodeID}
               data={this.state.currentNodeData}
+              constantNodes={this.state.filteredCategoryNodes.filter(node_id => this.state.nodes[node_id].type === 'const')}
             />
             {/* ) : (
               <Spinner size={SpinnerSize.large} />

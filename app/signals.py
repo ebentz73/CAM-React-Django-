@@ -152,7 +152,6 @@ def update_model(sender, **kwargs):
                                 tam_id=node_id,
                                 defaults={'name': node_name},
                             )
-
                             # Apply CAM role to Node
                             for cam_role in cam_roles:
                                 if cam_role in tag_roles:
@@ -184,7 +183,7 @@ def update_model(sender, **kwargs):
                                 ind, _ = InputNodeData.objects.update_or_create(
                                     node=node, default_data=node_data, is_model=True
                                 )
-                                assign_model_and_object_perms(ind, node_role, 'view_inputnodedata')
+                                assign_model_and_object_perms(ind, role, 'view_inputnodedata')
 
                             # Create ConstNodeData model
                             elif node_type == 'constnode':
@@ -197,7 +196,7 @@ def update_model(sender, **kwargs):
                                 cnd, _ = ConstNodeData.objects.update_or_create(
                                     node=node, default_data=node_data, is_model=True
                                 )
-                                assign_model_and_object_perms(cnd, node_role, 'view_constnodedata')
+                                assign_model_and_object_perms(cnd, role, 'view_constnodedata')
 
         finally:
             os.remove(filename)

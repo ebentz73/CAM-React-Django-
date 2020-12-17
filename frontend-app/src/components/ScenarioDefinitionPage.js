@@ -150,7 +150,7 @@ class ScenarioDefinitionPage extends Component {
       .then((resp) => {
         if (resp.id) this.scenario_id = resp.id;
         this.createOrUpdateScenNodeDatas();
-        history.push(`/frontend-app/solution/${this.scenario_id}/scenario`);
+        history.push(`/frontend-app/solution/${this.solution_id}/scenario`);
       })
       .catch((err) => {
         console.error(err);
