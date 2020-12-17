@@ -1,8 +1,16 @@
+from django import forms
 from django.contrib import admin
+from django.contrib.admin.widgets import AutocompleteSelect
+from django.contrib.auth.models import Group, User
 from django.db.models import ManyToManyRel
 from django.urls import resolve
-from polymorphic.admin import StackedPolymorphicInline, PolymorphicInlineSupportMixin, PolymorphicParentModelAdmin, \
-    PolymorphicChildModelAdmin
+from django.utils.translation import gettext_lazy as _
+from guardian.admin import GuardedModelAdminMixin
+from polymorphic.admin import (
+    PolymorphicChildModelAdmin,
+    PolymorphicParentModelAdmin,
+    StackedPolymorphicInline,
+)
 
 from app import models
 
@@ -21,7 +29,7 @@ class InlineBase(admin.StackedInline):
         return False
 
 
-class ModelAdminBase(admin.ModelAdmin):
+class ModelAdminBase(GuardedModelAdminMixin, admin.ModelAdmin):
 
     def __new__(cls, model, admin_site):
         instance = super().__new__(cls)
@@ -40,6 +48,12 @@ class ModelAdminBase(admin.ModelAdmin):
                 for field in model._meta.get_fields()
                 if field.auto_created and not field.concrete]
 
+    def get_obj_perms_user_select_form(self, request):
+        return UserManage
+
+    def get_obj_perms_group_select_form(self, request):
+        return GroupManage
+
 
 class HideModelBase(admin.ModelAdmin):
     def has_module_permission(self, request):
@@ -48,7 +62,12 @@ class HideModelBase(admin.ModelAdmin):
 
 
 class HideModelAdmin(ModelAdminBase, HideModelBase):
-    ...
+    pass
+
+
+@admin.register(models.AnalyticsSolution)
+class AnalyticsSolutionAdmin(ModelAdminBase):
+    change_form_template = 'admin/app/add_input_change_form.html'
 
 
 @admin.register(models.Scenario)
@@ -112,12 +131,6 @@ class InputAdmin(PolymorphicParentModelAdmin, HideModelBase):
         return [relation.related_model for relation in self.model._meta.related_objects]
 
 
-@admin.register(models.ExecutiveView)
-class ExecutiveViewAdmin(PolymorphicInlineSupportMixin, admin.ModelAdmin):
-    inlines = (InputInline,)
-
-
-admin.site.register(models.AnalyticsSolution, ModelAdminBase)
 admin.site.register(models.Model, HideModelAdmin)
 admin.site.register(models.InputPage, HideModelAdmin)
 admin.site.register(models.InputDataSet, HideModelAdmin)
@@ -127,6 +140,32 @@ admin.site.register(models.Node, HideModelAdmin)
 admin.site.register(models.InputDataSetInput, InputChildAdmin)
 admin.site.register(models.NumericInput, InputChildAdmin)
 admin.site.register(models.SliderInput, InputChildAdmin)
-
 admin.site.register(models.FilterCategory, HideModelAdmin)
 admin.site.register(models.FilterOption, HideModelAdmin)
+
+
+# https://stackoverflow.com/a/57968864
+class FakeRelation:
+    def __init__(self, model):
+        self.model = model
+
+
+class CustomAutocompleteSelect(AutocompleteSelect):
+    def __init__(self, model, admin_site, attrs=None, choices=(), using=None):
+        rel = FakeRelation(model)
+        super().__init__(rel, admin_site, attrs=attrs, choices=choices, using=using)
+
+
+class GroupManage(forms.Form):
+    group = forms.ModelChoiceField(
+        queryset=Group.objects.all(),
+        widget=CustomAutocompleteSelect(Group, admin.site),
+    )
+
+
+class UserManage(forms.Form):
+    user = forms.ModelChoiceField(
+        queryset=User.objects.all(),
+        widget=CustomAutocompleteSelect(User, admin.site),
+        help_text=_("Enter a user's username or email"),
+    )

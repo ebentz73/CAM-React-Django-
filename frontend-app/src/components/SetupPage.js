@@ -1,6 +1,15 @@
 import React, { Component } from "react";
-import { TextField, DatePicker, PrimaryButton, Text } from "@fluentui/react";
-import { initializeIcons } from "@fluentui/react";
+import {
+  DatePicker,
+  Dropdown,
+  initializeIcons,
+  Position,
+  PrimaryButton,
+  Slider,
+  SpinButton,
+  Text,
+  TextField,
+} from "@fluentui/react";
 
 initializeIcons();
 
@@ -63,6 +72,23 @@ const DayPickerStrings = {
 class SetupPage extends Component {
   constructor(props) {
     super(props);
+    this.state = { inputs: [] };
+    this.fetchInputs = this.fetchInputs.bind(this);
+  }
+
+  fetchInputs() {
+    fetch(`${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.props.solutionId}/inputs/`)
+      .then(response => response.json())
+      .then(response => {
+        this.setState({ inputs: response });
+      })
+      .catch(err => {
+        console.error(err);
+      });
+  }
+
+  componentDidMount() {
+    this.fetchInputs();
   }
 
   _getErrorMessage(value) {
@@ -97,6 +123,54 @@ class SetupPage extends Component {
             strings={DayPickerStrings}
             isRequired={true}
           />
+          {
+            this.state.inputs.map(input => {
+              const inputValue = this.props.inputValues[input.id]?.value;
+              switch (input.resourcetype) {
+                case "InputDataSetInput":
+                  return (
+                    <Dropdown
+                      label={input.name}
+                      placeHolder="Select an Option"
+                      defaultSelectedKey={inputValue}
+                      options={
+                        input.choices.map(choice => (
+                          { key: choice.id, text: choice.label }
+                        ))
+                      }
+                      key={input.id}
+                      onChange={(e, selected) =>
+                        this.props.changeInputDataSet(input.id, selected.key)}
+                    />
+                  );
+                case "NumericInput":
+                  return (
+                    <SpinButton
+                      label={input.name}
+                      labelPosition={Position.top}
+                      defaultValue={inputValue || 0}
+                      min={Number.MIN_SAFE_INTEGER}
+                      max={Number.MAX_SAFE_INTEGER}
+                      precision={5}
+                      key={input.id}
+                      onBlur={(e) => this.props.changeInputs(input.id, input.node, e.target.value)}
+                    />
+                  );
+                case "SliderInput":
+                  return (
+                    <Slider
+                      label={input.name}
+                      defaultValue={inputValue || (input.minimum + input.maximum / 2)}
+                      min={input.minimum}
+                      max={input.maximum}
+                      step={input.step}
+                      key={input.id}
+                      onChange={(n) => this.props.changeInputs(input.id, input.node, n)}
+                    />
+                  );
+              }
+            })
+          }
           <div className="next-button">
             <PrimaryButton
               text="Next"

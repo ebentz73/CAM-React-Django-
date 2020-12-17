@@ -27,11 +27,9 @@ router.register(r'api/v1/solutions', views.AnalyticsSolutionViewSet, basename='s
 
 solution_router = routers.NestedSimpleRouter(router, r'api/v1/solutions', lookup='solution')
 
-solution_router.register(r'scenarios', views.ScenarioViewSet, basename='scenarios')
+solution_router.register(r'inputs', views.InputViewSet, basename='solution-inputs')
+solution_router.register(r'scenarios', views.ScenarioViewSet, basename='solution-scenarios')
 solution_router.register(r'filtercategories', views.FilterCategoryViewSet, basename='filtercategories')
-solution_router.register(r'evaljobs',
-                         views.EvalJobDefinitionViewSet,
-                         basename='evaljobs')
 solution_router.register(r'models', views.AnalyticsModelViewSet, basename='models')
 solution_router.register(r'nodes', views.NodeViewSet, basename='solution-nodes')
 solution_router.register(r'modelnodedatas', views.NodeDataViewSet, basename='solution-modelnodedatas')
@@ -67,12 +65,6 @@ urlpatterns = [
     url("^frontend-app/.*", include("frontend-app.urls")),
     path("app/", include("app.urls")),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
-    path(
-        "api/evaljob/<int:pk>/",
-        views.EvalJobDefinitionViewSet.as_view(
-            {"get": "retrieve", "patch": "partial_update"}
-        ),
-    ),
     path("api/results/", views.NodeResultView.as_view()),
 
     path("api/model/", views.ModelAPIView.as_view()),

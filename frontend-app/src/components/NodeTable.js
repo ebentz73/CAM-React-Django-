@@ -27,8 +27,10 @@ class NodeTable extends Component {
                     <div className="table-scroll-pane">
                         <table className="table-in-scroll-pane">
                             {this.props.type === 'input' ?
-                                <InputNodeTable nodeId={this.props.nodeId} data={this.props.data} fixed={this.state.fixed} /> :
-                                <ConstNodeTable nodeId={this.props.nodeId} data={this.props.data} fixed={this.state.fixed} />
+                                <InputNodeTable nodeId={this.props.nodeId} data={this.props.data}
+                                                fixed={this.state.fixed} layerOffset={this.props.layerOffset} /> :
+                                <ConstNodeTable nodeId={this.props.nodeId} data={this.props.data}
+                                                fixed={this.state.fixed} layerOffset={this.props.layerOffset} />
                             }
                         </table>
                     </div>
