@@ -28,6 +28,8 @@ from app.utils import Sqlite
 from profile.models import Role
 from guardian.shortcuts import assign_perm
 
+CAM_ROLE_PREFIX = 'CAM_ROLE=='
+
 
 def get_or_create_solution_group(solution):
     groups = Group.objects.filter(name=solution.name)
@@ -43,6 +45,7 @@ def update_model(sender, **kwargs):
     solution = kwargs.get('instance')
 
     if 'tam_file' in solution.changed_fields:
+        tag_roles = {}
         group = get_or_create_solution_group(solution)
         # Download tam model file and save only what we need
         f, filename = tempfile.mkstemp()
@@ -100,7 +103,6 @@ def update_model(sender, **kwargs):
                             assign_perm('app.view_inputpage', group, page)
 
                     # Save all nodes
-                    tag_roles = {}
                     cursor.execute(
                         "SELECT n.NodeId, NodeName, NodeNotes, NodeType, TagList, NodeInputData "
                         "FROM Node AS n, NodeScenarioData AS d "
@@ -161,8 +163,7 @@ def update_model(sender, **kwargs):
                                 blob_model = ConstNodeData_pb2.ConstNodeData()
                                 blob_model.ParseFromString(node_data_blob)
                                 node_data = [
-                                    val.ConstData
-                                    for val in blob_model.AllLayerData
+                                    val.ConstData for val in blob_model.AllLayerData
                                 ]
                                 node_data, _ = ConstNodeData.objects.update_or_create(
                                     node=node, default_data=node_data, is_model=True
@@ -172,12 +173,17 @@ def update_model(sender, **kwargs):
                             # Apply CAM role to Node
                             # only create roles for nodes we are saving
                             if node_data and node_data_codename:
-                                cam_roles = (tag for tag in tag_list if tag.startswith('CAM_ROLE=='))
+                                cam_roles = (
+                                    tag[len(CAM_ROLE_PREFIX):]
+                                    for tag in tag_list
+                                    if tag.startswith(CAM_ROLE_PREFIX)
+                                )
                                 for cam_role in cam_roles:
                                     node_role = tag_roles.get(cam_role)
                                     if node_role is None:
                                         # Create role since it does not exist
-                                        node_role = Role.objects.create(name=f'role_{solution.name}_{cam_role}')
+                                        role_name = f'{solution.name} - {cam_role}'
+                                        node_role = Role.objects.create(name=role_name)
                                         tag_roles[cam_role] = node_role
                                     assign_perm('app.view_node', node_role, node)
                                     assign_perm(node_data_codename, node_role, node_data)
