@@ -207,6 +207,10 @@ class ScenarioViewSet(ModelViewSet):
     @evaluate.mapping.patch
     def patch_evaluate(self, request, solution_pk, pk):
         return self.update(request, solution_pk, pk, partial=True)
+
+    @action(detail=True, methods=['post'])
+    def add_user(self, request, solution_pk, pk):
+        print("add user backend part")
         
     @action(detail=True, methods=['post'])
     def clone(self, request, solution_pk, pk):

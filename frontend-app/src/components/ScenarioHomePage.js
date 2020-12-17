@@ -20,11 +20,17 @@ import {
   IIconProps,
   DefaultButton,
   CommandBarButton,
+  Dropdown,
+  DropdownMenuItemType,
+  IDropdownOption,
+  IDropdownStyle,
 } from "@fluentui/react";
 
 const overflowButtonProps = {
   ariaLabel: "More users",
 };
+
+const dropdownStyles = { dropdown: { width: 300 } };
 
 function getCookie(name) {
   return (
@@ -49,6 +55,9 @@ class ScenarioHomePage extends Component {
       newScenarioName: "",
       users: [],
       filteredUsers: [],
+      sharedScenarioId: "",
+      DropdownControlledMultiExampleOptions: [],
+      sharedEmails: [],
     };
 
     this._selection = new Selection({
@@ -72,7 +81,6 @@ class ScenarioHomePage extends Component {
     this.onCloneOrMerge = this.onCloneOrMerge.bind(this);
     this.sharePeople = this.sharePeople.bind(this);
     this.addPeople = this.addPeople.bind(this);
-    this.changeFilterPeople = this.changeFilterPeople.bind(this);
     this.removeFilteredUser = this.removeFilteredUser.bind(this);
   }
 
@@ -84,16 +92,23 @@ class ScenarioHomePage extends Component {
 
   _onColumnClickView() {}
 
-  sharePeople() {}
-
-  changeFilterPeople(e, val) {
-    let searchResult = [];
-    this.state.users.map((user, index) => {
-      if (user.email.toLowerCase().includes(val.toLowerCase())) {
-        searchResult.push(user);
+  sharePeople() {
+    fetch(
+      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.state.solution_id}/scenarios/${this.state.sharedScenarioId}/add_user/`,
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrf_token,
+        },
+        body: JSON.stringify({
+          item: 2,
+        }),
       }
+    ).catch((err) => {
+      console.log(err);
     });
-    this.setState({ filteredUsers: searchResult });
   }
 
   onCloneOrMerge() {
@@ -202,6 +217,9 @@ class ScenarioHomePage extends Component {
           },
         ];
         response.forEach((scenario) => {
+          scenario.sharedUserEmail = scenario.shared.map((user) => {
+            return user.email;
+          });
           scenario.shared = scenario.shared.map((user) => {
             let firstName = user["first_name"];
             let lastName = user["last_name"];
@@ -231,35 +249,76 @@ class ScenarioHomePage extends Component {
     this.setState({ countSelected });
   }
 
-  addPeople({ id, solution }) {
+  addPeople(index, item) {
     this.toggleShareDialog();
-    console.log("add people button is cliecked", id, solution);
+    this.setState({ sharedScenarioId: item.id });
+    let userEmails = [];
+    this.state.users.map((user) => {
+      userEmails.push(user.email);
+    });
+
+    let DropdownControlledMultiExampleOptions = [];
+    let sharedEmails = [...this.state.scenarios[index].sharedUserEmail];
+    this.setState({ sharedEmails });
+    if (this.state.scenarios[index].sharedUserEmail.length > 0) {
+      for (
+        let i = 0;
+        i < this.state.scenarios[index].sharedUserEmail.length;
+        i++
+      ) {
+        let idx = userEmails.indexOf(
+          this.state.scenarios[index].sharedUserEmail[i]
+        );
+        if (idx > -1) {
+          userEmails.splice(idx, 1);
+        }
+      }
+    }
+
+    for (let i = 0; i < userEmails.length; i++) {
+      DropdownControlledMultiExampleOptions.push({
+        key: `email+${i}`,
+        text: userEmails[i],
+      });
+    }
+
+    this.setState({ DropdownControlledMultiExampleOptions });
   }
 
   _renderItemColumn(item, index, column) {
     switch (column.key) {
       case "shared":
         var shared_data = [];
+        const menuProps = {
+          items: [
+            {
+              key: "addPeople",
+              text: "Add People",
+              iconProps: { iconName: "Add" },
+              onClick: () => this.addPeople(index, item),
+            },
+          ],
+        };
+        if (this.state.scenarios[index].sharedUserEmail.length > 0) {
+          for (
+            let i = 0;
+            i < this.state.scenarios[index].sharedUserEmail.length;
+            i++
+          ) {
+            menuProps.items.push({
+              key: `email+${i}`,
+              text: this.state.scenarios[index].sharedUserEmail[i],
+              iconProps: { iconName: "Mail" },
+            });
+          }
+        }
+
         for (var r in item[column.key]) {
           shared_data.push({ imageInitials: item[column.key][r] });
         }
 
         var overflowButtonType = OverflowButtonType.descriptive;
-        const menuProps = {
-          items: [
-            {
-              key: "email",
-              text: "jonny@gmail.com",
-              iconProps: { iconName: "Mail" },
-            },
-            {
-              key: "addPeople",
-              text: "Add People",
-              iconProps: { iconName: "Add" },
-              onClick: () => this.addPeople(item),
-            },
-          ],
-        };
+
         return (
           <div className="share-people">
             <Facepile
@@ -374,24 +433,22 @@ class ScenarioHomePage extends Component {
           onDismiss={this.toggleShareDialog}
           dialogContentProps={shareDialogContentProps}
         >
-          <TextField
+          <Dropdown
+            placeholder="Select options"
             label="Add people"
-            onChange={(e, val) => this.changeFilterPeople(e, val)}
+            // selectedKeys={selectedKeys}
+            // onChange={onChange}
+            multiSelect
+            options={this.state.DropdownControlledMultiExampleOptions}
+            styles={dropdownStyles}
           />
           <p>Shared With</p>
           <table>
             <tbody>
-              {this.state.filteredUsers.map((filtered_user, index) => {
+              {this.state.sharedEmails.map((sharedEmail, index) => {
                 return (
                   <tr key={index}>
-                    <td>{filtered_user.email}</td>
-                    <td>
-                      <ActionButton
-                        onClick={() => this.removeFilteredUser(index)}
-                      >
-                        remove
-                      </ActionButton>
-                    </td>
+                    <td>{sharedEmail}</td>
                   </tr>
                 );
               })}
