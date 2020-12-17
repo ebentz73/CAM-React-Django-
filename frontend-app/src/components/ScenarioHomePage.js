@@ -94,16 +94,16 @@ class ScenarioHomePage extends Component {
 
   sharePeople() {
     fetch(
-      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.state.solution_id}/scenarios/${this.state.sharedScenarioId}/add_user/`,
+      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.state.solution_id}/scenarios/${this.state.sharedScenarioId}/`,
       {
-        method: "POST",
+        method: "PATCH",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
           "X-CSRFToken": csrf_token,
         },
         body: JSON.stringify({
-          item: 2,
+          // item: 2,
         }),
       }
     ).catch((err) => {
