@@ -91,7 +91,6 @@ class SetupPage extends Component {
 
   componentDidMount() {
     this.fetchInputs();
-    console.log("this.props.name", this.props.name);
   }
 
   _getErrorMessage(value) {

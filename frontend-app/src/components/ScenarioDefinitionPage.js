@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Pivot, PivotItem, Dropdown } from "@fluentui/react";
+import { Pivot, PivotItem, Dropdown, Breadcrumb } from "@fluentui/react";
 import { withRouter } from "react-router";
 import SetupPage from "./SetupPage";
 import InputCategoryPage from "./InputCategoryPage";
@@ -30,8 +30,9 @@ class ScenarioDefinitionPage extends Component {
       category: "",
       category_idx: -1,
       scenario_name: "",
+      solution_name: "",
       model_date: "",
-      status,
+      status: null,
       description: "",
       input_values: {},
       nodes_changed: 0,
@@ -449,6 +450,7 @@ class ScenarioDefinitionPage extends Component {
         this.setState({
           layer_offset: resp.layer_offset,
           layer_time_increment: resp.layer_time_increment,
+          solution_name: resp.name,
         });
       });
   }
@@ -490,6 +492,21 @@ class ScenarioDefinitionPage extends Component {
   }
 
   render() {
+    const lastFolderName = this.scenario_id ? "Edit Scenario" : "New Scenario";
+    const itemsWithHref = [
+      {
+        text: "Analytics Solutions",
+        key: "f1",
+        href: `${window.location.protocol}//${window.location.host}/frontend-app/home`,
+      },
+      {
+        text: `${this.state.solution_name}`,
+        key: "f2",
+        href: `${window.location.protocol}//${window.location.host}/frontend-app/solution/${this.solution_id}/scenario`,
+      },
+      { text: `${lastFolderName}`, key: "f3", href: "#" },
+    ];
+
     let nodesContext = {
       nodes: this.state.nodes,
       updateConstNodeData: this.updateConstNodeData,
@@ -562,6 +579,12 @@ class ScenarioDefinitionPage extends Component {
                     </div>
                   </div>
                   <div className="ms-Grid-col ms-md8">
+                    <Breadcrumb
+                      items={itemsWithHref}
+                      maxDisplayedItems={3}
+                      ariaLabel="Breadcrumb with items rendered as links"
+                      overflowAriaLabel="More links"
+                    />
                     {/* Role Filter */}
                     <Dropdown
                       options={Object.keys(this.state.roles).map((role) => {
