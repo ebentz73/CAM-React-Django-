@@ -31,6 +31,7 @@ class ScenarioDefinitionPage extends Component {
       category_idx: -1,
       scenario_name: "",
       model_date: "",
+      status,
       description: "",
       input_values: {},
       nodes_changed: 0,
@@ -464,11 +465,13 @@ class ScenarioDefinitionPage extends Component {
           scenario_name: resp.name,
           model_date: new Date(resp.layer_date_start),
           description: "",
+          status: resp.status,
         });
       });
   }
 
   componentDidMount() {
+    this.fetchScenarioMetadata();
     this.fetchSolutionMetadata();
     this.filtersBySolution(this.solution_id);
     this.fetchNodesBySolution(this.solution_id);
@@ -580,10 +583,11 @@ class ScenarioDefinitionPage extends Component {
                         changeInputs={this.changeInputs}
                         changeInputDataSet={this.changeInputDataSet}
                         {...this.setupProps}
-                        name={this.state.scenario_name}
+                        name={this.scenario_id ? this.state.scenario_name : ""}
                         desc={this.state.description}
-                        date={this.state.model_date}
+                        date={this.scenario_id ? this.state.model_date : ""}
                         inputValues={this.state.input_values}
+                        isReadOnly={this.state.status === null}
                       />
                     )}
                     {this.state.tab === "category" && !this.state.isLoading && (
