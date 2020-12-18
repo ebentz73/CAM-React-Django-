@@ -130,7 +130,8 @@ class AnalyticsSolutionAdmin(ModelAdminBase):
         obj.save()
         # Give the user who created the AnalyticsSolution permissions
         if not change:
-            assign_model_perm(request.user, obj)
+            group = Group.objects.get(name=obj.name)
+            request.user.groups.add(group)
 
 
 @admin.register(models.Scenario)
