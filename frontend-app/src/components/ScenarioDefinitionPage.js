@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Pivot, PivotItem, Dropdown, Breadcrumb } from "@fluentui/react";
-import { withRouter } from "react-router";
+import { withRouter, Prompt } from "react-router";
 import SetupPage from "./SetupPage";
 import InputCategoryPage from "./InputCategoryPage";
 import NodesContext from "./NodesContext";
@@ -479,6 +479,10 @@ class ScenarioDefinitionPage extends Component {
     this.fetchNodesBySolution(this.solution_id);
   }
 
+  componentDidUpdate() {
+    window.onbeforeunload = () => true;
+  }
+
   onClickSetup() {
     this.setState({ tab: "setup" });
   }
@@ -540,6 +544,10 @@ class ScenarioDefinitionPage extends Component {
     return (
       <React.Fragment>
         <NavBar />
+        <Prompt
+          when={true}
+          message="You have made changes. Do you want to discard  or save them?"
+        />
         <div className="ms-Grid grid-margin" dir="ltr">
           <Pivot styles={pivotStyles} className="pivot-margin">
             <PivotItem headerText="Input">
