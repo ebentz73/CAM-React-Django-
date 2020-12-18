@@ -3,7 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cloud Analysis Manager</title>
+  {% load static %}
+  <link rel="shortcut icon" type="img/ico" href="{% static 'favicon.ico' %}"/>
+  <title>Cloud Analysis Manage</title>
 </head>
 <body>
 {% if user.is_authenticated %}
