@@ -12,7 +12,9 @@ from django.contrib.auth.models import Permission
 from django.core.files.storage import default_storage
 from django.db.models import QuerySet
 from grafana_api.grafana_face import GrafanaFace
-from guardian.shortcuts import assign_perm, remove_perm
+from guardian.shortcuts import assign_perm, remove_perm, get_perms_for_model
+
+from profile.models import Role
 
 _Z = TypeVar('_Z')
 
@@ -211,10 +213,7 @@ def remove_model_perm(user_or_group, model_or_instance):
 
 def _assign_or_remove_model_perm(assign, user_or_group, model_or_instance):
     perm_meth = assign_perm if assign else remove_perm
-    meta = model_or_instance._meta
-    app_label = meta.app_label
-    model_name = meta.model_name
-    all_permissions = Permission.objects.filter(content_type__app_label=app_label, content_type__model=model_name)
+    all_permissions = get_perms_for_model(model_or_instance)
     for permission in all_permissions:
         if isinstance(model_or_instance, type):
             # Is model class
@@ -247,7 +246,7 @@ class PowerBI:
         if self.user.is_anonymous:
             return []
         else:
-            roles = self.user.profile.roles.filter(name__startswith=self.solution.name)
+            roles = Role.get_roles_for_user(self.user).filter(name__startswith=self.solution.name)
             return [role.name[len(self.solution.name) + 3:] for role in roles]
 
     @property
