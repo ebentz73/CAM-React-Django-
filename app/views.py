@@ -50,7 +50,7 @@ from app.serializers import (
     FilterCategoryOptionsSerializer,
     PolyNodeDataSerializer,
 )
-from app.utils import PowerBI, run_eval_engine
+from app.utils import PowerBI, run_eval_engine, assign_model_perm
 
 
 def validate_api(serializer_cls, many=False):
@@ -180,10 +180,7 @@ class ScenarioViewSet(ModelViewSet):
     def create(self, request, solution_pk=None, **kwargs):
         response = self.create_or_update(request, solution_pk, **kwargs)
         obj = Scenario.objects.get(pk=response.data['id'])
-        assign_perm('app.add_scenario', request.user, obj)
-        assign_perm('app.change_scenario', request.user, obj)
-        assign_perm('app.delete_scenario', request.user, obj)
-        assign_perm('app.view_scenario', request.user, obj)
+        assign_model_perm(request.user, obj)
         return response
 
     @action(detail=True)

@@ -1,7 +1,7 @@
 import os
 import tempfile
 
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 
@@ -23,7 +23,7 @@ from app.proto_modules import (
     NodeTagListBlob_pb2,
     TagFilterOption_pb2,
 )
-from app.utils import Sqlite
+from app.utils import Sqlite, remove_model_perm
 
 from profile.models import Role
 from guardian.shortcuts import assign_perm
@@ -193,18 +193,25 @@ def update_model(sender, **kwargs):
 
 
 @receiver(m2m_changed, sender=InputDataSet.scenarios.through)
-def input_data_set_scenario_changed(sender, **kwargs):
-    action = kwargs.get('action')
-    pk_set = kwargs.get('pk_set')
-    ids = kwargs.get('instance')
-
+def input_data_set_scenario_changed(sender, action, instance, pk_set, **kwargs):
     if action == 'pre_add':
-        for scenario_id in pk_set:
-            scenario = Scenario.objects.get(pk=scenario_id)
+        scenarios = Scenario.objects.filter(pk__in=pk_set)
+        for scenario in scenarios:
             for input_page_id in scenario.input_data_sets.values_list(
                 'input_page_id', flat=True
             ):
-                if ids.input_page.id == input_page_id:
+                if instance.input_page.id == input_page_id:
                     raise Exception(
                         f"Scenario '{scenario.name}' cannot have multiple input data sets associated with Input Page '{ids.input_page.name}'."
                     )
+
+
+@receiver(m2m_changed, sender=Scenario.shared.through)
+def shared_scenario_changed(sender, action, instance, pk_set, **kwargs):
+    users = User.objects.filter(pk__in=pk_set)
+    for user in users:
+        if action == 'post_add':
+            assign_perm('app.view_scenario', user, instance)
+            assign_perm('app.change_scenario', user, instance)
+        elif action == 'post_remove':
+            remove_model_perm(user, instance)
