@@ -8,9 +8,9 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from guardian.shortcuts import assign_perm
+from django.contrib.auth.models import User
+from rest_framework import generics, status, permissions, filters
 from profile.models import UserProfile
-from rest_framework import generics, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -49,6 +49,7 @@ from app.serializers import (
     ScenarioEvaluateSerializer,
     FilterCategoryOptionsSerializer,
     PolyNodeDataSerializer,
+    UserSerializer,
 )
 from app.utils import PowerBI, run_eval_engine, assign_model_perm
 
@@ -565,3 +566,8 @@ class EvalJobViewSet(material.ModelViewSet):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+class UserAPIView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer

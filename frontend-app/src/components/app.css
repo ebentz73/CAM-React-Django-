@@ -297,3 +297,7 @@
   display: flex;
   justify-content: space-between;
 }
+
+.share-people {
+  display: flex;
+}

@@ -57,6 +57,7 @@ class ScenarioDefinitionPage extends Component {
 
     this.updateConstNodeData = this.updateConstNodeData.bind(this);
     this.updateInputNodeData = this.updateInputNodeData.bind(this);
+    this.updateInputRowData = this.updateInputRowData.bind(this);
     this.copyToAllLayers = this.copyToAllLayers.bind(this);
 
     this.changeScenarioName = this.changeScenarioName.bind(this);
@@ -89,14 +90,14 @@ class ScenarioDefinitionPage extends Component {
   }
 
   changeInputs(input_id, node_id, val) {
-    let inputValues = {...this.state.input_values};
+    let inputValues = { ...this.state.input_values };
     if (!inputValues.hasOwnProperty(input_id)) {
       inputValues[input_id] = {};
     }
     inputValues[input_id].value = val;
     inputValues[input_id].isIds = false;
 
-    let nodes = {...this.state.nodes};
+    let nodes = { ...this.state.nodes };
     let node = nodes[node_id];
     let dirty = this.state.nodes_changed;
 
@@ -118,18 +119,22 @@ class ScenarioDefinitionPage extends Component {
     }
     node.dirty = true;
 
-    this.setState({nodes: nodes, nodes_changed: dirty, input_values: inputValues});
+    this.setState({
+      nodes: nodes,
+      nodes_changed: dirty,
+      input_values: inputValues,
+    });
   }
 
   changeInputDataSet(input_id, val) {
-    let inputValues = {...this.state.input_values};
+    let inputValues = { ...this.state.input_values };
     if (!inputValues.hasOwnProperty(input_id)) {
       inputValues[input_id] = {};
     }
     inputValues[input_id].value = val;
     inputValues[input_id].isIds = true;
 
-    this.setState({input_values: inputValues});
+    this.setState({ input_values: inputValues });
   }
 
   changeRole(e, role) {
@@ -172,8 +177,10 @@ class ScenarioDefinitionPage extends Component {
     };
 
     const input_data_sets = Object.values(this.state.input_values)
-      .map(input => {if (input.isIds) return input.value})
-      .filter(value => value !== undefined);
+      .map((input) => {
+        if (input.isIds) return input.value;
+      })
+      .filter((value) => value !== undefined);
 
     let url = `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.solution_id}/scenarios/`;
     let method = "POST";
@@ -222,7 +229,8 @@ class ScenarioDefinitionPage extends Component {
           default_data: this.state.nodes[node_id].data,
           scenario: parseInt(this.scenario_id),
           is_model: false,
-          resourcetype: node.type === 'input' ? 'InputNodeData' : 'ConstNodeData'
+          resourcetype:
+            node.type === "input" ? "InputNodeData" : "ConstNodeData",
         };
         let url = `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.solution_id}/scenarios/${this.scenario_id}/nodedatas/`;
         if (node.hasOwnProperty("id")) {
@@ -230,18 +238,15 @@ class ScenarioDefinitionPage extends Component {
           body.id = node.id;
           url += node.id + "/";
         }
-        fetch(
-          url,
-          {
-            method: method,
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-              "X-CSRFToken": csrf_token,
-            },
-            body: JSON.stringify(body),
-          }
-        ).catch((err) => {
+        fetch(url, {
+          method: method,
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrf_token,
+          },
+          body: JSON.stringify(body),
+        }).catch((err) => {
           console.error(err);
         });
       });
@@ -254,6 +259,17 @@ class ScenarioDefinitionPage extends Component {
     if (!newNodes[node_id].dirty) newNumDirty++;
     newNodes[node_id].dirty = true;
     this.setState({ nodes: newNodes, nodes_changed: newNumDirty });
+  }
+
+  updateInputRowData(node_id, layer_idx, nom_idx, val) {
+    for (let i = 0; i < this.state.nodes[node_id].data.length; i++) {
+      let newNodes = { ...this.state.nodes };
+      let newNumDirty = this.state.nodes_changed;
+      newNodes[node_id].data[i][nom_idx] = val;
+      if (!newNodes[node_id].dirty) newNumDirty++;
+      newNodes[node_id].dirty = true;
+      this.setState({ nodes: newNodes, nodes_changed: newNumDirty });
+    }
   }
 
   updateConstNodeData(node_id, layer_idx, val) {
@@ -375,8 +391,7 @@ class ScenarioDefinitionPage extends Component {
             nodes[node.node].data = node.default_data;
             if (node.resourcetype === "InputNodeData")
               nodes[node.node].type = "input";
-            else
-              nodes[node.node].type = "const";
+            else nodes[node.node].type = "const";
           }
         });
         this.setState({ nodes: nodes });
@@ -421,7 +436,7 @@ class ScenarioDefinitionPage extends Component {
       });
   }
 
-  fetchSolutionMetadata(){
+  fetchSolutionMetadata() {
     fetch(
       `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.solution_id}/`
     )
@@ -429,8 +444,10 @@ class ScenarioDefinitionPage extends Component {
         return resp.json();
       })
       .then((resp) => {
-        this.setState({layer_offset: resp.layer_offset,
-          layer_time_increment: resp.layer_time_increment});
+        this.setState({
+          layer_offset: resp.layer_offset,
+          layer_time_increment: resp.layer_time_increment,
+        });
       });
   }
 
@@ -473,6 +490,7 @@ class ScenarioDefinitionPage extends Component {
       nodes: this.state.nodes,
       updateConstNodeData: this.updateConstNodeData,
       updateInputNodeData: this.updateInputNodeData,
+      updateInputRowData: this.updateInputRowData,
       copyToAllLayers: this.copyToAllLayers,
       layerStartDate: this.state.model_date,
       layerTimeIncrement: this.state.layer_time_increment,
@@ -582,9 +600,7 @@ class ScenarioDefinitionPage extends Component {
                         categoryNodes={
                           this.state.inputCategories[this.state.category]
                         }
-                        layerOffset={
-                          this.state.layer_offset
-                        }
+                        layerOffset={this.state.layer_offset}
                       />
                     )}
                     {this.state.tab === "review" && (
