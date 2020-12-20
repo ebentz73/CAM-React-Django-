@@ -1,5 +1,15 @@
 import React, { Component } from "react";
-import { Pivot, PivotItem, Dropdown, Breadcrumb } from "@fluentui/react";
+import {
+  Pivot,
+  PivotItem,
+  Dropdown,
+  Breadcrumb,
+  Dialog,
+  DialogType,
+  DialogFooter,
+  PrimaryButton,
+  DefaultButton,
+} from "@fluentui/react";
 import { withRouter, Prompt } from "react-router";
 import SetupPage from "./SetupPage";
 import InputCategoryPage from "./InputCategoryPage";
@@ -17,6 +27,15 @@ function getCookie(name) {
 }
 
 const csrf_token = getCookie("csrftoken");
+
+const dialogStyles = { main: { maxWidth: 450 } };
+
+const dialogContentProps = {
+  type: DialogType.normal,
+  title: "Unsaved Changes",
+  closeButtonArialLabel: "Close",
+  subText: "You have made changes. Do you want to discard?",
+};
 
 class ScenarioDefinitionPage extends Component {
   constructor(props) {
@@ -41,6 +60,9 @@ class ScenarioDefinitionPage extends Component {
       isLoading: true,
       layer_offset: 0,
       layer_time_increment: "month",
+      hideDialog: true,
+      lastLocation: null,
+      confirmedNavigation: false,
     };
 
     this.onClickCategory = this.onClickCategory.bind(this);
@@ -68,6 +90,12 @@ class ScenarioDefinitionPage extends Component {
     this.changeRole = this.changeRole.bind(this);
     this.changeInputs = this.changeInputs.bind(this);
     this.changeInputDataSet = this.changeInputDataSet.bind(this);
+    this.handleConfirmNavigationClick = this.handleConfirmNavigationClick.bind(
+      this
+    );
+
+    this.toggleHideDialog = this.toggleHideDialog.bind(this);
+    this.handleBlockedNavigation = this.handleBlockedNavigation.bind(this);
 
     this.setupProps = {
       updateName: this.changeScenarioName,
@@ -77,6 +105,31 @@ class ScenarioDefinitionPage extends Component {
 
     this.solution_id = this.props.match.params["id"];
     this.scenario_id = this.props.match.params["scenarioId"];
+  }
+
+  toggleHideDialog(location) {
+    this.setState((prevState) => ({
+      hideDialog: !prevState.hideDialog,
+      lastLocation: location,
+    }));
+  }
+
+  handleConfirmNavigationClick() {
+    const { lastLocation } = this.state;
+    if (lastLocation) {
+      this.setState({ confirmedNavigation: true });
+      window.location.href = `${window.location.protocol}//${window.location.host}${this.state.lastLocation.pathname}`;
+    }
+  }
+
+  handleBlockedNavigation(nextLocation) {
+    const { confirmedNavigation } = this.state;
+    if (!confirmedNavigation) {
+      this.toggleHideDialog(nextLocation);
+      return false;
+    }
+
+    return true;
   }
 
   changeScenarioName(val) {
@@ -479,10 +532,6 @@ class ScenarioDefinitionPage extends Component {
     this.fetchNodesBySolution(this.solution_id);
   }
 
-  componentDidUpdate() {
-    window.onbeforeunload = () => true;
-  }
-
   onClickSetup() {
     this.setState({ tab: "setup" });
   }
@@ -544,10 +593,20 @@ class ScenarioDefinitionPage extends Component {
     return (
       <React.Fragment>
         <NavBar />
-        <Prompt
-          when={true}
-          message="You have made changes. Do you want to discard  or save them?"
-        />
+        <Prompt when={true} message={this.handleBlockedNavigation} />
+        <Dialog
+          hidden={this.state.hideDialog}
+          onDismiss={this.toggleHideDialog}
+          dialogContentProps={dialogContentProps}
+        >
+          <DialogFooter>
+            <PrimaryButton onClick={this.toggleHideDialog} text="Discard" />
+            <DefaultButton
+              onClick={this.handleConfirmNavigationClick}
+              text="No"
+            />
+          </DialogFooter>
+        </Dialog>
         <div className="ms-Grid grid-margin" dir="ltr">
           <Pivot styles={pivotStyles} className="pivot-margin">
             <PivotItem headerText="Input">
