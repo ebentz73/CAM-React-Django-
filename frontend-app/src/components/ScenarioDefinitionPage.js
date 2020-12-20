@@ -659,7 +659,7 @@ class ScenarioDefinitionPage extends Component {
                       })}
                       label="Roles"
                       multiSelect
-                      styles={{ root: { marginBottom: "20px" } }}
+                      styles={{ root: { margin: "0px 50px 20px 50px" } }}
                       selectedKeys={this.state.activeRoles}
                       onChange={(e, val) => this.changeRole(e, val)}
                     />
