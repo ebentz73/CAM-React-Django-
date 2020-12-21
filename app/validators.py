@@ -17,11 +17,11 @@ def validate_input_date_set_file(value):
     Raises:
         ValidationError when validation fails.
     """
-    dataframe = pd.read_excel(value)
+    dataframe = pd.read_excel(value, 'Input Nodes')
     try:
-        dataframe['has_validation_error'] = np.where((dataframe['Low Bound'] <= dataframe[10]) &
-                                                     (dataframe['Base'].between(dataframe[10], dataframe[90])) &
-                                                     (dataframe['High Bound'] >= dataframe[90]), False, True)
+        dataframe['has_validation_error'] = np.where((dataframe['Low Bound'] <= dataframe['10']) &
+                                                     (dataframe['Base'].between(dataframe['10'], dataframe['90'])) &
+                                                     (dataframe['High Bound'] >= dataframe['90']), False, True)
     except TypeError:
         # Exception raised for non-numeric and empty inputs for fields Low Bound, Base, High Bound, 10 and 90.
         raise ValidationError(_(

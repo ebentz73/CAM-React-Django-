@@ -3,8 +3,25 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_polymorphic import serializers as polymorphic_serializers
 
-from app.models import AnalyticsSolution, EvalJob, NodeResult, \
-    Scenario, NodeData, Node, Model, InputNodeData, ConstNodeData, FilterOption, FilterCategory
+from app.models import (
+    AnalyticsSolution,
+    ConstNodeData,
+    EvalJob,
+    FilterCategory,
+    FilterOption,
+    Input,
+    InputDataSet,
+    InputDataSetInput,
+    InputDataSetInputChoice,
+    InputNodeData,
+    Model,
+    Node,
+    NodeData,
+    NumericInput,
+    NodeResult,
+    Scenario,
+    SliderInput,
+)
 from app.utils import StorageHelper, is_cloud
 
 
@@ -35,10 +52,7 @@ class EvalJobSerializer(serializers.ModelSerializer):
                 # Get all Node Overrides associated with Model and Scenario
                 for node_override in scenario.node_overrides.filter(node__model=model):
                     nodes_json.append(
-                        {
-                            'id': node_override.node.tam_id,
-                            'value': node_override.value,
-                        }
+                        {'id': node_override.node.tam_id, 'value': node_override.value}
                     )
 
                 # Only add Model to json if it contains at least one IDS
@@ -87,15 +101,40 @@ def generic_serializer(cls, **kwargs):
 
 
 AnalyticsSolutionSerializer = generic_serializer(AnalyticsSolution)
-NodeResultSerializer = generic_serializer(NodeResult)
-NodeDataSerializer = generic_serializer(NodeData)
-InputNodeDataSerializer = generic_serializer(InputNodeData)
 ConstNodeDataSerializer = generic_serializer(ConstNodeData)
-# ScenarioSerializer = generic_serializer(Scenario, depth=1)
-NodeSerializer = generic_serializer(Node)
 FilterCategorySerializer = generic_serializer(FilterCategory, depth=1)
 FilterOptionSerializer = generic_serializer(FilterOption)
+InputSerializer = generic_serializer(Input)
+InputDataSetInputChoiceSerializer = generic_serializer(InputDataSetInputChoice)
+InputNodeDataSerializer = generic_serializer(InputNodeData)
 ModelSerializer = generic_serializer(Model)
+NodeSerializer = generic_serializer(Node)
+NodeDataSerializer = generic_serializer(NodeData)
+NodeResultSerializer = generic_serializer(NodeResult)
+NumericInputSerializer = generic_serializer(
+    NumericInput, fields=('id', 'name', 'solution', 'node'),
+)
+SliderInputSerializer = generic_serializer(
+    SliderInput,
+    fields=('id', 'name', 'solution', 'node', 'minimum', 'maximum', 'step'),
+)
+
+
+class InputDataSetInputSerializer(serializers.ModelSerializer):
+    choices = InputDataSetInputChoiceSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = InputDataSetInput
+        fields = ('id', 'name', 'solution', 'choices')
+
+
+class PolyInputSerializer(polymorphic_serializers.PolymorphicSerializer):
+    model_serializer_mapping = {
+        Input: InputSerializer,
+        InputDataSetInput: InputDataSetInputSerializer,
+        NumericInput: NumericInputSerializer,
+        SliderInput: SliderInputSerializer,
+    }
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -103,7 +142,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'first_name', 'last_name')
+        fields = ('id', 'username', 'first_name', 'last_name', 'email')
 
 
 class ScenarioSerializer(serializers.ModelSerializer):
@@ -111,7 +150,16 @@ class ScenarioSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Scenario
-        fields = '__all__'
+        fields = (
+            'id',
+            'shared',
+            'name',
+            'is_in_progress',
+            'status',
+            'layer_date_start',
+            'solution',
+            'input_data_sets',
+        )
 
     @staticmethod
     def add_shared(instance, shared):
@@ -119,17 +167,27 @@ class ScenarioSerializer(serializers.ModelSerializer):
             user = User.objects.get(pk=user_data.get('id'))
             instance.shared.add(user)
 
-    def create(self, validated_data):
+    @staticmethod
+    def add_input_data_sets(instance, input_data_sets):
+        for ids_id in input_data_sets:
+            ids = InputDataSet.objects.get(pk=ids_id)
+            instance.input_data_sets.add(ids)
+
+    def create_or_update(self, validated_data, instance=None):
         shared = validated_data.pop('shared', [])
-        instance = super().create(validated_data)
+        instance = (
+            super().create(validated_data)
+            if instance is None
+            else super().update(instance, validated_data)
+        )
         self.add_shared(instance, shared)
         return instance
 
+    def create(self, validated_data):
+        return self.create_or_update(validated_data)
+
     def update(self, instance, validated_data):
-        shared = validated_data.pop('shared', [])
-        instance = super().update(instance, validated_data)
-        self.add_shared(instance, shared)
-        return instance
+        return self.create_or_update(validated_data, instance)
 
 
 class FilterCategoryOptionsSerializer(serializers.ModelSerializer):
@@ -195,11 +253,7 @@ class ScenarioEvaluateSerializer(serializers.ModelSerializer):
                 )
             )
             model_json.append(
-                {
-                    'id': model.tam_id,
-                    'input_data_sets': [],
-                    'nodes': nodes_json,
-                }
+                {'id': model.tam_id, 'input_data_sets': [], 'nodes': nodes_json,}
             )
         return {
             'pk': obj.pk,

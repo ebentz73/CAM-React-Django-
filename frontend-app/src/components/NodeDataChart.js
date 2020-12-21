@@ -31,7 +31,7 @@ class NodeDataChart extends Component {
   setupChartData(node) {
     if (node !== undefined && node.data !== undefined) {
       let labels = [];
-      for (let i = 0; i < node.data.length; i++) {
+      for (let i = this.props.layerOffset; i < node.data.length; i++) {
         labels.push(this.months[i % 12]);
       }
       let datasets = [
@@ -39,8 +39,8 @@ class NodeDataChart extends Component {
           label: 'Nominal',
           data:
             node.type === "input"
-              ? node.data.map((layer) => layer[2])
-              : node.data.map((data) => data),
+              ? node.data.flatMap((layer, idx) => idx < this.props.layerOffset ? [] : [layer[2]])
+              : node.data.flatMap((data, idx) => idx < this.props.layerOffset ? [] : [data]),
           fill: false,
           borderColor: "#50BFAF",
           lineTension: 0,
@@ -49,8 +49,8 @@ class NodeDataChart extends Component {
           label: 'Low',
           data:
             node.type === "input"
-              ? node.data.map((layer) => layer[1])
-              : node.data.map((data) => data),
+              ? node.data.flatMap((layer, idx) => idx < this.props.layerOffset ? [] : [layer[1]])
+              : node.data.flatMap((data, idx) => idx < this.props.layerOffset ? [] : [data]),
           fill: false,
           borderColor: "#742774",
           lineTension: 0,
@@ -59,8 +59,8 @@ class NodeDataChart extends Component {
           label: 'High',
           data:
             node.type === "input"
-              ? node.data.map((layer) => layer[3])
-              : node.data.map((data) => data),
+              ? node.data.flatMap((layer, idx) => idx < this.props.layerOffset ? [] : [layer[3]])
+              : node.data.flatMap((data, idx) => idx < this.props.layerOffset ? [] : [data]),
           fill: false,
           borderColor: "#BF2EBF",
           lineTension: 0,

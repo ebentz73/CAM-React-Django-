@@ -1,6 +1,3 @@
-import uuid
-import datetime
-
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.db import models
@@ -8,20 +5,17 @@ from django.db.models import Q
 from polymorphic.models import PolymorphicModel
 
 from app.mixins import ModelDiffMixin
-from app.validators import validate_input_date_set_file
 from app.utils import ModelType
-from profile.models import Role
+from app.validators import validate_input_date_set_file
 
 __all__ = [
     'AnalyticsSolution',
     'ConstNodeData',
     'DecimalNodeOverride',
     'EvalJob',
-    'ExecutiveView',
     'FilterCategory',
     'FilterOption',
     'Input',
-    'InputChoice',
     'InputDataSet',
     'InputDataSetInput',
     'InputDataSetInputChoice',
@@ -49,11 +43,11 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
         ('year', 'Year'),
     )
     ITERATIONS_OPTIONS = (
-        (100, 100), 
-        (1000, 1000), 
-        (5000, 5000), 
-        (10000, 10000), 
-        (25000, 25000), 
+        (100, 100),
+        (1000, 1000),
+        (5000, 5000),
+        (10000, 10000),
+        (25000, 25000),
         (50000, 50000)
     )
 
@@ -61,11 +55,14 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
     description = models.CharField(max_length=2048, null=True, blank=True)
     upload_date = models.DateTimeField(auto_now=True)
     tam_file = models.FileField(upload_to='tam_models/')
+    user_guide_file = models.FileField(upload_to='user_guides/', blank=True)
+    support_contact = models.CharField(max_length=255, editable=True, blank=True, default='')
     dashboard_uid = models.CharField(max_length=40, editable=False, default='')
     dashboard_url = models.CharField(max_length=255, editable=False, default='')
     report_id = models.CharField(max_length=128, null=True, blank=True)
     workspace_id = models.CharField(max_length=128, null=True, blank=True)
     layer_time_increment = models.TextField(choices=TIME_OPTIONS)
+    layer_offset = models.IntegerField(default=0, null=True)
     iterations = models.IntegerField(choices=ITERATIONS_OPTIONS, null=True)
 
     def __str__(self):
@@ -79,6 +76,22 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
     def scenarios(self) -> ModelType['Scenario']:
         return self.scenario_set.filter(is_adhoc=False)
 
+    @property
+    def inputs(self) -> ModelType['Input']:
+        return self.input_set.all()
+
+    @property
+    def ids_inputs(self) -> ModelType['InputDataSetInput']:
+        return self.input_set.filter(Q(instance_of=InputDataSetInput))
+
+    @property
+    def numeric_inputs(self) -> ModelType['NumericInput']:
+        return self.input_set.filter(Q(instance_of=NumericInput))
+
+    @property
+    def slider_inputs(self) -> ModelType['SliderInput']:
+        return self.input_set.filter(Q(instance_of=SliderInput))
+
 
 class Scenario(models.Model):
     solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
@@ -91,10 +104,6 @@ class Scenario(models.Model):
 
     def __str__(self):
         return self.name
-
-    @property
-    def input_data_sets(self) -> ModelType['InputDataSet']:
-        return self.inputdataset_set.all()
 
     @property
     def node_overrides(self) -> ModelType['NodeOverride']:
@@ -144,6 +153,7 @@ class Node(models.Model):
     name = models.CharField(max_length=255)
     tags = ArrayField(models.CharField(max_length=255), default=list)
     tam_id = models.UUIDField(editable=False)
+    notes = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -164,16 +174,12 @@ class Node(models.Model):
     def node_data(self) -> ModelType['NodeData']:
         return self.nodedata_set.all()
 
-    @property
-    def scenario_node_data(self) -> ModelType['ScenarioNodeData']:
-        return self.scenarionodedata_set.all()
-
 
 class InputDataSet(models.Model):
     input_page = models.ForeignKey(InputPage, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     file = models.FileField(upload_to='inputdatasets/', validators=[validate_input_date_set_file])
-    scenarios = models.ManyToManyField(Scenario, blank=True)
+    scenarios = models.ManyToManyField(Scenario, blank=True, related_name='input_data_sets')
 
     def __str__(self):
         return self.name
@@ -231,55 +237,27 @@ class NodeResult(models.Model):
         super().save(force_insert, force_update, using, update_fields)
 
 
-class ExecutiveView(models.Model):
-    name = models.CharField(max_length=255)
-    solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.name
-
-    @property
-    def inputs(self) -> ModelType['Input']:
-        return self.input_set.all()
-
-    @property
-    def ids_inputs(self) -> ModelType['InputDataSetInput']:
-        return self.input_set.filter(Q(instance_of=InputDataSetInput))
-
-    @property
-    def numeric_inputs(self) -> ModelType['NumericInput']:
-        return self.input_set.filter(Q(instance_of=NumericInput))
-
-    @property
-    def slider_inputs(self) -> ModelType['SliderInput']:
-        return self.input_set.filter(Q(instance_of=SliderInput))
-
-
 class Input(PolymorphicModel):
-    exec_view = models.ForeignKey(ExecutiveView, on_delete=models.CASCADE)
+    solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
 
 
-class InputChoice(models.Model):
+class InputDataSetInput(Input):
+    @property
+    def input_choices(self) -> ModelType['InputDataSetInputChoice']:
+        return self.inputdatasetinputchoice_set.all()
+
+
+class InputDataSetInputChoice(models.Model):
+    input = models.ForeignKey(InputDataSetInput, on_delete=models.CASCADE, related_name='choices')
+    ids = models.ForeignKey(InputDataSet, on_delete=models.CASCADE, verbose_name='Data Set')
     label = models.CharField(max_length=255)
 
     def __str__(self):
         return self.label
-
-
-class InputDataSetInput(Input):
-
-    @property
-    def input_choices(self) -> ModelType['InputChoice']:
-        return self.inputdatasetinputchoice_set.all()
-
-
-class InputDataSetInputChoice(InputChoice):
-    input = models.ForeignKey(InputDataSetInput, on_delete=models.CASCADE)
-    ids = models.ForeignKey(InputDataSet, on_delete=models.CASCADE, verbose_name='Data Set')
 
 
 class NumericInput(Input):
@@ -288,9 +266,9 @@ class NumericInput(Input):
 
 class SliderInput(Input):
     node = models.ForeignKey(Node, on_delete=models.CASCADE)
-    minimum = models.DecimalField(max_digits=15, decimal_places=5)
-    maximum = models.DecimalField(max_digits=15, decimal_places=5)
-    step = models.DecimalField(max_digits=15, decimal_places=5)
+    minimum = models.FloatField()
+    maximum = models.FloatField()
+    step = models.FloatField()
 
 
 class NodeOverride(PolymorphicModel):

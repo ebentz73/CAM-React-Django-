@@ -297,3 +297,20 @@
   display: flex;
   justify-content: space-between;
 }
+
+.share-people {
+  display: flex;
+}
+
+.centered {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+
+.divider {
+  height: 40px;
+  background-color: rgb(0, 99, 177);
+  box-shadow: "0px 1px 4px 1px rgb(194, 194, 194)";
+  margin-bottom: 20px;
+}

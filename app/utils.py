@@ -8,9 +8,13 @@ import docker
 import msal
 import requests
 from django.conf import settings
+from django.contrib.auth.models import Permission
 from django.core.files.storage import default_storage
 from django.db.models import QuerySet
 from grafana_api.grafana_face import GrafanaFace
+from guardian.shortcuts import assign_perm, remove_perm, get_perms_for_model
+
+from profile.models import Role
 
 _Z = TypeVar('_Z')
 
@@ -187,6 +191,38 @@ def create_dashboard(title: str) -> dict:
     return grafana_api.dashboard.update_dashboard({'dashboard': dashboard})
 
 
+def assign_model_perm(user_or_group, model_or_instance):
+    """Assign all permissions of a specific model to a user or group.
+
+    If `model_or_instance` is a model, model-level permissions will be
+    assigned. Otherwise, if `model_or_instance` is an instance, object-level
+    permissions will be assigned.
+    """
+    _assign_or_remove_model_perm(True, user_or_group, model_or_instance)
+
+
+def remove_model_perm(user_or_group, model_or_instance):
+    """Remove all permissions of a specific model to a user or group.
+
+    If `model_or_instance` is a model, model-level permissions will be removed.
+    Otherwise, if `model_or_instance` is an instance, object-level permissions
+    will be removed.
+    """
+    _assign_or_remove_model_perm(False, user_or_group, model_or_instance)
+
+
+def _assign_or_remove_model_perm(assign, user_or_group, model_or_instance):
+    perm_meth = assign_perm if assign else remove_perm
+    all_permissions = get_perms_for_model(model_or_instance)
+    for permission in all_permissions:
+        if isinstance(model_or_instance, type):
+            # Is model class
+            perm_meth(permission, user_or_group)
+        else:
+            # Is model instance
+            perm_meth(permission, user_or_group, model_or_instance)
+
+
 class PowerBI:
     SCOPE = ['https://analysis.windows.net/powerbi/api/.default']
 
@@ -207,11 +243,11 @@ class PowerBI:
 
     @property
     def roles(self):
-        return (
-            []
-            if self.user.is_anonymous
-            else [role.name for role in self.user.profile.roles.all()]
-        )
+        if self.user.is_anonymous:
+            return []
+        else:
+            roles = Role.get_roles_for_user(self.user).filter(name__startswith=self.solution.name)
+            return [role.name[len(self.solution.name) + 3:] for role in roles]
 
     @property
     def username(self):

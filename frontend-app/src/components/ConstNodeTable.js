@@ -9,6 +9,23 @@ class ConstNodeTable extends Component {
         this.months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     }
 
+    formatDate(date, increment, index) {
+        if (date === "") return date;
+        if (increment == "day") {
+            date = new Date(date.getFullYear(), date.getMonth(), date.getDate() + index);
+        } else if (increment == "week") {
+            date = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 7 * index);
+        } else if (increment == "month") {
+            date = new Date(date.getFullYear(), date.getMonth() + index, 1);
+        } else if (increment == "year") {
+            date = new Date(date.getFullYear() + index, 1, 1);
+        }
+        let year = date.getFullYear();
+        let month = `${date.getMonth() + 1}`.padStart(2, "0");
+        let day = `${date.getDate()}`.padStart(2, "0");
+        return increment === "year" ? `${year}` : increment === "month" ? `${year}-${month}` : `${year}-${month}-${day}`;
+    }
+
     render() {
         return (
             <NodesContext.Consumer>
@@ -16,42 +33,41 @@ class ConstNodeTable extends Component {
                     <tbody>
                         {!this.props.fixed &&
                             <tr>
-                                {this.props.data.map((_, index) => {
-                                    return (
+                                {context.nodes[this.props.constantNodes[0]].data.flatMap((_, index) => {
+                                    return index < this.props.layerOffset ? [] : [(
                                         <td key={`header_${index}`}>
-                                            <Text>{this.months[index % 12]}</Text>
+                                            <Text>{this.formatDate(context.layerStartDate, context.layerTimeIncrement, index)}</Text>
                                         </td>
-                                    );
+                                    )];
                                 })}
                             </tr>
                         }
-                        <tr>
-                            {this.props.fixed &&
-                                <td key={0}><NodeTableTextField data={this.props.data[0]} nodeId={this.props.nodeId}
-                                                                           layerIdx={0}
-                                                                           type={'const'}
-                                                                           updateData={context.updateConstNodeData}/></td>
-                            }
-                            {!this.props.fixed && this.props.data.map((row, layerIdx) => {
-                                return(<td key={layerIdx}><NodeTableTextField data={row} nodeId={this.props.nodeId}
-                                                                           layerIdx={layerIdx}
-                                                                           type={'const'}
-                                                                           updateData={context.updateConstNodeData}/></td>);
-                            })}
-                        </tr>
-                        {!this.props.fixed &&
-                            <tr>
-                                {this.props.data.map((_, index) => {
-                                    return (
-                                        <td key={`copy_${index}`}>
-                                            <PrimaryButton className="table-input"
-                                                           onClick={() => {context.copyToAllLayers(this.props.nodeId, index)}}
-                                                           text="Copy to All" />
-                                        </td>
-                                    );
-                                })}
-                            </tr>
-                        }
+                        {this.props.constantNodes.map((node, nodeIdx) => {
+                            return(
+                                this.props.fixed ?
+                                    <tr key={`row_${nodeIdx}`}>
+                                        <td><Text>{context.nodes[this.props.constantNodes[nodeIdx]].name}</Text></td>
+                                        <td key={0}><NodeTableTextField data={context.nodes[this.props.constantNodes[nodeIdx]].data[0]}
+                                                                        nodeId={this.props.constantNodes[nodeIdx]}
+                                                                                   layerIdx={0}
+                                                                                   type={'const'}
+                                                                                   updateData={context.updateConstNodeData}/></td>
+                                    </tr>
+
+                                :
+                                    <tr key={`row_${nodeIdx}`}>
+                                        <td><Text>{context.nodes[this.props.constantNodes[nodeIdx]].name}</Text></td>
+                                        { context.nodes[this.props.constantNodes[nodeIdx]].data.flatMap((row, layerIdx) => {
+                                        return layerIdx < this.props.layerOffset ? [] : [(
+                                        <td key={layerIdx}><NodeTableTextField data={row} nodeId={this.props.constantNodes[layerIdx]}
+                                                                                   layerIdx={layerIdx}
+                                                                                   type={'const'}
+                                                                                   updateData={context.updateConstNodeData}/></td>)];
+
+                                        })}
+                                    </tr>
+                            );
+                        })}
                     </tbody>
                 }
             </NodesContext.Consumer>
