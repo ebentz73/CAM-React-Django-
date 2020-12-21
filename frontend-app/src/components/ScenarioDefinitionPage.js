@@ -1,5 +1,15 @@
 import React, { Component } from "react";
-import { Pivot, PivotItem, Dropdown } from "@fluentui/react";
+import {
+  Pivot,
+  PivotItem,
+  Dropdown,
+  Breadcrumb,
+  Dialog,
+  DialogType,
+  DialogFooter,
+  PrimaryButton,
+  DefaultButton,
+} from "@fluentui/react";
 import { withRouter } from "react-router";
 import SetupPage from "./SetupPage";
 import InputCategoryPage from "./InputCategoryPage";
@@ -18,6 +28,15 @@ function getCookie(name) {
 
 const csrf_token = getCookie("csrftoken");
 
+const dialogStyles = { main: { maxWidth: 450 } };
+
+const dialogContentProps = {
+  type: DialogType.normal,
+  title: "Review Changes",
+  closeButtonArialLabel: "Close",
+  subText: "You have made changes. Do you want to discard or save them?",
+};
+
 class ScenarioDefinitionPage extends Component {
   constructor(props) {
     super(props);
@@ -30,7 +49,9 @@ class ScenarioDefinitionPage extends Component {
       category: "",
       category_idx: -1,
       scenario_name: "",
+      solution_name: "",
       model_date: "",
+      status: null,
       description: "",
       input_values: {},
       nodes_changed: 0,
@@ -39,6 +60,9 @@ class ScenarioDefinitionPage extends Component {
       isLoading: true,
       layer_offset: 0,
       layer_time_increment: "month",
+      hideDialog: true,
+      lastLocation: null,
+      confirmedNavigation: false,
     };
 
     this.onClickCategory = this.onClickCategory.bind(this);
@@ -57,6 +81,7 @@ class ScenarioDefinitionPage extends Component {
 
     this.updateConstNodeData = this.updateConstNodeData.bind(this);
     this.updateInputNodeData = this.updateInputNodeData.bind(this);
+    this.updateInputRowData = this.updateInputRowData.bind(this);
     this.copyToAllLayers = this.copyToAllLayers.bind(this);
 
     this.changeScenarioName = this.changeScenarioName.bind(this);
@@ -65,6 +90,11 @@ class ScenarioDefinitionPage extends Component {
     this.changeRole = this.changeRole.bind(this);
     this.changeInputs = this.changeInputs.bind(this);
     this.changeInputDataSet = this.changeInputDataSet.bind(this);
+    this.discard = this.discard.bind(this);
+
+    this.toggleHideDialog = this.toggleHideDialog.bind(this);
+    this.goScenarioListPage = this.goScenarioListPage.bind(this);
+    this.goHomepage = this.goHomepage.bind(this);
 
     this.setupProps = {
       updateName: this.changeScenarioName,
@@ -74,6 +104,36 @@ class ScenarioDefinitionPage extends Component {
 
     this.solution_id = this.props.match.params["id"];
     this.scenario_id = this.props.match.params["scenarioId"];
+  }
+
+  goHomepage() {
+    let nextLocation = `${window.location.protocol}//${window.location.host}/frontend-app/home`;
+    if (this.state.nodes_changed > 0) {
+      this.toggleHideDialog(nextLocation);
+    } else {
+      window.location.href = nextLocation;
+    }
+  }
+
+  goScenarioListPage() {
+    let nextLocation = `${window.location.protocol}//${window.location.host}/frontend-app/solution/${this.solution_id}/scenario`;
+    if (this.state.nodes_changed > 0) {
+      this.toggleHideDialog(nextLocation);
+    } else {
+      window.location.href = nextLocation;
+    }
+  }
+
+  discard() {
+    this.setState({ nodes_changed: 0 });
+    window.location.href = this.state.lastLocation;
+  }
+
+  toggleHideDialog(location) {
+    this.setState((prevState) => ({
+      hideDialog: !prevState.hideDialog,
+      lastLocation: location,
+    }));
   }
 
   changeScenarioName(val) {
@@ -89,14 +149,14 @@ class ScenarioDefinitionPage extends Component {
   }
 
   changeInputs(input_id, node_id, val) {
-    let inputValues = {...this.state.input_values};
+    let inputValues = { ...this.state.input_values };
     if (!inputValues.hasOwnProperty(input_id)) {
       inputValues[input_id] = {};
     }
     inputValues[input_id].value = val;
     inputValues[input_id].isIds = false;
 
-    let nodes = {...this.state.nodes};
+    let nodes = { ...this.state.nodes };
     let node = nodes[node_id];
     let dirty = this.state.nodes_changed;
 
@@ -118,18 +178,22 @@ class ScenarioDefinitionPage extends Component {
     }
     node.dirty = true;
 
-    this.setState({nodes: nodes, nodes_changed: dirty, input_values: inputValues});
+    this.setState({
+      nodes: nodes,
+      nodes_changed: dirty,
+      input_values: inputValues,
+    });
   }
 
   changeInputDataSet(input_id, val) {
-    let inputValues = {...this.state.input_values};
+    let inputValues = { ...this.state.input_values };
     if (!inputValues.hasOwnProperty(input_id)) {
       inputValues[input_id] = {};
     }
     inputValues[input_id].value = val;
     inputValues[input_id].isIds = true;
 
-    this.setState({input_values: inputValues});
+    this.setState({ input_values: inputValues });
   }
 
   changeRole(e, role) {
@@ -172,8 +236,10 @@ class ScenarioDefinitionPage extends Component {
     };
 
     const input_data_sets = Object.values(this.state.input_values)
-      .map(input => {if (input.isIds) return input.value})
-      .filter(value => value !== undefined);
+      .map((input) => {
+        if (input.isIds) return input.value;
+      })
+      .filter((value) => value !== undefined);
 
     let url = `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.solution_id}/scenarios/`;
     let method = "POST";
@@ -182,7 +248,7 @@ class ScenarioDefinitionPage extends Component {
       is_adhoc: true,
       layer_date_start: formatDate(this.state.model_date),
       input_data_sets: input_data_sets,
-      run_eval: false
+      run_eval: true
     }
     if (this.scenario_id) {
       url += `${this.scenario_id}/`;
@@ -202,7 +268,6 @@ class ScenarioDefinitionPage extends Component {
         return resp.json();
       })
       .then((resp) => {
-        if (resp.id) this.scenario_id = resp.id;
         this.createOrUpdateScenNodeDatas();
         history.push(`/frontend-app/solution/${this.solution_id}/scenario`);
       })
@@ -223,7 +288,8 @@ class ScenarioDefinitionPage extends Component {
           default_data: this.state.nodes[node_id].data,
           scenario: parseInt(this.scenario_id),
           is_model: false,
-          resourcetype: node.type === 'input' ? 'InputNodeData' : 'ConstNodeData'
+          resourcetype:
+            node.type === "input" ? "InputNodeData" : "ConstNodeData",
         };
         let url = `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.solution_id}/scenarios/${this.scenario_id}/nodedatas/`;
         if (node.hasOwnProperty("id")) {
@@ -231,18 +297,15 @@ class ScenarioDefinitionPage extends Component {
           body.id = node.id;
           url += node.id + "/";
         }
-        fetch(
-          url,
-          {
-            method: method,
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-              "X-CSRFToken": csrf_token,
-            },
-            body: JSON.stringify(body),
-          }
-        ).catch((err) => {
+        fetch(url, {
+          method: method,
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrf_token,
+          },
+          body: JSON.stringify(body),
+        }).catch((err) => {
           console.error(err);
         });
       });
@@ -255,6 +318,17 @@ class ScenarioDefinitionPage extends Component {
     if (!newNodes[node_id].dirty) newNumDirty++;
     newNodes[node_id].dirty = true;
     this.setState({ nodes: newNodes, nodes_changed: newNumDirty });
+  }
+
+  updateInputRowData(node_id, layer_idx, nom_idx, val) {
+    for (let i = 0; i < this.state.nodes[node_id].data.length; i++) {
+      let newNodes = { ...this.state.nodes };
+      let newNumDirty = this.state.nodes_changed;
+      newNodes[node_id].data[i][nom_idx] = val;
+      if (!newNodes[node_id].dirty) newNumDirty++;
+      newNodes[node_id].dirty = true;
+      this.setState({ nodes: newNodes, nodes_changed: newNumDirty });
+    }
   }
 
   updateConstNodeData(node_id, layer_idx, val) {
@@ -376,8 +450,7 @@ class ScenarioDefinitionPage extends Component {
             nodes[node.node].data = node.default_data;
             if (node.resourcetype === "InputNodeData")
               nodes[node.node].type = "input";
-            else
-              nodes[node.node].type = "const";
+            else nodes[node.node].type = "const";
           }
         });
         this.setState({ nodes: nodes });
@@ -422,7 +495,7 @@ class ScenarioDefinitionPage extends Component {
       });
   }
 
-  fetchSolutionMetadata(){
+  fetchSolutionMetadata() {
     fetch(
       `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.solution_id}/`
     )
@@ -430,8 +503,11 @@ class ScenarioDefinitionPage extends Component {
         return resp.json();
       })
       .then((resp) => {
-        this.setState({layer_offset: resp.layer_offset,
-          layer_time_increment: resp.layer_time_increment});
+        this.setState({
+          layer_offset: resp.layer_offset,
+          layer_time_increment: resp.layer_time_increment,
+          solution_name: resp.name,
+        });
       });
   }
 
@@ -447,11 +523,13 @@ class ScenarioDefinitionPage extends Component {
           scenario_name: resp.name,
           model_date: new Date(resp.layer_date_start),
           description: "",
+          status: resp.status,
         });
       });
   }
 
   componentDidMount() {
+    this.fetchScenarioMetadata();
     this.fetchSolutionMetadata();
     this.filtersBySolution(this.solution_id);
     this.fetchNodesBySolution(this.solution_id);
@@ -470,10 +548,26 @@ class ScenarioDefinitionPage extends Component {
   }
 
   render() {
+    const lastFolderName = this.scenario_id ? "Edit Scenario" : "New Scenario";
+    const itemsWithHref = [
+      {
+        text: "Analytics Solutions",
+        key: "f1",
+        onClick: this.goHomepage,
+      },
+      {
+        text: `${this.state.solution_name}`,
+        key: "f2",
+        onClick: this.goScenarioListPage,
+      },
+      { text: `${lastFolderName}`, key: "f3", href: "#" },
+    ];
+
     let nodesContext = {
       nodes: this.state.nodes,
       updateConstNodeData: this.updateConstNodeData,
       updateInputNodeData: this.updateInputNodeData,
+      updateInputRowData: this.updateInputRowData,
       copyToAllLayers: this.copyToAllLayers,
       layerStartDate: this.state.model_date,
       layerTimeIncrement: this.state.layer_time_increment,
@@ -502,6 +596,17 @@ class ScenarioDefinitionPage extends Component {
     return (
       <React.Fragment>
         <NavBar />
+        <Dialog
+          hidden={this.state.hideDialog}
+          onDismiss={this.toggleHideDialog}
+          dialogContentProps={dialogContentProps}
+        >
+          <DialogFooter>
+            <DefaultButton onClick={this.toggleHideDialog} text="Cancel" />
+            <DefaultButton onClick={this.discard} text="Discard" />
+            <PrimaryButton onClick={this.createOrUpdateScenario} text="Save" />
+          </DialogFooter>
+        </Dialog>
         <div className="ms-Grid grid-margin" dir="ltr">
           <Pivot styles={pivotStyles} className="pivot-margin">
             <PivotItem headerText="Input">
@@ -541,6 +646,12 @@ class ScenarioDefinitionPage extends Component {
                     </div>
                   </div>
                   <div className="ms-Grid-col ms-md8">
+                    <Breadcrumb
+                      items={itemsWithHref}
+                      maxDisplayedItems={3}
+                      ariaLabel="Breadcrumb with items rendered as links"
+                      overflowAriaLabel="More links"
+                    />
                     {/* Role Filter */}
                     <Dropdown
                       options={Object.keys(this.state.roles).map((role) => {
@@ -548,7 +659,7 @@ class ScenarioDefinitionPage extends Component {
                       })}
                       label="Roles"
                       multiSelect
-                      styles={{ root: { marginBottom: "20px" } }}
+                      styles={{ root: { margin: "0px 50px 20px 50px" } }}
                       selectedKeys={this.state.activeRoles}
                       onChange={(e, val) => this.changeRole(e, val)}
                     />
@@ -562,10 +673,11 @@ class ScenarioDefinitionPage extends Component {
                         changeInputs={this.changeInputs}
                         changeInputDataSet={this.changeInputDataSet}
                         {...this.setupProps}
-                        name={this.state.scenario_name}
+                        name={this.scenario_id ? this.state.scenario_name : ""}
                         desc={this.state.description}
-                        date={this.state.model_date}
+                        date={this.scenario_id ? this.state.model_date : ""}
                         inputValues={this.state.input_values}
+                        isReadOnly={this.state.status !== null}
                       />
                     )}
                     {this.state.tab === "category" && !this.state.isLoading && (
@@ -583,9 +695,7 @@ class ScenarioDefinitionPage extends Component {
                         categoryNodes={
                           this.state.inputCategories[this.state.category]
                         }
-                        layerOffset={
-                          this.state.layer_offset
-                        }
+                        layerOffset={this.state.layer_offset}
                       />
                     )}
                     {this.state.tab === "review" && (

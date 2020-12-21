@@ -1,7 +1,7 @@
 import os
 import tempfile
 
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 
@@ -23,10 +23,12 @@ from app.proto_modules import (
     NodeTagListBlob_pb2,
     TagFilterOption_pb2,
 )
-from app.utils import Sqlite
+from app.utils import Sqlite, remove_model_perm
 
 from profile.models import Role
 from guardian.shortcuts import assign_perm
+
+CAM_ROLE_PREFIX = 'CAM_ROLE=='
 
 
 def get_or_create_solution_group(solution):
@@ -43,6 +45,7 @@ def update_model(sender, **kwargs):
     solution = kwargs.get('instance')
 
     if 'tam_file' in solution.changed_fields:
+        tag_roles = {}
         group = get_or_create_solution_group(solution)
         # Download tam model file and save only what we need
         f, filename = tempfile.mkstemp()
@@ -100,7 +103,6 @@ def update_model(sender, **kwargs):
                             assign_perm('app.view_inputpage', group, page)
 
                     # Save all nodes
-                    tag_roles = {}
                     cursor.execute(
                         "SELECT n.NodeId, NodeName, NodeNotes, NodeType, TagList, NodeInputData "
                         "FROM Node AS n, NodeScenarioData AS d "
@@ -176,8 +178,7 @@ def update_model(sender, **kwargs):
                                 blob_model = ConstNodeData_pb2.ConstNodeData()
                                 blob_model.ParseFromString(node_data_blob)
                                 node_data = [
-                                    val.ConstData
-                                    for val in blob_model.AllLayerData
+                                    val.ConstData for val in blob_model.AllLayerData
                                 ]
                                 node_data, _ = ConstNodeData.objects.update_or_create(
                                     node=node, default_data=node_data, is_model=True
@@ -188,33 +189,45 @@ def update_model(sender, **kwargs):
                             # Apply CAM role to Node
                             # only create roles for nodes we are saving
                             if node_data and node_data_codename:
-                                cam_roles = (tag for tag in tag_list if tag.startswith('CAM_ROLE=='))
+                                cam_roles = (
+                                    tag[len(CAM_ROLE_PREFIX):]
+                                    for tag in tag_list
+                                    if tag.startswith(CAM_ROLE_PREFIX)
+                                )
                                 for cam_role in cam_roles:
                                     node_role = tag_roles.get(cam_role)
                                     if node_role is None:
                                         # Create role since it does not exist
-                                        node_role = Role.objects.create(name=f'role_{solution.name}_{cam_role}')
+                                        role_name = f'{solution.name} - {cam_role}'
+                                        node_role = Role.objects.create(name=role_name)
                                         tag_roles[cam_role] = node_role
-                                    assign_perm('app.view_node', node, node_role)
-                                    assign_perm(node_data_codename, node_data, node_role)
+                                    assign_perm('app.view_node', node_role, node)
+                                    assign_perm(node_data_codename, node_role, node_data)
 
         finally:
             os.remove(filename)
 
 
 @receiver(m2m_changed, sender=InputDataSet.scenarios.through)
-def input_data_set_scenario_changed(sender, **kwargs):
-    action = kwargs.get('action')
-    pk_set = kwargs.get('pk_set')
-    ids = kwargs.get('instance')
-
+def input_data_set_scenario_changed(sender, action, instance, pk_set, **kwargs):
     if action == 'pre_add':
-        for scenario_id in pk_set:
-            scenario = Scenario.objects.get(pk=scenario_id)
+        scenarios = Scenario.objects.filter(pk__in=pk_set)
+        for scenario in scenarios:
             for input_page_id in scenario.input_data_sets.values_list(
                 'input_page_id', flat=True
             ):
-                if ids.input_page.id == input_page_id:
+                if instance.input_page.id == input_page_id:
                     raise Exception(
                         f"Scenario '{scenario.name}' cannot have multiple input data sets associated with Input Page '{ids.input_page.name}'."
                     )
+
+
+@receiver(m2m_changed, sender=Scenario.shared.through)
+def shared_scenario_changed(sender, action, instance, pk_set, **kwargs):
+    users = User.objects.filter(pk__in=pk_set)
+    for user in users:
+        if action == 'post_add':
+            assign_perm('app.view_scenario', user, instance)
+            assign_perm('app.change_scenario', user, instance)
+        elif action == 'post_remove':
+            remove_model_perm(user, instance)

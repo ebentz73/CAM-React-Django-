@@ -7,7 +7,6 @@ from polymorphic.models import PolymorphicModel
 from app.mixins import ModelDiffMixin
 from app.utils import ModelType
 from app.validators import validate_input_date_set_file
-from profile.models import Role
 
 __all__ = [
     'AnalyticsSolution',
@@ -154,7 +153,7 @@ class Node(models.Model):
     name = models.CharField(max_length=255)
     tags = ArrayField(models.CharField(max_length=255), default=list)
     tam_id = models.UUIDField(editable=False)
-    notes = models.CharField(max_length=255, null=True, default=None)
+    notes = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.name
