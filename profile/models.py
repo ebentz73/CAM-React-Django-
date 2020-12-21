@@ -3,7 +3,9 @@ from django.db import models
 
 
 class Role(Group):
-    pass
+    @classmethod
+    def get_roles_for_user(cls, user):
+        return cls.objects.filter(user=user)
 
 
 class UserProfile(models.Model):

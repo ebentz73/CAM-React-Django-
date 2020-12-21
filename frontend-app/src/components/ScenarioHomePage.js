@@ -55,6 +55,7 @@ class ScenarioHomePage extends Component {
       DropdownControlledMultiExampleOptions: [],
       sharedEmails: [],
       support_contact: "",
+      sharedUsersDirty: [],
     };
 
     this._selection = new Selection({
@@ -104,11 +105,11 @@ class ScenarioHomePage extends Component {
           "X-CSRFToken": csrf_token,
         },
         body: JSON.stringify({
-          // item: 2,
+          shared: this.state.sharedUsersDirty.map((userId) => ({ id: userId })),
         }),
       }
     ).catch((err) => {
-      console.log(err);
+      console.error(err);
     });
   }
 
@@ -159,7 +160,10 @@ class ScenarioHomePage extends Component {
   }
 
   toggleShareDialog() {
-    this.setState((prevState) => ({ shareDialog: !prevState.shareDialog }));
+    this.setState((prevState) => ({
+      shareDialog: !prevState.shareDialog,
+      sharedUsersDirty: [],
+    }));
   }
 
   toggleHelpDialog() {
@@ -275,8 +279,10 @@ class ScenarioHomePage extends Component {
   addPeople(index, item) {
     this.toggleShareDialog();
     this.setState({ sharedScenarioId: item.id });
+    let userIds = [];
     let userEmails = [];
     this.state.users.map((user) => {
+      userIds.push(user.id);
       userEmails.push(user.email);
     });
 
@@ -293,6 +299,7 @@ class ScenarioHomePage extends Component {
           this.state.scenarios[index].sharedUserEmail[i]
         );
         if (idx > -1) {
+          userIds.splice(idx, 1);
           userEmails.splice(idx, 1);
         }
       }
@@ -300,7 +307,7 @@ class ScenarioHomePage extends Component {
 
     for (let i = 0; i < userEmails.length; i++) {
       DropdownControlledMultiExampleOptions.push({
-        key: `email+${i}`,
+        key: userIds[i],
         text: userEmails[i],
       });
     }
@@ -419,14 +426,14 @@ class ScenarioHomePage extends Component {
                 <ActionButton
                   disabled={this.state.countSelected !== 2}
                   iconProps={{ iconName: "Merge" }}
-                  onClick={this.toggleCloneOrMergeDialog}
+                  onClick={this.togglecloneOrMergeDialog}
                 >
                   Merge
                 </ActionButton>
                 <ActionButton
                   disabled={this.state.countSelected !== 1}
                   iconProps={{ iconName: "Copy" }}
-                  onClick={this.toggleCloneOrMergeDialog}
+                  onClick={this.togglecloneOrMergeDialog}
                 >
                   Clone
                 </ActionButton>
@@ -450,21 +457,6 @@ class ScenarioHomePage extends Component {
             </div>
           </div>
         </div>
-
-        <Dialog
-          hidden={this.state.cloneOrMergeDialog}
-          onDismiss={this.toggleCloneOrMergeDialog}
-          dialogContentProps={cloneOrMergeDialogContentProps}
-        >
-          <TextField
-            placeholder="Enter name"
-            onBlur={(e) => this.setState({ newScenarioName: e.target.value })}
-          />
-          <DialogFooter>
-            <PrimaryButton text="Save" onClick={this.onCloneOrMerge} />
-          </DialogFooter>
-        </Dialog>
-
         <Dialog
           hidden={this.state.helpDialog}
           onDismiss={this.toggleHelpDialog}
@@ -491,20 +483,42 @@ class ScenarioHomePage extends Component {
             </tbody>
           </table>
         </Dialog>
-
+        <Dialog
+          hidden={this.state.cloneOrMergeDialog}
+          onDismiss={this.toggleCloneOrMergeDialog}
+          dialogContentProps={cloneOrMergeDialogContentProps}
+        >
+          <TextField
+            placeholder="Enter name"
+            onBlur={(e) => this.setState({ newScenarioName: e.target.value })}
+          />
+          <DialogFooter>
+            <PrimaryButton text="Save" onClick={this.onCloneOrMerge} />
+          </DialogFooter>
+        </Dialog>
         <Dialog
           hidden={this.state.shareDialog}
           onDismiss={this.toggleShareDialog}
           dialogContentProps={shareDialogContentProps}
         >
-          <Dropdown
-            placeholder="Select options"
-            label="Add people"
-            // selectedKeys={selectedKeys}
-            // onChange={onChange}
-            multiSelect
+          <ComboBox
+            label="Add People"
+            placeholder="Select Options"
+            autocomplete={true}
             options={this.state.DropdownControlledMultiExampleOptions}
-            styles={dropdownStyles}
+            multiSelect
+            onChange={(e, selectedOption) => {
+              let sharedUsersDirty = [...this.state.sharedUsersDirty];
+              if (selectedOption.selected) {
+                sharedUsersDirty.push(selectedOption.key);
+              } else {
+                sharedUsersDirty.splice(
+                  sharedUsersDirty.indexOf(selectedOption.key),
+                  1
+                );
+              }
+              this.setState({ sharedUsersDirty });
+            }}
           />
           <p>Shared With</p>
           <table>

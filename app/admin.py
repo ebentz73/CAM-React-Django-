@@ -13,6 +13,7 @@ from polymorphic.admin import (
 )
 
 from app import models
+from app.utils import assign_model_perm
 
 admin.site.site_header = 'Cloud Analysis Manager Admin'
 admin.site.site_title = 'Cloud Analysis Manager Admin'
@@ -63,16 +64,6 @@ class HideModelBase(admin.ModelAdmin):
 
 class HideModelAdmin(ModelAdminBase, HideModelBase):
     pass
-
-
-@admin.register(models.AnalyticsSolution)
-class AnalyticsSolutionAdmin(ModelAdminBase):
-    change_form_template = 'admin/app/add_input_change_form.html'
-
-
-@admin.register(models.Scenario)
-class ScenarioAdmin(HideModelAdmin):
-    readonly_fields = ['is_adhoc']
 
 
 class InputInline(StackedPolymorphicInline):
@@ -129,6 +120,23 @@ class InputAdmin(PolymorphicParentModelAdmin, HideModelBase):
     def child_models(self):
         """Get all child models."""
         return [relation.related_model for relation in self.model._meta.related_objects]
+
+
+@admin.register(models.AnalyticsSolution)
+class AnalyticsSolutionAdmin(ModelAdminBase):
+    change_form_template = 'admin/app/add_input_change_form.html'
+
+    def save_model(self, request, obj, form, change):
+        obj.save()
+        # Give the user who created the AnalyticsSolution permissions
+        if not change:
+            group = Group.objects.get(name=obj.name)
+            request.user.groups.add(group)
+
+
+@admin.register(models.Scenario)
+class ScenarioAdmin(HideModelAdmin):
+    readonly_fields = ['is_adhoc']
 
 
 admin.site.register(models.Model, HideModelAdmin)

@@ -248,8 +248,8 @@ class ScenarioDefinitionPage extends Component {
       is_adhoc: true,
       layer_date_start: formatDate(this.state.model_date),
       input_data_sets: input_data_sets,
-      run_eval: false,
-    };
+      run_eval: true
+    }
     if (this.scenario_id) {
       url += `${this.scenario_id}/`;
       method = "PATCH";
@@ -268,9 +268,8 @@ class ScenarioDefinitionPage extends Component {
         return resp.json();
       })
       .then((resp) => {
-        if (resp.id) this.scenario_id = resp.id;
         this.createOrUpdateScenNodeDatas();
-        history.push(`/frontend-app/solution/${this.scenario_id}/scenario`);
+        history.push(`/frontend-app/solution/${this.solution_id}/scenario`);
       })
       .catch((err) => {
         console.error(err);

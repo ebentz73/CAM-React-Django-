@@ -51,7 +51,7 @@ from app.serializers import (
     PolyNodeDataSerializer,
     UserSerializer,
 )
-from app.utils import PowerBI, run_eval_engine
+from app.utils import PowerBI, run_eval_engine, assign_model_perm
 
 
 def validate_api(serializer_cls, many=False):
@@ -176,8 +176,13 @@ class ScenarioViewSet(ModelViewSet):
             response.then_args = (solution_pk, pk or response.data['id'])
 
         return response
-    create = create_or_update
     update = create_or_update
+
+    def create(self, request, solution_pk=None, **kwargs):
+        response = self.create_or_update(request, solution_pk, **kwargs)
+        obj = Scenario.objects.get(pk=response.data['id'])
+        assign_model_perm(request.user, obj)
+        return response
 
     @action(detail=True)
     def evaluate(self, request, solution_pk, pk):
@@ -189,10 +194,6 @@ class ScenarioViewSet(ModelViewSet):
     def patch_evaluate(self, request, solution_pk, pk):
         return self.update(request, solution_pk, pk, partial=True)
 
-    @action(detail=True, methods=['post'])
-    def add_user(self, request, solution_pk, pk):
-        print("add user backend part")
-        
     @action(detail=True, methods=['post'])
     def clone(self, request, solution_pk, pk):
         body = request.data
@@ -565,6 +566,7 @@ class EvalJobViewSet(material.ModelViewSet):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
 
 class UserAPIView(generics.ListAPIView):
     queryset = User.objects.all()
