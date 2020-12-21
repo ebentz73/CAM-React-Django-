@@ -53,7 +53,7 @@ class PowerBIReport extends Component {
 
   fetchReportEmbedData() {
     fetch(
-      `${window.location.protocol}//${window.location.host}/api/solution/${this.props.solutionId}/report`
+      `${window.location.protocol}//${window.location.host}/api/solution/${this.props.solutionId}/powerbi/token`
     )
       .then((response) => {
         return response.json();

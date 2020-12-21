@@ -1,6 +1,7 @@
 import csv
 import datetime
 import logging
+import requests
 from functools import wraps
 
 import material.frontend.views as material
@@ -9,8 +10,8 @@ from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
-from rest_framework import generics, status, permissions, filters
 from profile.models import UserProfile
+from rest_framework import generics, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -68,6 +69,29 @@ def validate_api(serializer_cls, many=False):
     return decorator
 
 
+def catch_request_exception(f):
+    """
+    Catch a `requests` exception and add the Microsoft error message, if it
+    exists.
+    """
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            result = f(*args, **kwargs)
+            print(result)
+            return result
+        except requests.exceptions.RequestException as e:
+            try:
+                body = e.response.json()
+            except ValueError:
+                # Response does not contain valid json
+                body = {}
+            msg = f"{e}: {body['error']['message']}" if 'error' in body else str(e)
+            logging.error(msg)
+            return Response({'errorMsg', msg}, 500)
+    return wrapper
+
+
 class NodeViewSet(ModelViewSet):
     serializer_class = NodeSerializer
     permission_classes = (permissions.IsAuthenticated, CustomObjectPermissions)
@@ -113,15 +137,20 @@ class AnalyticsSolutionViewSet(ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, CustomObjectPermissions)
     filter_backends = (ObjectPermissionsFilter,)
 
-    @action(detail=True)
-    def report(self, request, pk):
+    @catch_request_exception
+    @action(detail=True, url_path='powerbi/token')
+    def token(self, request, pk):
         instance = self.get_object()
         powerbi = PowerBI(instance, request.user)
-        try:
-            return Response(powerbi.get_embed_token())
-        except Exception as e:
-            logging.error(e, exc_info=True)
-            return Response({'errorMsg': str(e)}, 500)
+        return Response(powerbi.get_embed_token())
+
+    @catch_request_exception
+    @action(detail=True, url_path='powerbi/refresh')
+    def refresh(self, request, pk):
+        instance = self.get_object()
+        powerbi = PowerBI(instance, request.user)
+        powerbi.refresh_dataset()
+        return Response('Success.')
 
 
 class InputViewSet(NestedViewSetMixin, ModelViewSet):
@@ -161,12 +190,16 @@ class ScenarioViewSet(ModelViewSet):
         return Scenario.objects.filter(solution=self.kwargs['solution_pk'])
 
     def create_or_update(self, request, solution_pk=None, pk=None, **kwargs):
-        run_eval = request.data.pop('run_eval', False)
+        _mutable = request.data._mutable
+        request.data._mutable = True
 
+        run_eval = request.data.pop('run_eval', False)
         if 'solution' not in request.data:
             request.data['solution'] = solution_pk
         if 'shared' not in request.data:
             request.data['shared'] = []
+
+        request.data._mutable = _mutable
 
         meth = super().create if pk is None else super().update
         response = meth(request, **kwargs)

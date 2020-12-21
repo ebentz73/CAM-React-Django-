@@ -4,6 +4,8 @@ import tempfile
 from django.contrib.auth.models import Group, User
 from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
+from guardian.shortcuts import assign_perm
+from profile.models import Role
 
 from app.models import (
     AnalyticsSolution,
@@ -23,30 +25,21 @@ from app.proto_modules import (
     NodeTagListBlob_pb2,
     TagFilterOption_pb2,
 )
-from app.utils import Sqlite, remove_model_perm
-
-from profile.models import Role
-from guardian.shortcuts import assign_perm
+from app.utils import Sqlite, remove_model_perm, PowerBI
 
 CAM_ROLE_PREFIX = 'CAM_ROLE=='
 
 
-def get_or_create_solution_group(solution):
-    groups = Group.objects.filter(name=solution.name)
-    group = groups.first()
-    if group is None:
-        group = Group.objects.create(name=solution.name)
-        assign_perm('app.view_analyticssolution', group, solution)
-    return group
-
-
 @receiver(post_save, sender=AnalyticsSolution)
-def update_model(sender, **kwargs):
-    solution = kwargs.get('instance')
+def post_save_solution(sender, instance, **kwargs):
+    if 'tam_file' in instance.changed_fields:
+        update_tam_model(instance)
 
-    if 'tam_file' in solution.changed_fields:
+
+def update_tam_model(solution):
         tag_roles = {}
         group = get_or_create_solution_group(solution)
+
         # Download tam model file and save only what we need
         f, filename = tempfile.mkstemp()
         try:
@@ -192,6 +185,21 @@ def update_model(sender, **kwargs):
             os.remove(filename)
 
 
+def get_or_create_solution_group(solution):
+    groups = Group.objects.filter(name=solution.name)
+    group = groups.first()
+    if group is None:
+        group = Group.objects.create(name=solution.name)
+        assign_perm('app.view_analyticssolution', group, solution)
+    return group
+
+
+@receiver(post_save, sender=Scenario)
+def post_save_scenario(sender, instance, **kwargs):
+    if 'status' in instance.changed_fields and instance.status == 'Completed.':
+        PowerBI(instance.solution).refresh_dataset()
+
+
 @receiver(m2m_changed, sender=InputDataSet.scenarios.through)
 def input_data_set_scenario_changed(sender, action, instance, pk_set, **kwargs):
     if action == 'pre_add':
@@ -202,16 +210,26 @@ def input_data_set_scenario_changed(sender, action, instance, pk_set, **kwargs):
             ):
                 if instance.input_page.id == input_page_id:
                     raise Exception(
-                        f"Scenario '{scenario.name}' cannot have multiple input data sets associated with Input Page '{ids.input_page.name}'."
+                        f"Scenario '{scenario.name}' cannot have multiple input data sets "
+                        f"associated with Input Page '{instance.input_page.name}'."
                     )
 
 
 @receiver(m2m_changed, sender=Scenario.shared.through)
 def shared_scenario_changed(sender, action, instance, pk_set, **kwargs):
-    users = User.objects.filter(pk__in=pk_set)
-    for user in users:
-        if action == 'post_add':
+    def post_add():
             assign_perm('app.view_scenario', user, instance)
             assign_perm('app.change_scenario', user, instance)
-        elif action == 'post_remove':
+
+    def post_remove():
             remove_model_perm(user, instance)
+
+    do_action = locals().get(action)
+    if action is None:
+        return
+
+    users = User.objects.filter(pk__in=pk_set)
+    for user in users:
+        do_action()
+
+    PowerBI(instance).refresh_dataset()
