@@ -8,4 +8,5 @@ node_modules
 .env
 .azure
 tam_models
+inputdatasets
 user_guides

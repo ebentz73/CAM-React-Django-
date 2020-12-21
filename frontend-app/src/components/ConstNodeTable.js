@@ -33,7 +33,7 @@ class ConstNodeTable extends Component {
                     <tbody>
                         {!this.props.fixed &&
                             <tr>
-                                {this.props.data.flatMap((_, index) => {
+                                {context.nodes[this.props.constantNodes[0]].data.flatMap((_, index) => {
                                     return index < this.props.layerOffset ? [] : [(
                                         <td key={`header_${index}`}>
                                             <Text>{this.formatDate(context.layerStartDate, context.layerTimeIncrement, index)}</Text>
@@ -42,35 +42,32 @@ class ConstNodeTable extends Component {
                                 })}
                             </tr>
                         }
-                        <tr>
-                            {this.props.fixed &&
-                                <td key={0}><NodeTableTextField data={this.props.data[0]} nodeId={this.props.nodeId}
-                                                                           layerIdx={0}
-                                                                           type={'const'}
-                                                                           updateData={context.updateConstNodeData}/></td>
-                            }
-                            {!this.props.fixed && this.props.data.flatMap((row, layerIdx) => {
-                                return layerIdx < this.props.layerOffset ? [] : [(
-                                    <td key={layerIdx}><NodeTableTextField data={row} nodeId={this.props.nodeId}
-                                                                           layerIdx={layerIdx}
-                                                                           type={'const'}
-                                                                           updateData={context.updateConstNodeData}/>
-                                    </td>)];
-                            })}
-                        </tr>
-                        {!this.props.fixed &&
-                            <tr>
-                                {this.props.data.flatMap((_, index) => {
-                                    return index < this.props.layerOffset ? [] : [(
-                                        <td key={`copy_${index}`}>
-                                            <PrimaryButton className="table-input"
-                                                           onClick={() => {context.copyToAllLayers(this.props.nodeId, index)}}
-                                                           text="Copy to All" />
-                                        </td>
-                                    )];
-                                })}
-                            </tr>
-                        }
+                        {this.props.constantNodes.map((node, nodeIdx) => {
+                            return(
+                                this.props.fixed ?
+                                    <tr key={`row_${nodeIdx}`}>
+                                        <td><Text>{context.nodes[this.props.constantNodes[nodeIdx]].name}</Text></td>
+                                        <td key={0}><NodeTableTextField data={context.nodes[this.props.constantNodes[nodeIdx]].data[0]}
+                                                                        nodeId={this.props.constantNodes[nodeIdx]}
+                                                                                   layerIdx={0}
+                                                                                   type={'const'}
+                                                                                   updateData={context.updateConstNodeData}/></td>
+                                    </tr>
+
+                                :
+                                    <tr key={`row_${nodeIdx}`}>
+                                        <td><Text>{context.nodes[this.props.constantNodes[nodeIdx]].name}</Text></td>
+                                        { context.nodes[this.props.constantNodes[nodeIdx]].data.flatMap((row, layerIdx) => {
+                                        return layerIdx < this.props.layerOffset ? [] : [(
+                                        <td key={layerIdx}><NodeTableTextField data={row} nodeId={this.props.constantNodes[layerIdx]}
+                                                                                   layerIdx={layerIdx}
+                                                                                   type={'const'}
+                                                                                   updateData={context.updateConstNodeData}/></td>)];
+
+                                        })}
+                                    </tr>
+                            );
+                        })}
                     </tbody>
                 }
             </NodesContext.Consumer>

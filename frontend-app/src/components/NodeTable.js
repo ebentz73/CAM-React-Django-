@@ -41,6 +41,7 @@ class NodeTable extends Component {
                     data={this.props.data}
                     fixed={this.state.fixed}
                     layerOffset={this.props.layerOffset}
+                    constantNodes={this.props.constantNodes} 
                   />
                 )}
               </table>
