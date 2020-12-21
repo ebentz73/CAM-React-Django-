@@ -17,13 +17,8 @@ import {
   TextField,
   ActionButton,
   PrimaryButton,
-  IIconProps,
-  DefaultButton,
   CommandBarButton,
   Dropdown,
-  DropdownMenuItemType,
-  IDropdownOption,
-  IDropdownStyle,
 } from "@fluentui/react";
 
 const overflowButtonProps = {
@@ -51,6 +46,7 @@ class ScenarioHomePage extends Component {
       countSelected: 0,
       cloneOrMergeDialog: true,
       shareDialog: true,
+      helpDialog: true,
       firstCheckedScenarioId: null,
       newScenarioName: "",
       users: [],
@@ -58,6 +54,7 @@ class ScenarioHomePage extends Component {
       sharedScenarioId: "",
       DropdownControlledMultiExampleOptions: [],
       sharedEmails: [],
+      support_contact: "",
     };
 
     this._selection = new Selection({
@@ -73,11 +70,15 @@ class ScenarioHomePage extends Component {
           item["id"].toString()
       );
     };
+    this.fetchAnalyticsSolutionsData = this.fetchAnalyticsSolutionsData.bind(
+      this
+    );
     this.fetchScenariosData = this.fetchScenariosData.bind(this);
     this.fetchAllUser = this.fetchAllUser.bind(this);
     this._renderItemColumn = this._renderItemColumn.bind(this);
     this.toggleCloneOrMergeDialog = this.toggleCloneOrMergeDialog.bind(this);
     this.toggleShareDialog = this.toggleShareDialog.bind(this);
+    this.toggleHelpDialog = this.toggleHelpDialog.bind(this);
     this.onCloneOrMerge = this.onCloneOrMerge.bind(this);
     this.sharePeople = this.sharePeople.bind(this);
     this.addPeople = this.addPeople.bind(this);
@@ -161,6 +162,10 @@ class ScenarioHomePage extends Component {
     this.setState((prevState) => ({ shareDialog: !prevState.shareDialog }));
   }
 
+  toggleHelpDialog() {
+    this.setState((prevState) => ({ helpDialog: !prevState.helpDialog }));
+  }
+
   fetchAllUser() {
     fetch(`${window.location.protocol}//${window.location.host}/api/user`)
       .then((response) => {
@@ -171,6 +176,24 @@ class ScenarioHomePage extends Component {
       })
       .catch((error) => {
         console.log(error);
+      });
+  }
+
+  fetchAnalyticsSolutionsData() {
+    fetch(
+      `${window.location.protocol}//${window.location.host}/api/v1/solutions/`
+    )
+      .then((response) => {
+        return response.json();
+      })
+      .then((response) => {
+        let filteredSolution = response.filter((solution) => {
+          return solution.id === this.props.match.params["id"];
+        });
+        this.setState({ support_contact: filteredSolution.support_contact });
+      })
+      .catch((err) => {
+        console.log(err);
       });
   }
 
@@ -343,6 +366,7 @@ class ScenarioHomePage extends Component {
   componentDidMount() {
     this.fetchScenariosData();
     this.fetchAllUser();
+    this.fetchAnalyticsSolutionsData();
   }
 
   render() {
@@ -359,6 +383,11 @@ class ScenarioHomePage extends Component {
     const shareDialogContentProps = {
       type: DialogType.normal,
       title: "Sharing",
+    };
+
+    const helpDialogContentProps = {
+      type: DialogType.normal,
+      title: "Support",
     };
     return (
       <React.Fragment>
@@ -390,16 +419,22 @@ class ScenarioHomePage extends Component {
                 <ActionButton
                   disabled={this.state.countSelected !== 2}
                   iconProps={{ iconName: "Merge" }}
-                  onClick={this.togglecloneOrMergeDialog}
+                  onClick={this.toggleCloneOrMergeDialog}
                 >
                   Merge
                 </ActionButton>
                 <ActionButton
                   disabled={this.state.countSelected !== 1}
                   iconProps={{ iconName: "Copy" }}
-                  onClick={this.togglecloneOrMergeDialog}
+                  onClick={this.toggleCloneOrMergeDialog}
                 >
                   Clone
+                </ActionButton>
+                <ActionButton
+                  iconProps={{ iconName: "Help" }}
+                  onClick={this.toggleHelpDialog}
+                >
+                  Help
                 </ActionButton>
               </div>
               <DetailsList
@@ -415,6 +450,7 @@ class ScenarioHomePage extends Component {
             </div>
           </div>
         </div>
+
         <Dialog
           hidden={this.state.cloneOrMergeDialog}
           onDismiss={this.toggleCloneOrMergeDialog}
@@ -428,6 +464,34 @@ class ScenarioHomePage extends Component {
             <PrimaryButton text="Save" onClick={this.onCloneOrMerge} />
           </DialogFooter>
         </Dialog>
+
+        <Dialog
+          hidden={this.state.helpDialog}
+          onDismiss={this.toggleHelpDialog}
+          dialogContentProps={helpDialogContentProps}
+        >
+          <table>
+            <tbody>
+              <tr>
+                <td>
+                  <p>User guide</p>
+                </td>
+                <td>
+                  <a>Click to download</a>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p>Support</p>
+                </td>
+                <td>
+                  <p>{this.state.support_contact}</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </Dialog>
+
         <Dialog
           hidden={this.state.shareDialog}
           onDismiss={this.toggleShareDialog}
