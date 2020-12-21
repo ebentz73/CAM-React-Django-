@@ -33,6 +33,7 @@ from app.models import (
     NodeData,
     NodeResult,
     Scenario,
+    InputDataSet,
 )
 from app.permissions import CustomObjectPermissions
 from app.serializers import (
@@ -49,6 +50,7 @@ from app.serializers import (
     ScenarioEvaluateSerializer,
     FilterCategoryOptionsSerializer,
     PolyNodeDataSerializer,
+    InputDataSetSerializer,
 )
 from app.utils import PowerBI, run_eval_engine
 
@@ -284,6 +286,11 @@ class ScenarioEvaluateViewSet(ModelViewSet):
     serializer_class = ScenarioEvaluateSerializer
 
 
+class InputDataSetViewSet(ModelViewSet):
+    queryset = InputDataSet.objects.all()
+    serializer_class = InputDataSetSerializer
+
+
 class ScenarioNodeDataViewSet(ModelViewSet):
     serializer_class = PolyNodeDataSerializer
 
@@ -295,7 +302,9 @@ class NodeDataViewSet(ModelViewSet):
     serializer_class = PolyNodeDataSerializer
 
     def get_queryset(self):
-        if 'scenario_pk' in self.kwargs:
+        if 'inputdataset_pk' in self.kwargs:
+            return NodeData.objects.filter(input_data_set=self.kwargs['inputdataset_pk'])
+        elif 'scenario_pk' in self.kwargs:
             return NodeData.objects.filter(scenario=self.kwargs['scenario_pk'])
         else:
             return NodeData.objects.filter(node__model__solution=self.kwargs['solution_pk'], is_model=True)

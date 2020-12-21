@@ -135,12 +135,12 @@ class SetupPage extends Component {
                       defaultSelectedKey={inputValue}
                       options={
                         input.choices.map(choice => (
-                          { key: choice.id, text: choice.label }
+                          { key: choice.id, text: choice.label, ids: choice.ids }
                         ))
                       }
                       key={input.id}
                       onChange={(e, selected) =>
-                        this.props.changeInputDataSet(input.id, selected.key)}
+                        this.props.changeInputDataSet(input.id, selected.key, selected.ids)}
                     />
                   );
                 case "NumericInput":

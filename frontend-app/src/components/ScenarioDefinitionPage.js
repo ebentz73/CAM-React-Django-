@@ -121,13 +121,33 @@ class ScenarioDefinitionPage extends Component {
     this.setState({nodes: nodes, nodes_changed: dirty, input_values: inputValues});
   }
 
-  changeInputDataSet(input_id, val) {
+  changeInputDataSet(input_id, val, ids) {
     let inputValues = {...this.state.input_values};
     if (!inputValues.hasOwnProperty(input_id)) {
       inputValues[input_id] = {};
     }
     inputValues[input_id].value = val;
     inputValues[input_id].isIds = true;
+
+    let url = `${window.location.protocol}//${window.location.host}/api/v1/inputdatasets/${ids}/nodedatas/`;
+    return fetch(url, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrf_token,
+      }
+    })
+      .then((resp) => {
+        return resp.json();
+      })
+      .then((resp) => {
+        resp.map(node => {
+          //Enter InputDataSet data into nodes state variable
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
 
     this.setState({input_values: inputValues});
   }
