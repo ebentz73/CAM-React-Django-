@@ -10,7 +10,7 @@ import {
   PrimaryButton,
   DefaultButton,
 } from "@fluentui/react";
-import { withRouter, Prompt } from "react-router";
+import { withRouter } from "react-router";
 import SetupPage from "./SetupPage";
 import InputCategoryPage from "./InputCategoryPage";
 import NodesContext from "./NodesContext";
@@ -32,9 +32,9 @@ const dialogStyles = { main: { maxWidth: 450 } };
 
 const dialogContentProps = {
   type: DialogType.normal,
-  title: "Unsaved Changes",
+  title: "Review Changes",
   closeButtonArialLabel: "Close",
-  subText: "You have made changes. Do you want to discard?",
+  subText: "You have made changes. Do you want to discard or save them?",
 };
 
 class ScenarioDefinitionPage extends Component {
@@ -90,12 +90,11 @@ class ScenarioDefinitionPage extends Component {
     this.changeRole = this.changeRole.bind(this);
     this.changeInputs = this.changeInputs.bind(this);
     this.changeInputDataSet = this.changeInputDataSet.bind(this);
-    this.handleConfirmNavigationClick = this.handleConfirmNavigationClick.bind(
-      this
-    );
+    this.discard = this.discard.bind(this);
 
     this.toggleHideDialog = this.toggleHideDialog.bind(this);
-    this.handleBlockedNavigation = this.handleBlockedNavigation.bind(this);
+    this.goScenarioListPage = this.goScenarioListPage.bind(this);
+    this.goHomepage = this.goHomepage.bind(this);
 
     this.setupProps = {
       updateName: this.changeScenarioName,
@@ -107,29 +106,34 @@ class ScenarioDefinitionPage extends Component {
     this.scenario_id = this.props.match.params["scenarioId"];
   }
 
+  goHomepage() {
+    let nextLocation = `${window.location.protocol}//${window.location.host}/frontend-app/home`;
+    if (this.state.nodes_changed > 0) {
+      this.toggleHideDialog(nextLocation);
+    } else {
+      window.location.href = nextLocation;
+    }
+  }
+
+  goScenarioListPage() {
+    let nextLocation = `${window.location.protocol}//${window.location.host}/frontend-app/solution/${this.solution_id}/scenario`;
+    if (this.state.nodes_changed > 0) {
+      this.toggleHideDialog(nextLocation);
+    } else {
+      window.location.href = nextLocation;
+    }
+  }
+
+  discard() {
+    this.setState({ nodes_changed: 0 });
+    window.location.href = this.state.lastLocation;
+  }
+
   toggleHideDialog(location) {
     this.setState((prevState) => ({
       hideDialog: !prevState.hideDialog,
       lastLocation: location,
     }));
-  }
-
-  handleConfirmNavigationClick() {
-    const { lastLocation } = this.state;
-    if (lastLocation) {
-      this.setState({ confirmedNavigation: true });
-      window.location.href = `${window.location.protocol}//${window.location.host}${this.state.lastLocation.pathname}`;
-    }
-  }
-
-  handleBlockedNavigation(nextLocation) {
-    const { confirmedNavigation } = this.state;
-    if (!confirmedNavigation) {
-      this.toggleHideDialog(nextLocation);
-      return false;
-    }
-
-    return true;
   }
 
   changeScenarioName(val) {
@@ -550,12 +554,12 @@ class ScenarioDefinitionPage extends Component {
       {
         text: "Analytics Solutions",
         key: "f1",
-        href: `${window.location.protocol}//${window.location.host}/frontend-app/home`,
+        onClick: this.goHomepage,
       },
       {
         text: `${this.state.solution_name}`,
         key: "f2",
-        href: `${window.location.protocol}//${window.location.host}/frontend-app/solution/${this.solution_id}/scenario`,
+        onClick: this.goScenarioListPage,
       },
       { text: `${lastFolderName}`, key: "f3", href: "#" },
     ];
@@ -593,18 +597,15 @@ class ScenarioDefinitionPage extends Component {
     return (
       <React.Fragment>
         <NavBar />
-        <Prompt when={true} message={this.handleBlockedNavigation} />
         <Dialog
           hidden={this.state.hideDialog}
           onDismiss={this.toggleHideDialog}
           dialogContentProps={dialogContentProps}
         >
           <DialogFooter>
-            <PrimaryButton onClick={this.toggleHideDialog} text="Discard" />
-            <DefaultButton
-              onClick={this.handleConfirmNavigationClick}
-              text="No"
-            />
+            <DefaultButton onClick={this.toggleHideDialog} text="Cancel" />
+            <DefaultButton onClick={this.discard} text="Discard" />
+            <PrimaryButton onClick={this.createOrUpdateScenario} text="Save" />
           </DialogFooter>
         </Dialog>
         <div className="ms-Grid grid-margin" dir="ltr">
@@ -677,7 +678,7 @@ class ScenarioDefinitionPage extends Component {
                         desc={this.state.description}
                         date={this.scenario_id ? this.state.model_date : ""}
                         inputValues={this.state.input_values}
-                        isReadOnly={this.state.status === null}
+                        isReadOnly={this.state.status !== null}
                       />
                     )}
                     {this.state.tab === "category" && !this.state.isLoading && (
