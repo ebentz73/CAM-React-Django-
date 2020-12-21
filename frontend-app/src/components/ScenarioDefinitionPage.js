@@ -142,7 +142,7 @@ class ScenarioDefinitionPage extends Component {
       })
       .then((resp) => {
         resp.map(node => {
-          //Enter InputDataSet data into nodes state variable
+          //
         });
       })
       .catch((err) => {

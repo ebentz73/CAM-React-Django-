@@ -197,6 +197,7 @@ def update_model(sender, **kwargs):
 @receiver(post_save, sender=InputDataSet)
 def retrieve_spreadsheet_values(sender, **kwargs):
     ids = kwargs.get('instance')
+    print(ids.input_choices())
     if 'file' in ids.changed_fields:
         wb = openpyxl.load_workbook(ids.file)
 
