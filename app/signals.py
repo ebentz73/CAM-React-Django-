@@ -139,21 +139,6 @@ def update_model(sender, **kwargs):
                                 defaults={'name': node_name},
                                 notes=node_notes,
                             )
-                            # Apply CAM role to Node
-                            for cam_role in cam_roles:
-                                if cam_role in tag_roles:
-                                    node_role = tag_roles[cam_role]
-                                else:
-                                    node_role = Role.objects.create(name='role_' + solution.name + '_' + cam_role)
-                                    permission = Permission.objects.get(
-                                        codename='view_node',
-                                        content_type=ContentType.objects.get_for_model(Node),
-                                    )
-                                    node_role.permissions.add(permission)
-                                    tag_roles[cam_role] = node_role
-                                assign_perm('view_node', node_role, node)
-
-
                             node_data = node_data_codename = None
                             # Create InputNodeData model
                             if node_type == 'inputnode':
@@ -172,7 +157,6 @@ def update_model(sender, **kwargs):
                                 node_data, _ = InputNodeData.objects.update_or_create(
                                     node=node, default_data=node_data, is_model=True
                                 )
-                                assign_model_and_object_perms(ind, role, 'view_inputnodedata')
                                 node_data_codename = 'app.view_inputnodedata'
 
                             # Create ConstNodeData model
@@ -185,7 +169,6 @@ def update_model(sender, **kwargs):
                                 node_data, _ = ConstNodeData.objects.update_or_create(
                                     node=node, default_data=node_data, is_model=True
                                 )
-                                assign_model_and_object_perms(cnd, role, 'view_constnodedata')
                                 node_data_codename = 'app.view_constnodedata'
 
                             # Apply CAM role to Node
@@ -213,7 +196,8 @@ def update_model(sender, **kwargs):
 @receiver(post_save, sender=InputDataSet)
 def retrieve_spreadsheet_values(sender, **kwargs):
     ids = kwargs.get('instance')
-    print(ids.input_choices())
+    choice = ids.input_choices.first()
+    solution = choice.input.solution
     if 'file' in ids.changed_fields:
         wb = openpyxl.load_workbook(ids.file)
 
@@ -224,7 +208,7 @@ def retrieve_spreadsheet_values(sender, **kwargs):
             node_name = row[0].value
             if node_name is None:
                 break
-            node = Node.objects.filter(name=node_name).first()
+            node = Node.objects.filter(name=node_name, model__solution=solution).first()
             if node is not None:
                 lowest = row[7].value
                 low = row[4].value
@@ -276,7 +260,7 @@ def input_data_set_scenario_changed(sender, action, instance, pk_set, **kwargs):
             ):
                 if instance.input_page.id == input_page_id:
                     raise Exception(
-                        f"Scenario '{scenario.name}' cannot have multiple input data sets associated with Input Page '{ids.input_page.name}'."
+                        f"Scenario '{scenario.name}' cannot have multiple input data sets associated with Input Page '{instance.input_page.name}'."
                     )
 
 

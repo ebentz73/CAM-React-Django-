@@ -206,7 +206,7 @@ class ScenarioDefinitionPage extends Component {
       })
       .then((resp) => {
         resp.map(node => {
-          //
+          console.log(node);
         });
       })
       .catch((err) => {
