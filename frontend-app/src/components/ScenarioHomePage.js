@@ -193,9 +193,9 @@ class ScenarioHomePage extends Component {
       })
       .then((response) => {
         let filteredSolution = response.filter((solution) => {
-          return solution.id === this.props.match.params["id"];
+          return solution.id == this.props.match.params["id"];
         });
-        this.setState({ support_contact: filteredSolution.support_contact });
+        this.setState({ support_contact: filteredSolution[0].support_contact });
       })
       .catch((err) => {
         console.log(err);
