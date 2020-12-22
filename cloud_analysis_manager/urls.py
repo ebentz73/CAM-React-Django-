@@ -13,14 +13,17 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
+from django.conf.urls import url
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
-from django.conf.urls import url
 from django.views.generic import RedirectView
 from material.frontend import urls as frontend_urls
 from rest_framework_nested import routers
 
 from app import views
+from app.utils import is_cloud
 
 router = routers.SimpleRouter()
 router.register(r'api/v1/solutions', views.AnalyticsSolutionViewSet, basename='solutions')
@@ -90,3 +93,6 @@ urlpatterns = [
 
     path('api/user', views.UserAPIView.as_view()),
 ]
+
+if not is_cloud():
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
