@@ -478,7 +478,7 @@ class ScenarioHomePage extends Component {
                     href={this.state.userGuideFileUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    // download
+                    download
                   >
                     Click to download
                   </a>
