@@ -8,9 +8,9 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from guardian.shortcuts import assign_perm
+from django.contrib.auth.models import User
+from rest_framework import generics, status, permissions, filters
 from profile.models import UserProfile
-from rest_framework import generics, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -51,8 +51,9 @@ from app.serializers import (
     FilterCategoryOptionsSerializer,
     PolyNodeDataSerializer,
     InputDataSetSerializer,
+    UserSerializer,
 )
-from app.utils import PowerBI, run_eval_engine
+from app.utils import PowerBI, run_eval_engine, assign_model_perm
 
 
 def validate_api(serializer_cls, many=False):
@@ -182,10 +183,7 @@ class ScenarioViewSet(ModelViewSet):
     def create(self, request, solution_pk=None, **kwargs):
         response = self.create_or_update(request, solution_pk, **kwargs)
         obj = Scenario.objects.get(pk=response.data['id'])
-        assign_perm('app.add_scenario', request.user, obj)
-        assign_perm('app.change_scenario', request.user, obj)
-        assign_perm('app.delete_scenario', request.user, obj)
-        assign_perm('app.view_scenario', request.user, obj)
+        assign_model_perm(request.user, obj)
         return response
 
     @action(detail=True)
@@ -577,3 +575,8 @@ class EvalJobViewSet(material.ModelViewSet):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+class UserAPIView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer

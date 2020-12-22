@@ -95,4 +95,6 @@ urlpatterns = [
     url('^api/const-node-data/node=(?P<node>.+)/$', views.ConstNodeDataByNodeListAPIView.as_view()),
     url('^api/input-node-data/node=(?P<node>.+)/$', views.InputNodeDataByNodeListAPIView.as_view()),
     url('^api/node/model=(?P<model>.+)/$', views.NodeByModelListAPIView.as_view()),
+
+    path('api/user', views.UserAPIView.as_view()),
 ]
