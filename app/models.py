@@ -179,7 +179,6 @@ class InputDataSet(models.Model, ModelDiffMixin):
     input_page = models.ForeignKey(InputPage, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     file = models.FileField(upload_to='inputdatasets/', validators=[validate_input_date_set_file])
-    solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE, null=True)
     scenarios = models.ManyToManyField(Scenario, blank=True, related_name='input_data_sets')
 
     def __str__(self):
