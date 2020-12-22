@@ -530,7 +530,6 @@ class ScenarioDefinitionPage extends Component {
 
   componentDidMount() {
     if (this.scenario_id !== undefined) {
-      console.log("I am here I am not create one");
       this.fetchScenarioMetadata();
     }
     this.filtersBySolution(this.solution_id);
