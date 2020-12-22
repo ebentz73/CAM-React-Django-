@@ -56,6 +56,7 @@ class ScenarioHomePage extends Component {
       DropdownControlledMultiExampleOptions: [],
       sharedEmails: [],
       support_contact: "",
+      userGuideFileUrl: "",
       sharedUsersDirty: [],
     };
 
@@ -193,9 +194,12 @@ class ScenarioHomePage extends Component {
       })
       .then((response) => {
         let filteredSolution = response.filter((solution) => {
-          return solution.id === this.props.match.params["id"];
+          return solution.id == this.props.match.params["id"];
         });
-        this.setState({ support_contact: filteredSolution.support_contact });
+        this.setState({
+          support_contact: filteredSolution[0].support_contact,
+          userGuideFileUrl: filteredSolution[0].user_guide_file,
+        });
       })
       .catch((err) => {
         console.log(err);
@@ -427,14 +431,14 @@ class ScenarioHomePage extends Component {
                 <ActionButton
                   disabled={this.state.countSelected !== 2}
                   iconProps={{ iconName: "Merge" }}
-                  onClick={this.togglecloneOrMergeDialog}
+                  onClick={this.toggleCloneOrMergeDialog}
                 >
                   Merge
                 </ActionButton>
                 <ActionButton
                   disabled={this.state.countSelected !== 1}
                   iconProps={{ iconName: "Copy" }}
-                  onClick={this.togglecloneOrMergeDialog}
+                  onClick={this.toggleCloneOrMergeDialog}
                 >
                   Clone
                 </ActionButton>
@@ -469,15 +473,22 @@ class ScenarioHomePage extends Component {
                 <td>
                   <p>User guide</p>
                 </td>
-                <td>
-                  <a>Click to download</a>
+                <td className="support-padding">
+                  <a
+                    href={this.state.userGuideFileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download
+                  >
+                    Click to download
+                  </a>
                 </td>
               </tr>
               <tr>
                 <td>
                   <p>Support</p>
                 </td>
-                <td>
+                <td className="support-padding">
                   <p>{this.state.support_contact}</p>
                 </td>
               </tr>
