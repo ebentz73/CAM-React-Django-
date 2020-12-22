@@ -225,7 +225,8 @@
 }
 .progress-circle-text {
   width: 50%;
-  font-family: "Segoe UI";
+  font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI",
+    -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
   display: inline-block;
   font-size: 1em;
   vertical-align: middle;
@@ -313,4 +314,8 @@
   background-color: rgb(0, 99, 177);
   box-shadow: "0px 1px 4px 1px rgb(194, 194, 194)";
   margin-bottom: 20px;
+}
+
+.support-padding {
+  padding-left: 30px;
 }

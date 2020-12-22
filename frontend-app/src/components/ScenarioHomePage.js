@@ -473,7 +473,7 @@ class ScenarioHomePage extends Component {
                 <td>
                   <p>User guide</p>
                 </td>
-                <td>
+                <td className="support-padding">
                   <a
                     href={this.state.userGuideFileUrl}
                     target="_blank"
@@ -488,7 +488,7 @@ class ScenarioHomePage extends Component {
                 <td>
                   <p>Support</p>
                 </td>
-                <td>
+                <td className="support-padding">
                   <p>{this.state.support_contact}</p>
                 </td>
               </tr>
