@@ -130,6 +130,20 @@ def update_tam_model(solution):
                                 defaults={'name': node_name},
                                 notes=node_notes,
                             )
+                            # Apply CAM role to Node
+                            for cam_role in cam_roles:
+                                if cam_role in tag_roles:
+                                    node_role = tag_roles[cam_role]
+                                else:
+                                    node_role = Role.objects.create(name='role_' + solution.name + '_' + cam_role)
+                                    permission = Permission.objects.get(
+                                        codename='view_node',
+                                        content_type=ContentType.objects.get_for_model(Node),
+                                    )
+                                    node_role.permissions.add(permission)
+                                    tag_roles[cam_role] = node_role
+                                assign_perm('view_node', node_role, node)
+
 
                             node_data = node_data_codename = None
                             # Create InputNodeData model
@@ -149,6 +163,7 @@ def update_tam_model(solution):
                                 node_data, _ = InputNodeData.objects.update_or_create(
                                     node=node, default_data=node_data, is_model=True
                                 )
+                                assign_model_and_object_perms(ind, role, 'view_inputnodedata')
                                 node_data_codename = 'app.view_inputnodedata'
 
                             # Create ConstNodeData model
@@ -161,6 +176,7 @@ def update_tam_model(solution):
                                 node_data, _ = ConstNodeData.objects.update_or_create(
                                     node=node, default_data=node_data, is_model=True
                                 )
+                                assign_model_and_object_perms(cnd, role, 'view_constnodedata')
                                 node_data_codename = 'app.view_constnodedata'
 
                             # Apply CAM role to Node
