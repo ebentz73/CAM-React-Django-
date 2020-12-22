@@ -1,6 +1,7 @@
 import csv
 import datetime
 import logging
+import requests
 from functools import wraps
 
 import material.frontend.views as material
@@ -8,7 +9,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from guardian.shortcuts import assign_perm
+from django.contrib.auth.models import User
 from profile.models import UserProfile
 from rest_framework import generics, status, permissions
 from rest_framework.decorators import action
@@ -49,8 +50,9 @@ from app.serializers import (
     ScenarioEvaluateSerializer,
     FilterCategoryOptionsSerializer,
     PolyNodeDataSerializer,
+    UserSerializer,
 )
-from app.utils import PowerBI, run_eval_engine
+from app.utils import PowerBI, run_eval_engine, assign_model_perm
 
 
 def validate_api(serializer_cls, many=False):
@@ -65,6 +67,28 @@ def validate_api(serializer_cls, many=False):
         return wrapper
 
     return decorator
+
+
+def catch_request_exception(f):
+    """
+    Catch a `requests` exception and add the Microsoft error message, if it
+    exists.
+    """
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            result = f(*args, **kwargs)
+            return result
+        except requests.exceptions.RequestException as e:
+            try:
+                body = e.response.json()
+            except ValueError:
+                # Response does not contain valid json
+                body = {}
+            msg = f"{e}: {body['error']['message']}" if 'error' in body else str(e)
+            logging.error(msg)
+            return Response({'errorMsg', msg}, 500)
+    return wrapper
 
 
 class NodeViewSet(ModelViewSet):
@@ -112,15 +136,20 @@ class AnalyticsSolutionViewSet(ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, CustomObjectPermissions)
     filter_backends = (ObjectPermissionsFilter,)
 
-    @action(detail=True)
-    def report(self, request, pk):
+    @catch_request_exception
+    @action(detail=True, url_path='powerbi/token')
+    def token(self, request, pk):
         instance = self.get_object()
         powerbi = PowerBI(instance, request.user)
-        try:
-            return Response(powerbi.get_embed_token())
-        except Exception as e:
-            logging.error(e, exc_info=True)
-            return Response({'errorMsg': str(e)}, 500)
+        return Response(powerbi.get_embed_token())
+
+    @catch_request_exception
+    @action(detail=True, url_path='powerbi/refresh')
+    def refresh(self, request, pk):
+        instance = self.get_object()
+        powerbi = PowerBI(instance, request.user)
+        powerbi.refresh_dataset()
+        return Response('Success.')
 
 
 class InputViewSet(NestedViewSetMixin, ModelViewSet):
@@ -160,12 +189,16 @@ class ScenarioViewSet(ModelViewSet):
         return Scenario.objects.filter(solution=self.kwargs['solution_pk'])
 
     def create_or_update(self, request, solution_pk=None, pk=None, **kwargs):
-        run_eval = request.data.pop('run_eval', False)
+        _mutable = request.data._mutable
+        request.data._mutable = True
 
+        run_eval = request.data.pop('run_eval', False)
         if 'solution' not in request.data:
             request.data['solution'] = solution_pk
         if 'shared' not in request.data:
             request.data['shared'] = []
+
+        request.data._mutable = _mutable
 
         meth = super().create if pk is None else super().update
         response = meth(request, **kwargs)
@@ -180,10 +213,7 @@ class ScenarioViewSet(ModelViewSet):
     def create(self, request, solution_pk=None, **kwargs):
         response = self.create_or_update(request, solution_pk, **kwargs)
         obj = Scenario.objects.get(pk=response.data['id'])
-        assign_perm('app.add_scenario', request.user, obj)
-        assign_perm('app.change_scenario', request.user, obj)
-        assign_perm('app.delete_scenario', request.user, obj)
-        assign_perm('app.view_scenario', request.user, obj)
+        assign_model_perm(request.user, obj)
         return response
 
     @action(detail=True)
@@ -568,3 +598,8 @@ class EvalJobViewSet(material.ModelViewSet):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+class UserAPIView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer

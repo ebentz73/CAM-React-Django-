@@ -17,12 +17,16 @@ import {
   TextField,
   ActionButton,
   PrimaryButton,
-  IIconProps,
+  CommandBarButton,
+  Dropdown,
+  ComboBox,
 } from "@fluentui/react";
 
 const overflowButtonProps = {
   ariaLabel: "More users",
 };
+
+const dropdownStyles = { dropdown: { width: 300 } };
 
 function getCookie(name) {
   return (
@@ -41,10 +45,19 @@ class ScenarioHomePage extends Component {
       columns: [],
       solution_id: null,
       countSelected: 0,
-      hideDialog: true,
+      cloneOrMergeDialog: true,
+      shareDialog: true,
+      helpDialog: true,
       firstCheckedScenarioId: null,
       newScenarioName: "",
       selectedScenarios: [],
+      users: [],
+      filteredUsers: [],
+      sharedScenarioId: "",
+      DropdownControlledMultiExampleOptions: [],
+      sharedEmails: [],
+      support_contact: "",
+      sharedUsersDirty: [],
     };
 
     this._selection = new Selection({
@@ -60,11 +73,20 @@ class ScenarioHomePage extends Component {
           item["id"].toString()
       );
     };
+    this.fetchAnalyticsSolutionsData = this.fetchAnalyticsSolutionsData.bind(
+      this
+    );
     this.fetchScenariosData = this.fetchScenariosData.bind(this);
+    this.fetchAllUser = this.fetchAllUser.bind(this);
     this._renderItemColumn = this._renderItemColumn.bind(this);
-    this.toggleHideDialog = this.toggleHideDialog.bind(this);
+    this.toggleCloneOrMergeDialog = this.toggleCloneOrMergeDialog.bind(this);
+    this.toggleShareDialog = this.toggleShareDialog.bind(this);
+    this.toggleHelpDialog = this.toggleHelpDialog.bind(this);
     this.onCloneOrMerge = this.onCloneOrMerge.bind(this);
     this.deleteScenario = this.deleteScenario.bind(this);
+    this.sharePeople = this.sharePeople.bind(this);
+    this.addPeople = this.addPeople.bind(this);
+    this.removeFilteredUser = this.removeFilteredUser.bind(this);
   }
 
   deleteScenario() {
@@ -84,6 +106,35 @@ class ScenarioHomePage extends Component {
       console.error(err);
     });
   }
+    
+
+  removeFilteredUser(index) {
+    let newArray = [...this.state.filteredUsers];
+    newArray.splice(index, 1);
+    this.setState({ filteredUsers: newArray });
+  }
+
+  _onColumnClickView() {}
+
+  sharePeople() {
+    fetch(
+      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.state.solution_id}/scenarios/${this.state.sharedScenarioId}/`,
+      {
+        method: "PATCH",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrf_token,
+        },
+        body: JSON.stringify({
+          shared: this.state.sharedUsersDirty.map((userId) => ({ id: userId })),
+        }),
+      }
+    ).catch((err) => {
+      console.error(err);
+    });
+  }
+
   onCloneOrMerge() {
     if (this.state.countSelected === 1) {
       fetch(
@@ -131,8 +182,52 @@ class ScenarioHomePage extends Component {
     }
   }
 
-  toggleHideDialog() {
-    this.setState((prevState) => ({ hideDialog: !prevState.hideDialog }));
+  toggleCloneOrMergeDialog() {
+    this.setState((prevState) => ({
+      cloneOrMergeDialog: !prevState.cloneOrMergeDialog,
+    }));
+  }
+
+  toggleShareDialog() {
+    this.setState((prevState) => ({
+      shareDialog: !prevState.shareDialog,
+      sharedUsersDirty: [],
+    }));
+  }
+
+  toggleHelpDialog() {
+    this.setState((prevState) => ({ helpDialog: !prevState.helpDialog }));
+  }
+
+  fetchAllUser() {
+    fetch(`${window.location.protocol}//${window.location.host}/api/user`)
+      .then((response) => {
+        return response.json();
+      })
+      .then((response) => {
+        this.setState({ users: response });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
+  fetchAnalyticsSolutionsData() {
+    fetch(
+      `${window.location.protocol}//${window.location.host}/api/v1/solutions/`
+    )
+      .then((response) => {
+        return response.json();
+      })
+      .then((response) => {
+        let filteredSolution = response.filter((solution) => {
+          return solution.id === this.props.match.params["id"];
+        });
+        this.setState({ support_contact: filteredSolution.support_contact });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 
   fetchScenariosData() {
@@ -178,6 +273,9 @@ class ScenarioHomePage extends Component {
           },
         ];
         response.forEach((scenario) => {
+          scenario.sharedUserEmail = scenario.shared.map((user) => {
+            return user.email;
+          });
           scenario.shared = scenario.shared.map((user) => {
             let firstName = user["first_name"];
             let lastName = user["last_name"];
@@ -207,23 +305,93 @@ class ScenarioHomePage extends Component {
     this.setState({ countSelected });
   }
 
+  addPeople(index, item) {
+    this.toggleShareDialog();
+    this.setState({ sharedScenarioId: item.id });
+    let userIds = [];
+    let userEmails = [];
+    this.state.users.map((user) => {
+      userIds.push(user.id);
+      userEmails.push(user.email);
+    });
+
+    let DropdownControlledMultiExampleOptions = [];
+    let sharedEmails = [...this.state.scenarios[index].sharedUserEmail];
+    this.setState({ sharedEmails });
+    if (this.state.scenarios[index].sharedUserEmail.length > 0) {
+      for (
+        let i = 0;
+        i < this.state.scenarios[index].sharedUserEmail.length;
+        i++
+      ) {
+        let idx = userEmails.indexOf(
+          this.state.scenarios[index].sharedUserEmail[i]
+        );
+        if (idx > -1) {
+          userIds.splice(idx, 1);
+          userEmails.splice(idx, 1);
+        }
+      }
+    }
+
+    for (let i = 0; i < userEmails.length; i++) {
+      DropdownControlledMultiExampleOptions.push({
+        key: userIds[i],
+        text: userEmails[i],
+      });
+    }
+
+    this.setState({ DropdownControlledMultiExampleOptions });
+  }
+
   _renderItemColumn(item, index, column) {
     switch (column.key) {
       case "shared":
         var shared_data = [];
+        const menuProps = {
+          items: [
+            {
+              key: "addPeople",
+              text: "Add People",
+              iconProps: { iconName: "Add" },
+              onClick: () => this.addPeople(index, item),
+            },
+          ],
+        };
+        if (this.state.scenarios[index].sharedUserEmail.length > 0) {
+          for (
+            let i = 0;
+            i < this.state.scenarios[index].sharedUserEmail.length;
+            i++
+          ) {
+            menuProps.items.push({
+              key: `email+${i}`,
+              text: this.state.scenarios[index].sharedUserEmail[i],
+              iconProps: { iconName: "Mail" },
+            });
+          }
+        }
+
         for (var r in item[column.key]) {
           shared_data.push({ imageInitials: item[column.key][r] });
         }
 
         var overflowButtonType = OverflowButtonType.descriptive;
+
         return (
-          <Facepile
-            personaSize={PersonaSize.size24}
-            personas={shared_data}
-            maxDisplayablePersonas={2}
-            overflowButtonProps={overflowButtonProps}
-            overflowButtonType={overflowButtonType}
-          />
+          <div className="share-people">
+            <Facepile
+              personaSize={PersonaSize.size24}
+              personas={shared_data}
+              maxDisplayablePersonas={2}
+              overflowButtonProps={overflowButtonProps}
+              overflowButtonType={overflowButtonType}
+            />
+            <CommandBarButton
+              iconProps={{ iconName: "AddFriend" }}
+              menuProps={menuProps}
+            ></CommandBarButton>
+          </div>
         );
 
       default:
@@ -233,11 +401,13 @@ class ScenarioHomePage extends Component {
 
   componentDidMount() {
     this.fetchScenariosData();
+    this.fetchAllUser();
+    this.fetchAnalyticsSolutionsData();
   }
 
   render() {
     const path = `/frontend-app/solution/${this.props.match.params["id"]}/scenario`;
-    const dialogContentProps = {
+    const cloneOrMergeDialogContentProps = {
       type: DialogType.normal,
       title:
         this.state.countSelected === 1
@@ -245,6 +415,15 @@ class ScenarioHomePage extends Component {
           : this.state.countSelected === 2
           ? "Merge Scenario"
           : "",
+    };
+    const shareDialogContentProps = {
+      type: DialogType.normal,
+      title: "Sharing",
+    };
+
+    const helpDialogContentProps = {
+      type: DialogType.normal,
+      title: "Support",
     };
     return (
       <React.Fragment>
@@ -276,16 +455,22 @@ class ScenarioHomePage extends Component {
                 <ActionButton
                   disabled={this.state.countSelected !== 2}
                   iconProps={{ iconName: "Merge" }}
-                  onClick={this.toggleHideDialog}
+                  onClick={this.togglecloneOrMergeDialog}
                 >
                   Merge
                 </ActionButton>
                 <ActionButton
                   disabled={this.state.countSelected !== 1}
                   iconProps={{ iconName: "Copy" }}
-                  onClick={this.toggleHideDialog}
+                  onClick={this.togglecloneOrMergeDialog}
                 >
                   Clone
+                </ActionButton>
+                <ActionButton
+                  iconProps={{ iconName: "Help" }}
+                  onClick={this.toggleHelpDialog}
+                >
+                  Help
                 </ActionButton>
               </div>
               <DetailsList
@@ -302,9 +487,35 @@ class ScenarioHomePage extends Component {
           </div>
         </div>
         <Dialog
-          hidden={this.state.hideDialog}
-          onDismiss={this.toggleHideDialog}
-          dialogContentProps={dialogContentProps}
+          hidden={this.state.helpDialog}
+          onDismiss={this.toggleHelpDialog}
+          dialogContentProps={helpDialogContentProps}
+        >
+          <table>
+            <tbody>
+              <tr>
+                <td>
+                  <p>User guide</p>
+                </td>
+                <td>
+                  <a>Click to download</a>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p>Support</p>
+                </td>
+                <td>
+                  <p>{this.state.support_contact}</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </Dialog>
+        <Dialog
+          hidden={this.state.cloneOrMergeDialog}
+          onDismiss={this.toggleCloneOrMergeDialog}
+          dialogContentProps={cloneOrMergeDialogContentProps}
         >
           <TextField
             placeholder="Enter name"
@@ -312,6 +523,46 @@ class ScenarioHomePage extends Component {
           />
           <DialogFooter>
             <PrimaryButton text="Save" onClick={this.onCloneOrMerge} />
+          </DialogFooter>
+        </Dialog>
+        <Dialog
+          hidden={this.state.shareDialog}
+          onDismiss={this.toggleShareDialog}
+          dialogContentProps={shareDialogContentProps}
+        >
+          <ComboBox
+            label="Add People"
+            placeholder="Select Options"
+            autocomplete={true}
+            options={this.state.DropdownControlledMultiExampleOptions}
+            multiSelect
+            onChange={(e, selectedOption) => {
+              let sharedUsersDirty = [...this.state.sharedUsersDirty];
+              if (selectedOption.selected) {
+                sharedUsersDirty.push(selectedOption.key);
+              } else {
+                sharedUsersDirty.splice(
+                  sharedUsersDirty.indexOf(selectedOption.key),
+                  1
+                );
+              }
+              this.setState({ sharedUsersDirty });
+            }}
+          />
+          <p>Shared With</p>
+          <table>
+            <tbody>
+              {this.state.sharedEmails.map((sharedEmail, index) => {
+                return (
+                  <tr key={index}>
+                    <td>{sharedEmail}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          <DialogFooter>
+            <PrimaryButton text="Save" onClick={this.sharePeople} />
           </DialogFooter>
         </Dialog>
       </React.Fragment>
