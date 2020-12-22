@@ -167,12 +167,6 @@ class ScenarioSerializer(serializers.ModelSerializer):
             user = User.objects.get(pk=user_data.get('id'))
             instance.shared.add(user)
 
-    @staticmethod
-    def add_input_data_sets(instance, input_data_sets):
-        for ids_id in input_data_sets:
-            ids = InputDataSet.objects.get(pk=ids_id)
-            instance.input_data_sets.add(ids)
-
     def create_or_update(self, validated_data, instance=None):
         shared = validated_data.pop('shared', [])
         instance = (
