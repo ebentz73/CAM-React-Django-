@@ -19,6 +19,8 @@ from django.conf.urls import url
 from django.views.generic import RedirectView
 from material.frontend import urls as frontend_urls
 from rest_framework_nested import routers
+from django.conf import settings 
+from django.conf.urls.static import static 
 
 from app import views
 
@@ -90,3 +92,7 @@ urlpatterns = [
 
     path('api/user', views.UserAPIView.as_view()),
 ]
+
+
+if settings.DEBUG:     
+     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
