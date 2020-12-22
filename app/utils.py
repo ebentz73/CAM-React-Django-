@@ -336,19 +336,16 @@ class PowerBI:
         dataset_id = report['dataset_id']
 
         # Get embed token
-        body = {'datasets': []}
-        if dataset_id:
-            body['datasets'].append(
-                {
-                    'id': dataset_id,
-                    'username': self.username,
-                    'roles': self.roles,
-                    'datasets': [dataset_id],
-                }
-            )
-
-        body['reports'] = [{'id': self.report_id}]
-        body['targetWorkspaces'] = [{'id': self.workspace_id}]
+        body = {
+            'datasets': [],
+            'identities': [],
+            'reports': [],
+            'targetWorkspaces': [],
+        }
+        body['datasets'].append({'id': dataset_id})
+        body['identities'].append({'datasets': [dataset_id], 'username': self.username, 'roles': self.roles})
+        body['reports'].append({'id': self.report_id})
+        body['targetWorkspaces'].append({'id': self.workspace_id})
 
         # Generate Embed token for multiple workspaces, datasets, and reports.
         # Refer https://aka.ms/MultiResourceEmbedToken

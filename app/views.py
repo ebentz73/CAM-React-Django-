@@ -78,7 +78,6 @@ def catch_request_exception(f):
     def wrapper(*args, **kwargs):
         try:
             result = f(*args, **kwargs)
-            print(result)
             return result
         except requests.exceptions.RequestException as e:
             try:
