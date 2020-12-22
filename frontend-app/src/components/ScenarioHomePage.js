@@ -50,6 +50,7 @@ class ScenarioHomePage extends Component {
       helpDialog: true,
       firstCheckedScenarioId: null,
       newScenarioName: "",
+      selectedScenarios: [],
       users: [],
       filteredUsers: [],
       sharedScenarioId: "",
@@ -83,10 +84,30 @@ class ScenarioHomePage extends Component {
     this.toggleShareDialog = this.toggleShareDialog.bind(this);
     this.toggleHelpDialog = this.toggleHelpDialog.bind(this);
     this.onCloneOrMerge = this.onCloneOrMerge.bind(this);
+    this.deleteScenario = this.deleteScenario.bind(this);
     this.sharePeople = this.sharePeople.bind(this);
     this.addPeople = this.addPeople.bind(this);
     this.removeFilteredUser = this.removeFilteredUser.bind(this);
   }
+
+  deleteScenario() {
+    Promise.all(this.state.selectedScenarios.map(scen => {
+      return fetch(`${window.location.protocol}//${window.location.host}/api/v1/solutions/`+
+            `${this.state.solution_id}/scenarios/${this.state.scenarios[scen].id}/`, {
+        method: 'DELETE',
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrf_token,
+        }
+      });
+    })).then(resp => {
+      window.location.reload(false);
+    }).catch((err) => {
+      console.error(err);
+    });
+  }
+    
 
   removeFilteredUser(index) {
     let newArray = [...this.state.filteredUsers];
@@ -118,7 +139,8 @@ class ScenarioHomePage extends Component {
   onCloneOrMerge() {
     if (this.state.countSelected === 1) {
       fetch(
-        `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.state.solution_id}/scenarios/${this.state.firstCheckedScenarioId}/clone/`,
+        `${window.location.protocol}//${window.location.host}/api/v1/solutions/`+
+          `${this.state.solution_id}/scenarios/${this.state.scenarios[this.state.selectedScenarios[0]].id}/clone/`,
         {
           method: "POST",
           headers: {
@@ -130,13 +152,16 @@ class ScenarioHomePage extends Component {
             name: this.state.newScenarioName,
           }),
         }
-      ).catch((err) => {
+      ).then(resp => {
+        window.location.reload(false);
+      }).catch((err) => {
         console.error(err);
       });
     }
     if (this.state.countSelected === 2) {
       fetch(
-        `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.state.solution_id}/scenarios/${this.state.firstCheckedScenarioId}/merge/`,
+        `${window.location.protocol}//${window.location.host}/api/v1/solutions/`+
+        `${this.state.solution_id}/scenarios/${this.state.scenarios[this.state.selectedScenarios[0]].id}/merge/`,
         {
           method: "POST",
           headers: {
@@ -146,12 +171,15 @@ class ScenarioHomePage extends Component {
           },
           body: JSON.stringify({
             name: this.state.newScenarioName,
-            mergeId: this.state.firstCheckedScenarioId,
+            mergeId: this.state.scenarios[this.state.selectedScenarios[1]].id,
           }),
         }
-      ).catch((err) => {
+      ).then(resp => {
+        window.location.reload(false);
+      }).catch((err) => {
         console.error(err);
       });
+
     }
   }
 
@@ -277,7 +305,7 @@ class ScenarioHomePage extends Component {
   selectScenario() {
     const countSelected = this._selection.getSelectedCount();
     const selectedItem = this._selection.getSelectedIndices();
-    this.setState({ firstCheckedScenarioId: selectedItem[0] + 1 });
+    this.setState({ firstCheckedScenarioId: selectedItem[0] + 1, selectedScenarios: selectedItem });
     this.setState({ countSelected });
   }
 
@@ -424,7 +452,7 @@ class ScenarioHomePage extends Component {
                 <ActionButton
                   disabled={this.state.countSelected === 0}
                   iconProps={{ iconName: "RecycleBin" }}
-                  onClick={() => {}}
+                  onClick={() => {this.deleteScenario()}}
                 >
                   Delete
                 </ActionButton>
