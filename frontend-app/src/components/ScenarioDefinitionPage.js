@@ -193,7 +193,7 @@ class ScenarioDefinitionPage extends Component {
     inputValues[input_id].value = val;
     inputValues[input_id].isIds = true;
 
-    let url = `${window.location.protocol}//${window.location.host}/api/v1/inputdatasets/${ids}/nodedatas/`;
+    let url = `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.solution_id}/inputdatasets/${ids}/nodedatas/`;
     return fetch(url, {
       headers: {
         Accept: "application/json",
@@ -206,7 +206,12 @@ class ScenarioDefinitionPage extends Component {
       })
       .then((resp) => {
         resp.map(node => {
-          console.log(node);
+          let newNodes = { ...this.state.nodes };
+          let newNumDirty = this.state.nodes_changed;
+          newNodes[node.node].data = node.default_data;
+          if (!newNodes[node.node].dirty) newNumDirty++;
+          newNodes[node.node].dirty = true;
+          this.setState({ nodes: newNodes, nodes_changed: newNumDirty });
         });
       })
       .catch((err) => {

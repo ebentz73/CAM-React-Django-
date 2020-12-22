@@ -34,6 +34,7 @@ from app.models import (
     NodeResult,
     Scenario,
     InputDataSet,
+    InputDataSetInputChoice,
 )
 from app.permissions import CustomObjectPermissions
 from app.serializers import (
@@ -287,6 +288,12 @@ class ScenarioEvaluateViewSet(ModelViewSet):
 class InputDataSetViewSet(ModelViewSet):
     queryset = InputDataSet.objects.all()
     serializer_class = InputDataSetSerializer
+
+    def get_queryset(self):
+        return InputDataSet.objects.filter(
+            inputdatasetinputchoice__in=InputDataSetInputChoice.objects.filter(
+                input__solution=self.kwargs['solution_pk'])
+        )
 
 
 class ScenarioNodeDataViewSet(ModelViewSet):

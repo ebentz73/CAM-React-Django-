@@ -197,7 +197,10 @@ def update_model(sender, **kwargs):
 def retrieve_spreadsheet_values(sender, **kwargs):
     ids = kwargs.get('instance')
     choice = ids.input_choices.first()
-    solution = choice.input.solution
+    if choice is None:
+        solution = None
+    else:
+        solution = choice.input.solution
     if 'file' in ids.changed_fields:
         wb = openpyxl.load_workbook(ids.file)
 

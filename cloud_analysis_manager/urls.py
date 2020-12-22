@@ -24,7 +24,6 @@ from app import views
 
 router = routers.SimpleRouter()
 router.register(r'api/v1/solutions', views.AnalyticsSolutionViewSet, basename='solutions')
-router.register(r'api/v1/inputdatasets', views.InputDataSetViewSet, basename='inputdatasets')
 
 solution_router = routers.NestedSimpleRouter(router, r'api/v1/solutions', lookup='solution')
 
@@ -34,8 +33,9 @@ solution_router.register(r'filtercategories', views.FilterCategoryViewSet, basen
 solution_router.register(r'models', views.AnalyticsModelViewSet, basename='models')
 solution_router.register(r'nodes', views.NodeViewSet, basename='solution-nodes')
 solution_router.register(r'modelnodedatas', views.NodeDataViewSet, basename='solution-modelnodedatas')
+solution_router.register(r'inputdatasets', views.InputDataSetViewSet, basename='inputdatasets')
 
-input_data_set_router = routers.NestedSimpleRouter(router, r'api/v1/inputdatasets', lookup='inputdataset')
+input_data_set_router = routers.NestedSimpleRouter(solution_router, r'inputdatasets', lookup='inputdataset')
 input_data_set_router.register(r'nodedatas', views.NodeDataViewSet, basename='inputdataset-nodedatas')
 
 input_router = routers.NestedSimpleRouter(solution_router, r'inputs', lookup='input')
