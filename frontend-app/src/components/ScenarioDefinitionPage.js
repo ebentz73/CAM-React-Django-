@@ -532,6 +532,7 @@ class ScenarioDefinitionPage extends Component {
     if (this.scenario_id !== undefined) {
       this.fetchScenarioMetadata();
     }
+    this.fetchSolutionMetadata();
     this.filtersBySolution(this.solution_id);
     this.fetchNodesBySolution(this.solution_id);
   }

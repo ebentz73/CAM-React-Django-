@@ -104,7 +104,7 @@ class SetupPage extends Component {
         <div className="scenario-info">
           <TextField
             label="Scenario Name"
-            value={this.props.name !== "" ? this.props.name : "New Scenario"}
+            defaultValue={this.props.name}
             onBlur={(e) => this.props.updateName(e.target.value)}
             required={true}
             onGetErrorMessage={this._getErrorMessage}
