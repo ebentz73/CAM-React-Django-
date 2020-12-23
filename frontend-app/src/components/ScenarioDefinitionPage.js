@@ -48,7 +48,7 @@ class ScenarioDefinitionPage extends Component {
       inputCategoryOrder: [],
       category: "",
       category_idx: -1,
-      scenario_name: "",
+      scenario_name: "New Scenario",
       solution_name: "",
       model_date: "",
       status: null,
@@ -104,6 +104,15 @@ class ScenarioDefinitionPage extends Component {
 
     this.solution_id = this.props.match.params["id"];
     this.scenario_id = this.props.match.params["scenarioId"];
+  }
+
+  componentDidMount() {
+    if (this.scenario_id !== undefined) {
+      this.fetchScenarioMetadata();
+    }
+    this.fetchSolutionMetadata();
+    this.filtersBySolution(this.solution_id);
+    this.fetchNodesBySolution(this.solution_id);
   }
 
   goHomepage() {
@@ -248,8 +257,8 @@ class ScenarioDefinitionPage extends Component {
       is_adhoc: true,
       layer_date_start: formatDate(this.state.model_date),
       input_data_sets: input_data_sets,
-      run_eval: true
-    }
+      run_eval: true,
+    };
     if (this.scenario_id) {
       url += `${this.scenario_id}/`;
       method = "PATCH";
@@ -528,13 +537,6 @@ class ScenarioDefinitionPage extends Component {
       });
   }
 
-  componentDidMount() {
-    this.fetchScenarioMetadata();
-    this.fetchSolutionMetadata();
-    this.filtersBySolution(this.solution_id);
-    this.fetchNodesBySolution(this.solution_id);
-  }
-
   onClickSetup() {
     this.setState({ tab: "setup" });
   }
@@ -548,7 +550,6 @@ class ScenarioDefinitionPage extends Component {
   }
 
   render() {
-    const lastFolderName = this.scenario_id ? "Edit Scenario" : "New Scenario";
     const itemsWithHref = [
       {
         text: "Analytics Solutions",
@@ -560,7 +561,7 @@ class ScenarioDefinitionPage extends Component {
         key: "f2",
         onClick: this.goScenarioListPage,
       },
-      { text: `${lastFolderName}`, key: "f3", href: "#" },
+      { text: `${this.state.scenario_name}`, key: "f3", href: "#" },
     ];
 
     let nodesContext = {
@@ -668,14 +669,13 @@ class ScenarioDefinitionPage extends Component {
                       <SetupPage
                         solutionId={this.solution_id}
                         index={0}
-                        changeScenarioName={this.changeScenarioName}
                         changeTab={this.changeTab}
                         changeInputs={this.changeInputs}
                         changeInputDataSet={this.changeInputDataSet}
                         {...this.setupProps}
-                        name={this.scenario_id ? this.state.scenario_name : ""}
+                        name={this.state.scenario_name}
                         desc={this.state.description}
-                        date={this.scenario_id ? this.state.model_date : ""}
+                        date={this.state.model_date}
                         inputValues={this.state.input_values}
                         isReadOnly={this.state.status !== null}
                       />
@@ -707,6 +707,7 @@ class ScenarioDefinitionPage extends Component {
                         desc={this.state.description}
                         date={this.state.model_date}
                         nodesChanged={this.state.nodes_changed}
+                        isReadOnly={this.state.status !== null}
                       />
                     )}
                   </div>

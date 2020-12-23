@@ -39,15 +39,17 @@ class AnalyticsSolutionPage extends Component {
   }
 
   fetchAnalyticsSolutionsData() {
-    fetch(`${window.location.protocol}//${window.location.host}/api/v1/solutions/`)
+    fetch(
+      `${window.location.protocol}//${window.location.host}/api/v1/solutions/`
+    )
       .then((response) => {
         return response.json();
       })
       .then((response) => {
         var _columns = [
           {
-            key: "model",
-            name: "Model",
+            key: "solution",
+            name: "Solution",
             fieldName: "name",
             minWidth: 100,
             maxWidth: 200,
@@ -90,6 +92,7 @@ class AnalyticsSolutionPage extends Component {
                 setKey="set"
                 layoutMode={DetailsListLayoutMode.justified}
                 checkButtonAriaLabel="Row checkbox"
+                checkboxVisibility={2}
               />
             </div>
           </div>

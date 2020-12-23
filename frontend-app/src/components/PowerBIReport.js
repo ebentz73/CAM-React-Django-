@@ -45,6 +45,9 @@ class PowerBIReport extends Component {
       })
       .then((response) => {
         console.log(response);
+        this.props.history.push(
+          "/frontend-app/solution/" + this.props.solutionId + "/scenario"
+        );
       })
       .catch((err) => {
         console.log(err);

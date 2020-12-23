@@ -189,8 +189,8 @@ class ScenarioViewSet(ModelViewSet):
         return Scenario.objects.filter(solution=self.kwargs['solution_pk'])
 
     def create_or_update(self, request, solution_pk=None, pk=None, **kwargs):
-        _mutable = request.data._mutable
-        request.data._mutable = True
+        # _mutable = request.data._mutable
+        # request.data._mutable = True
 
         run_eval = request.data.pop('run_eval', False)
         if 'solution' not in request.data:
@@ -198,7 +198,7 @@ class ScenarioViewSet(ModelViewSet):
         if 'shared' not in request.data:
             request.data['shared'] = []
 
-        request.data._mutable = _mutable
+        # request.data._mutable = _mutable
 
         meth = super().create if pk is None else super().update
         response = meth(request, **kwargs)
