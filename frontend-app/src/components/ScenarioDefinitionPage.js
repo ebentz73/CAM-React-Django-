@@ -48,7 +48,7 @@ class ScenarioDefinitionPage extends Component {
       inputCategoryOrder: [],
       category: "",
       category_idx: -1,
-      scenario_name: "",
+      scenario_name: "New Scenario",
       solution_name: "",
       model_date: "",
       status: null,
@@ -137,6 +137,7 @@ class ScenarioDefinitionPage extends Component {
   }
 
   changeScenarioName(val) {
+    console.log("changed value:", val);
     this.setState({ scenario_name: val });
   }
 
@@ -670,12 +671,11 @@ class ScenarioDefinitionPage extends Component {
                       <SetupPage
                         solutionId={this.solution_id}
                         index={0}
-                        changeScenarioName={this.changeScenarioName}
                         changeTab={this.changeTab}
                         changeInputs={this.changeInputs}
                         changeInputDataSet={this.changeInputDataSet}
                         {...this.setupProps}
-                        name={this.scenario_id ? this.state.scenario_name : ""}
+                        name={this.state.scenario_name}
                         desc={this.state.description}
                         date={this.scenario_id ? this.state.model_date : ""}
                         inputValues={this.state.input_values}

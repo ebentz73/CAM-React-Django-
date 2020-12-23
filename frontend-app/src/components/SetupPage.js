@@ -104,8 +104,8 @@ class SetupPage extends Component {
         <div className="scenario-info">
           <TextField
             label="Scenario Name"
-            defaultValue={this.props.name}
-            onBlur={(e) => this.props.updateName(e.target.value)}
+            value={this.props.name}
+            onChange={(e) => this.props.updateName(e.target.value)}
             required={true}
             onGetErrorMessage={this._getErrorMessage}
             validateOnLoad={false}
@@ -113,11 +113,11 @@ class SetupPage extends Component {
           />
           <TextField
             label="Description (Optional)"
-            defaultValue={this.props.desc}
+            value={this.props.desc}
             multiline
             disabled={this.props.isReadOnly}
             rows={4}
-            onBlur={(e) => this.props.updateDesc(e.target.value)}
+            onChange={(e) => this.props.updateDesc(e.target.value)}
           />
           <DatePicker
             label="Model Start"
