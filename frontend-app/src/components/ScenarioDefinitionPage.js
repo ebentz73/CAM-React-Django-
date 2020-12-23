@@ -550,7 +550,6 @@ class ScenarioDefinitionPage extends Component {
   }
 
   render() {
-    const lastFolderName = this.scenario_id ? "Edit Scenario" : "New Scenario";
     const itemsWithHref = [
       {
         text: "Analytics Solutions",
@@ -562,7 +561,7 @@ class ScenarioDefinitionPage extends Component {
         key: "f2",
         onClick: this.goScenarioListPage,
       },
-      { text: `${lastFolderName}`, key: "f3", href: "#" },
+      { text: `${this.state.scenario_name}`, key: "f3", href: "#" },
     ];
 
     let nodesContext = {
