@@ -135,7 +135,7 @@ class PowerBIReport extends Component {
               panes: {
                 filters: {
                   expanded: false,
-                  visible: false,
+                  visible: true,
                 },
               },
               background: models.BackgroundType.Transparent,
