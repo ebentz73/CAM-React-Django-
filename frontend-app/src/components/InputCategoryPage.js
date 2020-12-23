@@ -61,6 +61,13 @@ class InputCategoryPage extends Component {
   }
 
   setInputCategoryNodes(categoryNodes) {
+    // Sort alphabetically
+
+    categoryNodes.sort((a, b) => {
+      if (this.props.nodes[a].name < this.props.nodes[b].name) return -1;
+      if (this.props.nodes[a].name > this.props.nodes[b].name) return 1;
+      return 0;
+    });
     this.setState({ categoryNodes: categoryNodes.map((a) => a.toString()) });
     this.setState({
       filteredCategoryNodes: categoryNodes.map((a) => a.toString()),
