@@ -330,3 +330,11 @@
   width: 60%;
   margin: 0 auto;
 }
+
+.constant-node-name {
+  width: 150px;
+  overflow: hidden;
+  display: inline-block;
+  white-space: nowrap;
+  text-align: center;
+}
