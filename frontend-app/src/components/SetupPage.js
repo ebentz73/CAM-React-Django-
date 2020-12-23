@@ -100,7 +100,6 @@ class SetupPage extends Component {
   render() {
     return (
       <React.Fragment>
-        <Text variant="xLarge">Setup</Text>
         {/* Scenario Info */}
         <div className="scenario-info">
           <TextField

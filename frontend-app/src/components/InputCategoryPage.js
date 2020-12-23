@@ -53,7 +53,6 @@ class InputCategoryPage extends Component {
         nodeOnChart: this.state.nodes[nodeId],
       });
     }
-
   }
 
   changeNodeShownOnChart(e, node_id) {
@@ -136,9 +135,6 @@ class InputCategoryPage extends Component {
     return (
       <React.Fragment>
         <div className="ms-Grid-row">
-          <div className="tab-title">
-            <Text variant="xLarge">{this.props.name}</Text>
-          </div>
           {/* Filters */}
           <div className="filters-label-box">
             <div className="filters-box-header" onClick={this.toggleFiltersBox}>
@@ -183,7 +179,10 @@ class InputCategoryPage extends Component {
         <div className="ms-Grid-row">
           <div className="ms-Grid-col ms-md12">
             {/* {this.state.nodeOnChart !== "none" ? ( */}
-            <NodeDataChart node={this.state.nodeOnChart} layerOffset={this.props.layerOffset} />
+            <NodeDataChart
+              node={this.state.nodeOnChart}
+              layerOffset={this.props.layerOffset}
+            />
             {/* ) : (
             <Spinner size={SpinnerSize.large} />
             )} */}
@@ -215,7 +214,8 @@ class InputCategoryPage extends Component {
                       currentNodeID: "",
                       currentNodeData: {},
                       currentNodeType: "",
-                      nodeOnChart: "none",  });
+                      nodeOnChart: "none",
+                    });
                   }}
                 />
                 {this.state.filteredCategoryNodes.map((node_id, index) => {
@@ -228,7 +228,7 @@ class InputCategoryPage extends Component {
                       inRole |= tag.includes("CAM_ROLE==" + role);
                     });
                   });
-                  if (!node.visible | !inRole | node.type === "const") return;
+                  if (!node.visible | !inRole | (node.type === "const")) return;
                   return (
                     <Node
                       className="highlight"
@@ -242,9 +242,12 @@ class InputCategoryPage extends Component {
                   );
                 })}
                 <ConstantsListNode
-                    constantNodes={this.state.filteredCategoryNodes.filter(node_id => this.state.nodes[node_id].type === 'const')}
-                    onClick={() => this.setCurrentNode("const")}
-                    isSelected={this.state.currentNodeID === "const"} />
+                  constantNodes={this.state.filteredCategoryNodes.filter(
+                    (node_id) => this.state.nodes[node_id].type === "const"
+                  )}
+                  onClick={() => this.setCurrentNode("const")}
+                  isSelected={this.state.currentNodeID === "const"}
+                />
               </div>
             </div>
           </div>
@@ -254,7 +257,9 @@ class InputCategoryPage extends Component {
               type={this.state.currentNodeType}
               nodeId={this.state.currentNodeID}
               data={this.state.currentNodeData}
-              constantNodes={this.state.filteredCategoryNodes.filter(node_id => this.state.nodes[node_id].type === 'const')}
+              constantNodes={this.state.filteredCategoryNodes.filter(
+                (node_id) => this.state.nodes[node_id].type === "const"
+              )}
               layerOffset={this.props.layerOffset}
             />
             {/* ) : (

@@ -61,12 +61,12 @@ class InputNodeTable extends Component {
             {!this.props.fixed && (
               <tr>
                 <td></td>
-                {this.props.data.map((_, index) => {
-                  return (
+                {this.props.data.flatMap((_, index) => {
+                  return index < this.props.layerOffset ? [] : [(
                     <td key={`header_${index}`}>
-                      <Text>{this.months[index % 12]}</Text>
+                      <Text>{this.formatDate(context.layerStartDate, context.layerTimeIncrement, index)}</Text>
                     </td>
-                  );
+                  )];
                 })}
               </tr>
             )}
@@ -97,8 +97,8 @@ class InputNodeTable extends Component {
                     <td>
                       <Text>{this.nomLabels[nomIdx]}</Text>
                     </td>
-                    {this.props.data.map((row, layerIdx) => {
-                      return (
+                    {this.props.data.flatMap((row, layerIdx) => {
+                      return layerIdx < this.props.layerOffset ? [] : [(
                         <td key={layerIdx}>
                           <NodeTableTextField
                             data={row[nomIdx]}
@@ -109,7 +109,7 @@ class InputNodeTable extends Component {
                             updateData={context.updateInputNodeData}
                           />
                         </td>
-                      );
+                      )];
                     })}
                   </tr>
                 );
@@ -117,8 +117,8 @@ class InputNodeTable extends Component {
             {!this.props.fixed && (
               <tr>
                 <td></td>
-                {this.props.data.map((_, index) => {
-                  return (
+                {this.props.data.flatMap((_, index) => {
+                  return index < this.props.layerOffset ? [] : [(
                     <td key={`copy_${index}`}>
                       <PrimaryButton
                         className="table-input"
@@ -128,7 +128,7 @@ class InputNodeTable extends Component {
                         text="Copy to All"
                       />
                     </td>
-                  );
+                  )];
                 })}
               </tr>
             )}

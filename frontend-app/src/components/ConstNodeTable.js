@@ -33,6 +33,7 @@ class ConstNodeTable extends Component {
                     <tbody>
                         {!this.props.fixed &&
                             <tr>
+                                <td></td>
                                 {context.nodes[this.props.constantNodes[0]].data.flatMap((_, index) => {
                                     return index < this.props.layerOffset ? [] : [(
                                         <td key={`header_${index}`}>

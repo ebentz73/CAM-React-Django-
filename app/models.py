@@ -35,7 +35,7 @@ def NON_POLYMORPHIC_CASCADE(collector, field, sub_objs, using):
     return models.CASCADE(collector, field, sub_objs.non_polymorphic(), using)
 
 
-class AnalyticsSolution(models.Model, ModelDiffMixin):
+class AnalyticsSolution(ModelDiffMixin, models.Model):
     TIME_OPTIONS = (
         ('day', 'Day'),
         ('week', 'Week'),
@@ -93,7 +93,7 @@ class AnalyticsSolution(models.Model, ModelDiffMixin):
         return self.input_set.filter(Q(instance_of=SliderInput))
 
 
-class Scenario(models.Model):
+class Scenario(ModelDiffMixin, models.Model):
     solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     is_adhoc = models.BooleanField(default=False)

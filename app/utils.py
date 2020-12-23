@@ -226,7 +226,7 @@ def _assign_or_remove_model_perm(assign, user_or_group, model_or_instance):
 class PowerBI:
     SCOPE = ['https://analysis.windows.net/powerbi/api/.default']
 
-    def __init__(self, solution, user):
+    def __init__(self, solution, user=None):
         self.solution = solution
         self.user = user
 
@@ -240,6 +240,10 @@ class PowerBI:
     @property
     def report_id(self):
         return self.solution.report_id
+
+    @property
+    def dataset_id(self):
+        return self.report['dataset_id']
 
     @property
     def roles(self):
@@ -332,19 +336,16 @@ class PowerBI:
         dataset_id = report['dataset_id']
 
         # Get embed token
-        body = {'datasets': []}
-        if dataset_id:
-            body['datasets'].append(
-                {
-                    'id': dataset_id,
-                    'username': self.username,
-                    'roles': self.roles,
-                    'datasets': [dataset_id],
-                }
-            )
-
-        body['reports'] = [{'id': self.report_id}]
-        body['targetWorkspaces'] = [{'id': self.workspace_id}]
+        body = {
+            'datasets': [],
+            'identities': [],
+            'reports': [],
+            'targetWorkspaces': [],
+        }
+        body['datasets'].append({'id': dataset_id})
+        body['identities'].append({'datasets': [dataset_id], 'username': self.username, 'roles': self.roles})
+        body['reports'].append({'id': self.report_id})
+        body['targetWorkspaces'].append({'id': self.workspace_id})
 
         # Generate Embed token for multiple workspaces, datasets, and reports.
         # Refer https://aka.ms/MultiResourceEmbedToken
@@ -362,3 +363,20 @@ class PowerBI:
             'tokenExpiry': token_expiry,
             'reportId': self.report_id,
         }
+
+    def refresh_dataset(self):
+        """Triggers a refresh for the report's data in the solution's workspace."""
+
+        if not self.workspace_id or not self.report_id:
+            return ''
+
+        # https://docs.microsoft.com/en-us/rest/api/power-bi/datasets/refreshdatasetingroup
+        url = (
+            'https://api.powerbi.com/v1.0/myorg/groups/'
+            + self.workspace_id
+            + '/datasets/'
+            + self.dataset_id
+            + '/refreshes'
+        )
+        response = requests.post(url, headers=self.headers)
+        response.raise_for_status()
