@@ -92,6 +92,7 @@ class AnalyticsSolutionPage extends Component {
                 setKey="set"
                 layoutMode={DetailsListLayoutMode.justified}
                 checkButtonAriaLabel="Row checkbox"
+                checkboxVisibility={2}
               />
             </div>
           </div>
