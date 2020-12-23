@@ -137,7 +137,6 @@ class ScenarioDefinitionPage extends Component {
   }
 
   changeScenarioName(val) {
-    console.log("changed value:", val);
     this.setState({ scenario_name: val });
   }
 
