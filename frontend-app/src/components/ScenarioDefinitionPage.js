@@ -676,7 +676,7 @@ class ScenarioDefinitionPage extends Component {
                         {...this.setupProps}
                         name={this.state.scenario_name}
                         desc={this.state.description}
-                        date={this.scenario_id ? this.state.model_date : ""}
+                        date={this.state.model_date}
                         inputValues={this.state.input_values}
                         isReadOnly={this.state.status !== null}
                       />
