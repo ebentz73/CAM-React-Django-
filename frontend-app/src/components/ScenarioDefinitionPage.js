@@ -106,6 +106,15 @@ class ScenarioDefinitionPage extends Component {
     this.scenario_id = this.props.match.params["scenarioId"];
   }
 
+  componentDidMount() {
+    if (this.scenario_id !== undefined) {
+      this.fetchScenarioMetadata();
+    }
+    this.fetchSolutionMetadata();
+    this.filtersBySolution(this.solution_id);
+    this.fetchNodesBySolution(this.solution_id);
+  }
+
   goHomepage() {
     let nextLocation = `${window.location.protocol}//${window.location.host}/frontend-app/home`;
     if (this.state.nodes_changed > 0) {
@@ -526,15 +535,6 @@ class ScenarioDefinitionPage extends Component {
           status: resp.status,
         });
       });
-  }
-
-  componentDidMount() {
-    if (this.scenario_id !== undefined) {
-      this.fetchScenarioMetadata();
-    }
-    this.fetchSolutionMetadata();
-    this.filtersBySolution(this.solution_id);
-    this.fetchNodesBySolution(this.solution_id);
   }
 
   onClickSetup() {
