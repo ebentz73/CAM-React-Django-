@@ -707,6 +707,7 @@ class ScenarioDefinitionPage extends Component {
                         desc={this.state.description}
                         date={this.state.model_date}
                         nodesChanged={this.state.nodes_changed}
+                        isReadOnly={this.state.status !== null}
                       />
                     )}
                   </div>
