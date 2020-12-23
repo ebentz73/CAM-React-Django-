@@ -8,13 +8,19 @@ class NodeTable extends Component {
     super(props);
 
     this.state = {
-      fixed: false,
+      fixed: props.type === "const",
     };
 
     this.toggleFixedTableView = this.toggleFixedTableView.bind(this);
   }
 
-  toggleFixedTableView(val) {
+  componentDidUpdate(prevProps, prevState, snapshot) {
+      if(prevProps.type !== this.props.type) {
+          this.setState({fixed: this.props.type === "const"});
+      }
+  }
+
+    toggleFixedTableView(val) {
     this.setState({ fixed: val });
   }
 
@@ -23,7 +29,7 @@ class NodeTable extends Component {
       this.props.nodeId.length > 0 && (
         <React.Fragment>
           <div style={{ textAlign: "right" }}>
-            <FixedVariableToggle toggleFixed={this.toggleFixedTableView} />
+            <FixedVariableToggle fixed={this.state.fixed} toggleFixed={this.toggleFixedTableView} />
           </div>
           <div className="node-table">
             <div className="table-scroll-pane">
