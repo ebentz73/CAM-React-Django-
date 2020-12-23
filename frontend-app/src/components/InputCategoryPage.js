@@ -197,7 +197,7 @@ class InputCategoryPage extends Component {
                 {/* Input Nodes */}
                 <SearchBox
                   placeholder="Search nodes"
-                  onSearch={(searchStr) => {
+                  onChange={(e, searchStr) => {
                     let searchResult = [];
                     this.state.categoryNodes.map((node_id, index) => {
                       let node = this.state.nodes[node_id];
