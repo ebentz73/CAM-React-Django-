@@ -612,8 +612,8 @@ class ScenarioDefinitionPage extends Component {
           <Pivot styles={pivotStyles} className="pivot-margin">
             <PivotItem headerText="Input">
               <NodesContext.Provider value={nodesContext}>
-                <div className="ms-Grid-row">
-                  <div className="ms-Grid-col ms-md2">
+                <div className="ms-Grid-row scenario-definition">
+                  <div className="ms-Grid-col ms-md2 sidebar-left">
                     <div className="progress-sidebar">
                       <ScenarioProgressStep
                         index={-1}
@@ -646,7 +646,7 @@ class ScenarioDefinitionPage extends Component {
                       />
                     </div>
                   </div>
-                  <div className="ms-Grid-col ms-md8">
+                  <div className="ms-Grid-col ms-md8 sidebar-right">
                     <Breadcrumb
                       items={itemsWithHref}
                       maxDisplayedItems={3}

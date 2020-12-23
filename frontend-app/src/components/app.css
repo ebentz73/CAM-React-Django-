@@ -136,9 +136,6 @@
   width: 100%;
 }
 
-.table-in-scroll-pane {
-}
-
 /* Navigation Buttons */
 
 .next-button {
@@ -167,9 +164,6 @@
   margin: -8px;
   height: 75px;
   position: relative;
-}
-
-.nav-bar img {
 }
 
 .nav-bar-logo {
@@ -318,4 +312,21 @@
 
 .support-padding {
   padding-left: 30px;
+}
+
+.scenario-definition {
+  display: flex;
+}
+
+.sidebar-left {
+  width: 20%;
+}
+
+.sidebar-right {
+  width: 80%;
+}
+
+.centered-list {
+  width: 60%;
+  margin: 0 auto;
 }

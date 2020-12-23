@@ -461,7 +461,7 @@ class ScenarioHomePage extends Component {
             <div className="ms-Grid-col ms-md3">
               {/* <HomePageSideBar path={path} /> */}
             </div>
-            <div className="ms-Grid-col ms-md6">
+            <div className="ms-Grid-col ms-md6 centered-list">
               <div align="right">
                 <ActionButton
                   iconProps={{ iconName: "Add" }}

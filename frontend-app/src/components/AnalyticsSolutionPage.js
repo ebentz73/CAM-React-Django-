@@ -84,7 +84,7 @@ class AnalyticsSolutionPage extends Component {
             <div className="ms-Grid-col ms-md3">
               {/* <HomePageSideBar path={this.state.path} /> */}
             </div>
-            <div className="ms-Grid-col ms-md6">
+            <div className="ms-Grid-col ms-md6 centered-list">
               <DetailsList
                 items={this.state.solutions}
                 columns={this.state.columns}
