@@ -229,9 +229,10 @@ def _assign_or_remove_model_perm(assign, user_or_group, model_or_instance):
 class PowerBI:
     SCOPE = ['https://analysis.windows.net/powerbi/api/.default']
 
-    def __init__(self, solution, user=None):
+    def __init__(self, solution, user=None, scenario=None):
         self.solution = solution
         self.user = user
+        self.scenario = scenario
 
         self._access_token = None
         self._report = None
@@ -307,6 +308,10 @@ class PowerBI:
             raise Exception(response['error_description']) from None
 
     @property
+    def powerbi_url_filter(self):
+        return '' if self.scenario is None else f'?filter=app_noderesult/Scenario eq {self.scenario.name}'
+
+    @property
     def report(self):
         if self._report is not None:
             return self._report
@@ -316,6 +321,7 @@ class PowerBI:
             + self.workspace_id
             + '/reports/'
             + self.report_id
+            + self.powerbi_url_filter
         )
 
         response = requests.get(url, headers=self.headers)

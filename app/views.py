@@ -140,21 +140,6 @@ class AnalyticsSolutionViewSet(ModelViewSet):
     permission_classes = (permissions.IsAuthenticated, CustomObjectPermissions)
     filter_backends = (ObjectPermissionsFilter,)
 
-    @catch_request_exception
-    @action(detail=True, url_path='powerbi/token')
-    def token(self, request, pk):
-        instance = self.get_object()
-        powerbi = PowerBI(instance, request.user)
-        return Response(powerbi.get_embed_token())
-
-    @catch_request_exception
-    @action(detail=True, url_path='powerbi/refresh')
-    def refresh(self, request, pk):
-        instance = self.get_object()
-        powerbi = PowerBI(instance, request.user)
-        powerbi.refresh_dataset()
-        return Response('Success.')
-
 
 class InputViewSet(NestedViewSetMixin, ModelViewSet):
     queryset = Input.objects.all()
@@ -188,6 +173,23 @@ class ConstNodeDataViewSet(ModelViewSet):
 
 class ScenarioViewSet(ModelViewSet):
     serializer_class = ScenarioSerializer
+
+    @catch_request_exception
+    @action(detail=True, url_path='powerbi/token')
+    def token(self, request, solution_pk, pk):
+        solution = AnalyticsSolution.objects.get(pk=solution_pk)
+        scenario = Scenario.objects.get(pk=pk)
+        powerbi = PowerBI(solution, request.user, scenario)
+        return Response(powerbi.get_embed_token())
+
+    @catch_request_exception
+    @action(detail=True, url_path='powerbi/refresh')
+    def refresh(self, request, solution_pk, pk):
+        solution = AnalyticsSolution.objects.get(pk=solution_pk)
+        scenario = Scenario.objects.get(pk=pk)
+        powerbi = PowerBI(solution, request.user, scenario)
+        powerbi.refresh_dataset()
+        return Response('Success.')
 
     def get_queryset(self):
         return Scenario.objects.filter(solution=self.kwargs['solution_pk'])
@@ -444,19 +446,6 @@ class ModelNodeDataBySolutionAPIView(generics.ListAPIView):
             'input_nodes': input_serializer.data,
             'const_nodes': const_serializer.data
         })
-
-
-class PowerBIAPIView(APIView):
-    queryset = AnalyticsSolution.objects.all()
-
-    def get(self, request, *args, **kwargs):
-        solution = AnalyticsSolution.objects.get(**kwargs)
-        powerbi = PowerBI(solution, request.user)
-        try:
-            return Response(powerbi.get_embed_token())
-        except Exception as e:
-            logging.error(e, exc_info=True)
-            return Response({'errorMsg': str(e)}, 500)
 
 
 class AnalyticsSolutionScenarios(generics.ListAPIView):
