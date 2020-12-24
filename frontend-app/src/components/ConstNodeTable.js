@@ -54,13 +54,23 @@ class ConstNodeTable extends Component {
   render() {
     return (
       <NodesContext.Consumer>
-        {(context) => (
-          <tbody>
-            {!this.props.fixed && (
-              <tr>
-                <td></td>
-                {context.nodes[this.props.constantNodes[0]].data.flatMap(
-                  (_, index) => {
+        {(context) => {
+          let constantNodes = this.props.constantNodes;
+          constantNodes.sort((a, b) => {
+            if (context.nodes[a].name < context.nodes[b].name) {
+              return -1;
+            }
+            if (context.nodes[a].name > context.nodes[b].name) {
+              return 1;
+            }
+            return 0;
+          });
+          return (
+            <tbody>
+              {!this.props.fixed && (
+                <tr>
+                  <td></td>
+                  {context.nodes[constantNodes[0]].data.flatMap((_, index) => {
                     return index < this.props.layerOffset
                       ? []
                       : [
@@ -74,59 +84,51 @@ class ConstNodeTable extends Component {
                             </Text>
                           </td>,
                         ];
-                  }
-                )}
-              </tr>
-            )}
-            {this.props.constantNodes.map((node, nodeIdx) => {
-              return this.props.fixed ? (
-                <tr key={`row_${nodeIdx}`}>
-                  <td>
-                    <Text>
-                      {context.nodes[this.props.constantNodes[nodeIdx]].name}
-                    </Text>
-                  </td>
-                  <td key={0}>
-                    <NodeTableTextField
-                      data={
-                        context.nodes[this.props.constantNodes[nodeIdx]].data[0]
-                      }
-                      nodeId={this.props.constantNodes[nodeIdx]}
-                      layerIdx={0}
-                      type={"const"}
-                      updateData={context.updateConstNodeData}
-                    />
-                  </td>
-                </tr>
-              ) : (
-                <tr key={`row_${nodeIdx}`}>
-                  <td className="constant-node-name">
-                    <Text>
-                      {context.nodes[this.props.constantNodes[nodeIdx]].name}
-                    </Text>
-                  </td>
-                  {context.nodes[
-                    this.props.constantNodes[nodeIdx]
-                  ].data.flatMap((row, layerIdx) => {
-                    return layerIdx < this.props.layerOffset
-                      ? []
-                      : [
-                          <td key={layerIdx}>
-                            <NodeTableTextField
-                              data={row}
-                              nodeId={this.props.constantNodes[layerIdx]}
-                              layerIdx={layerIdx}
-                              type={"const"}
-                              updateData={context.updateConstNodeData}
-                            />
-                          </td>,
-                        ];
                   })}
                 </tr>
-              );
-            })}
-          </tbody>
-        )}
+              )}
+              {constantNodes.map((node, nodeIdx) => {
+                return this.props.fixed ? (
+                  <tr key={`row_${nodeIdx}`}>
+                    <td>
+                      <Text>{context.nodes[node].name}</Text>
+                    </td>
+                    <td key={0}>
+                      <NodeTableTextField
+                        data={context.nodes[node].data[0]}
+                        nodeId={node}
+                        layerIdx={0}
+                        type={"const"}
+                        updateData={context.updateConstNodeData}
+                      />
+                    </td>
+                  </tr>
+                ) : (
+                  <tr key={`row_${nodeIdx}`}>
+                    <td className="constant-node-name">
+                      <Text>{context.nodes[node].name}</Text>
+                    </td>
+                    {context.nodes[node].data.flatMap((row, layerIdx) => {
+                      return layerIdx < this.props.layerOffset
+                        ? []
+                        : [
+                            <td key={layerIdx}>
+                              <NodeTableTextField
+                                data={row}
+                                nodeId={constantNodes[layerIdx]}
+                                layerIdx={layerIdx}
+                                type={"const"}
+                                updateData={context.updateConstNodeData}
+                              />
+                            </td>,
+                          ];
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          );
+        }}
       </NodesContext.Consumer>
     );
   }
