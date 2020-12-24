@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { PrimaryButton, Text } from "@fluentui/react";
+import { TooltipHost, ActionButton, Text } from "@fluentui/react";
 import NodeTableTextField from "./NodeTableTextField";
 import NodesContext from "./NodesContext";
 
@@ -92,6 +92,21 @@ class ConstNodeTable extends Component {
                   <tr key={`row_${nodeIdx}`}>
                     <td>
                       <Text>{context.nodes[node].name}</Text>
+                      <TooltipHost content={context.nodes[node].notes}>
+                        <ActionButton
+                          iconProps={{
+                            iconName: "StatusCircleQuestionMark",
+                            styles: {
+                              root: {
+                                fontSize: "20px",
+                                border: "2px solid black",
+                                borderRadius: "50%",
+                                height: "20px",
+                              },
+                            },
+                          }}
+                        ></ActionButton>
+                      </TooltipHost>
                     </td>
                     <td key={0}>
                       <NodeTableTextField
@@ -107,6 +122,21 @@ class ConstNodeTable extends Component {
                   <tr key={`row_${nodeIdx}`}>
                     <td className="constant-node-name">
                       <Text>{context.nodes[node].name}</Text>
+                      <TooltipHost content={context.nodes[node].notes}>
+                        <ActionButton
+                          iconProps={{
+                            iconName: "StatusCircleQuestionMark",
+                            styles: {
+                              root: {
+                                fontSize: "20px",
+                                border: "2px solid black",
+                                borderRadius: "50%",
+                                height: "20px",
+                              },
+                            },
+                          }}
+                        ></ActionButton>
+                      </TooltipHost>
                     </td>
                     {context.nodes[node].data.flatMap((row, layerIdx) => {
                       return layerIdx < this.props.layerOffset
