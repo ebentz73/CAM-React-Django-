@@ -84,6 +84,7 @@ class ScenarioHomePage extends Component {
     this.toggleShareDialog = this.toggleShareDialog.bind(this);
     this.toggleHelpDialog = this.toggleHelpDialog.bind(this);
     this.onCloneOrMerge = this.onCloneOrMerge.bind(this);
+    this.clearResults = this.clearResults.bind(this);
     this.deleteScenario = this.deleteScenario.bind(this);
     this.sharePeople = this.sharePeople.bind(this);
     this.addPeople = this.addPeople.bind(this);
@@ -154,6 +155,24 @@ class ScenarioHomePage extends Component {
     ).catch((err) => {
       console.error(err);
     });
+  }
+
+  clearResults() {
+    fetch(
+      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.state.solution_id}/scenarios/${this.state.firstCheckedScenarioId}/reset/`
+    )
+      .then((response) => {
+        return response.json();
+      })
+      .then((response) => {
+        console.log(response);
+        this.props.history.push(
+          "/frontend-app/solution/" + this.props.solutionId + "/scenario"
+        );
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 
   onCloneOrMerge() {
@@ -474,8 +493,24 @@ class ScenarioHomePage extends Component {
               </div>
               <div align="left">
                 <ActionButton
+                  disabled={this.state.countSelected !== 1}
+                  iconProps={{ iconName: "Clear" }}
+                  onClick={() => {
+                    this.clearResults();
+                  }}
+                >
+                  Clear
+                </ActionButton>
+                <ActionButton
+                  disabled={this.state.countSelected !== 1}
+                  iconProps={{ iconName: "Copy" }}
+                  onClick={this.toggleCloneOrMergeDialog}
+                >
+                  Clone
+                </ActionButton>
+                <ActionButton
                   disabled={this.state.countSelected === 0}
-                  iconProps={{ iconName: "RecycleBin" }}
+                  iconProps={{ iconName: "Delete" }}
                   onClick={() => {
                     this.deleteScenario();
                   }}
@@ -488,13 +523,6 @@ class ScenarioHomePage extends Component {
                   onClick={this.toggleCloneOrMergeDialog}
                 >
                   Merge
-                </ActionButton>
-                <ActionButton
-                  disabled={this.state.countSelected !== 1}
-                  iconProps={{ iconName: "Copy" }}
-                  onClick={this.toggleCloneOrMergeDialog}
-                >
-                  Clone
                 </ActionButton>
                 <ActionButton
                   iconProps={{ iconName: "Help" }}
