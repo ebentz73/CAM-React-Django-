@@ -406,6 +406,7 @@ class ScenarioDefinitionPage extends Component {
               visible: true,
               selectedCategories: {},
               dirty: false,
+              notes: node.notes,
             };
             Object.keys(this.state.filters).forEach((cat_id) => {
               node_obj.selectedCategories[cat_id] = true;

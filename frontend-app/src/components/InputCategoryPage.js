@@ -268,6 +268,7 @@ class InputCategoryPage extends Component {
                 (node_id) => this.state.nodes[node_id].type === "const"
               )}
               layerOffset={this.props.layerOffset}
+              nodeOnChart={this.state.nodeOnChart}
             />
             {/* ) : (
               <Spinner size={SpinnerSize.large} />

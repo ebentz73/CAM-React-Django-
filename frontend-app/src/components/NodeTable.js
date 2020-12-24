@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { TooltipHost, ActionButton } from "@fluentui/react";
 import FixedVariableToggle from "./FixedVariableToggle";
 import InputNodeTable from "./InputNodeTable";
 import ConstNodeTable from "./ConstNodeTable";
@@ -22,7 +23,28 @@ class NodeTable extends Component {
     return (
       this.props.nodeId.length > 0 && (
         <React.Fragment>
-          <div style={{ textAlign: "right" }}>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div style={{ display: "flex" }}>
+              <div style={{ fontSize: "xx-large" }}>
+                {this.props.nodeOnChart.name}
+              </div>
+              <TooltipHost content={this.props.nodeOnChart.notes}>
+                <ActionButton
+                  iconProps={{
+                    iconName: "StatusCircleQuestionMark",
+                    styles: {
+                      root: {
+                        fontSize: "30px",
+                        border: "2px solid black",
+                        borderRadius: "50%",
+                        height: "24px",
+                        paddingTop: "5px",
+                      },
+                    },
+                  }}
+                ></ActionButton>
+              </TooltipHost>
+            </div>
             <FixedVariableToggle toggleFixed={this.toggleFixedTableView} />
           </div>
           <div className="node-table">
@@ -41,7 +63,7 @@ class NodeTable extends Component {
                     data={this.props.data}
                     fixed={this.state.fixed}
                     layerOffset={this.props.layerOffset}
-                    constantNodes={this.props.constantNodes} 
+                    constantNodes={this.props.constantNodes}
                   />
                 )}
               </table>
