@@ -32,20 +32,22 @@ class NodeTable extends Component {
           >
             {this.props.type === "input" && (
               <div style={{ display: "flex" }}>
-                <div style={{ fontSize: "xx-large" }}>
+                <span
+                  style={{
+                    fontSize: "x-large",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
                   {this.props.nodeOnChart.name}
-                </div>
+                </span>
                 <TooltipHost content={this.props.nodeOnChart.notes}>
                   <ActionButton
                     iconProps={{
-                      iconName: "StatusCircleQuestionMark",
+                      iconName: "info",
                       styles: {
                         root: {
-                          fontSize: "30px",
-                          border: "2px solid black",
-                          borderRadius: "50%",
-                          height: "24px",
-                          paddingTop: "5px",
+                          fontSize: "20px",
                         },
                       },
                     }}

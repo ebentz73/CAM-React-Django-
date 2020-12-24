@@ -95,15 +95,7 @@ class ConstNodeTable extends Component {
                       <TooltipHost content={context.nodes[node].notes}>
                         <ActionButton
                           iconProps={{
-                            iconName: "StatusCircleQuestionMark",
-                            styles: {
-                              root: {
-                                fontSize: "20px",
-                                border: "2px solid black",
-                                borderRadius: "50%",
-                                height: "20px",
-                              },
-                            },
+                            iconName: "info",
                           }}
                         ></ActionButton>
                       </TooltipHost>
@@ -125,15 +117,7 @@ class ConstNodeTable extends Component {
                       <TooltipHost content={context.nodes[node].notes}>
                         <ActionButton
                           iconProps={{
-                            iconName: "StatusCircleQuestionMark",
-                            styles: {
-                              root: {
-                                fontSize: "20px",
-                                border: "2px solid black",
-                                borderRadius: "50%",
-                                height: "20px",
-                              },
-                            },
+                            iconName: "info",
                           }}
                         ></ActionButton>
                       </TooltipHost>
