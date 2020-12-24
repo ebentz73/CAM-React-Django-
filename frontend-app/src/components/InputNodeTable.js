@@ -62,11 +62,19 @@ class InputNodeTable extends Component {
               <tr>
                 <td></td>
                 {this.props.data.flatMap((_, index) => {
-                  return index < this.props.layerOffset ? [] : [(
-                    <td key={`header_${index}`}>
-                      <Text>{this.formatDate(context.layerStartDate, context.layerTimeIncrement, index)}</Text>
-                    </td>
-                  )];
+                  return index < this.props.layerOffset
+                    ? []
+                    : [
+                        <td key={`header_${index}`}>
+                          <Text>
+                            {this.formatDate(
+                              context.layerStartDate,
+                              context.layerTimeIncrement,
+                              index
+                            )}
+                          </Text>
+                        </td>,
+                      ];
                 })}
               </tr>
             )}
@@ -85,6 +93,7 @@ class InputNodeTable extends Component {
                         nomIdx={nomIdx}
                         type={"input"}
                         updateData={context.updateInputRowData}
+                        isReadOnly={this.props.isReadOnly}
                       />
                     </td>
                   </tr>
@@ -98,18 +107,21 @@ class InputNodeTable extends Component {
                       <Text>{this.nomLabels[nomIdx]}</Text>
                     </td>
                     {this.props.data.flatMap((row, layerIdx) => {
-                      return layerIdx < this.props.layerOffset ? [] : [(
-                        <td key={layerIdx}>
-                          <NodeTableTextField
-                            data={row[nomIdx]}
-                            nodeId={this.props.nodeId}
-                            layerIdx={layerIdx}
-                            nomIdx={nomIdx}
-                            type={"input"}
-                            updateData={context.updateInputNodeData}
-                          />
-                        </td>
-                      )];
+                      return layerIdx < this.props.layerOffset
+                        ? []
+                        : [
+                            <td key={layerIdx}>
+                              <NodeTableTextField
+                                data={row[nomIdx]}
+                                nodeId={this.props.nodeId}
+                                layerIdx={layerIdx}
+                                nomIdx={nomIdx}
+                                type={"input"}
+                                updateData={context.updateInputNodeData}
+                                isReadOnly={this.props.isReadOnly}
+                              />
+                            </td>,
+                          ];
                     })}
                   </tr>
                 );
@@ -118,17 +130,20 @@ class InputNodeTable extends Component {
               <tr>
                 <td></td>
                 {this.props.data.flatMap((_, index) => {
-                  return index < this.props.layerOffset ? [] : [(
-                    <td key={`copy_${index}`}>
-                      <PrimaryButton
-                        className="table-input"
-                        onClick={() => {
-                          context.copyToAllLayers(this.props.nodeId, index);
-                        }}
-                        text="Copy to All"
-                      />
-                    </td>
-                  )];
+                  return index < this.props.layerOffset
+                    ? []
+                    : [
+                        <td key={`copy_${index}`}>
+                          <PrimaryButton
+                            className="table-input"
+                            onClick={() => {
+                              context.copyToAllLayers(this.props.nodeId, index);
+                            }}
+                            text="Copy to All"
+                            disabled={this.props.isReadOnly}
+                          />
+                        </td>,
+                      ];
                 })}
               </tr>
             )}

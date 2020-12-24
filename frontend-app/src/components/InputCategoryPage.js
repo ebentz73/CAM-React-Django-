@@ -254,6 +254,7 @@ class InputCategoryPage extends Component {
                   )}
                   onClick={() => this.setCurrentNode("const")}
                   isSelected={this.state.currentNodeID === "const"}
+                  isReadOnly={this.props.isReadOnly}
                 />
               </div>
             </div>
@@ -269,6 +270,7 @@ class InputCategoryPage extends Component {
               )}
               layerOffset={this.props.layerOffset}
               nodeOnChart={this.state.nodeOnChart}
+              isReadOnly={this.props.isReadOnly}
             />
             {/* ) : (
               <Spinner size={SpinnerSize.large} />
@@ -290,6 +292,7 @@ class InputCategoryPage extends Component {
                   <DefaultButton
                     text="Save & exit"
                     onClick={this.props.postScenario}
+                    disabled={this.props.isReadOnly}
                   />
                 </Stack.Item>
                 <Stack.Item align="end">

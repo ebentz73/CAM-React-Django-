@@ -107,6 +107,7 @@ class ConstNodeTable extends Component {
                         layerIdx={0}
                         type={"const"}
                         updateData={context.updateConstNodeData}
+                        isReadOnly={this.props.isReadOnly}
                       />
                     </td>
                   </tr>
@@ -133,6 +134,7 @@ class ConstNodeTable extends Component {
                                 layerIdx={layerIdx}
                                 type={"const"}
                                 updateData={context.updateConstNodeData}
+                                isReadOnly={this.props.isReadOnly}
                               />
                             </td>,
                           ];

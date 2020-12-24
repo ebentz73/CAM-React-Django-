@@ -697,6 +697,7 @@ class ScenarioDefinitionPage extends Component {
                           this.state.inputCategories[this.state.category]
                         }
                         layerOffset={this.state.layer_offset}
+                        isReadOnly={this.state.status !== null}
                       />
                     )}
                     {this.state.tab === "review" && (
