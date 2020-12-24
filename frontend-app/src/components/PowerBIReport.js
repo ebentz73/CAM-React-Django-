@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { ActionButton, DefaultButton } from "@fluentui/react";
+import { ActionButton, DefaultButton, Breadcrumb } from "@fluentui/react";
 import { PowerBIEmbed } from "powerbi-client-react";
 import { models } from "powerbi-client";
 
@@ -78,6 +78,20 @@ class PowerBIReport extends Component {
   }
 
   render() {
+    const itemsWithHref = [
+      {
+        text: "Analytics Solutions",
+        key: "f1",
+        onClick: this.props.goHomepage,
+      },
+      {
+        text: `${this.props.solution_name}`,
+        key: "f2",
+        onClick: this.props.goScenarioListPage,
+      },
+      { text: `${this.props.scenario_name}`, key: "f3", href: "#" },
+    ];
+
     const menuProps = {
       items: [
         {
@@ -101,27 +115,35 @@ class PowerBIReport extends Component {
 
     return (
       <div>
-        <div className="result-item">
-          <div align="left">
-            <ActionButton
-              iconProps={{ iconName: "ChevronLeft" }}
-              onClick={() => {
-                this.props.history.push(
-                  "/frontend-app/solution/" +
-                    this.props.solutionId +
-                    "/scenario"
-                );
-              }}
-            >
-              Back to Scenarios
-            </ActionButton>
-          </div>
-          <div align="right">
-            <DefaultButton
-              text="Action"
-              menuProps={menuProps}
-              allowDisabledFocus
-            />
+        <div>
+          <Breadcrumb
+            items={itemsWithHref}
+            maxDisplayedItems={3}
+            ariaLabel="Breadcrumb with items rendered as links"
+            overflowAriaLabel="More links"
+          />
+          <div className="result-item">
+            <div align="left">
+              <ActionButton
+                iconProps={{ iconName: "ChevronLeft" }}
+                onClick={() => {
+                  this.props.history.push(
+                    "/frontend-app/solution/" +
+                      this.props.solutionId +
+                      "/scenario"
+                  );
+                }}
+              >
+                Back to Scenarios
+              </ActionButton>
+            </div>
+            <div align="right">
+              <DefaultButton
+                text="Action"
+                menuProps={menuProps}
+                allowDisabledFocus
+              />
+            </div>
           </div>
         </div>
         <PowerBIEmbed

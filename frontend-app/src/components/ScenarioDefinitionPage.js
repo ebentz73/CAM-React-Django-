@@ -719,6 +719,10 @@ class ScenarioDefinitionPage extends Component {
                 history={this.props.history}
                 solutionId={this.solution_id}
                 scenarioId={this.scenario_id}
+                goHomepage={this.goHomepage}
+                solution_name={this.state.solution_name}
+                goScenarioListPage={this.goScenarioListPage}
+                scenario_name={this.state.scenario_name}
               />
             </PivotItem>
           </Pivot>
