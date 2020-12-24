@@ -494,7 +494,7 @@ class ScenarioHomePage extends Component {
               <div align="left">
                 <ActionButton
                   disabled={this.state.countSelected !== 1}
-                  iconProps={{ iconName: "Clear" }}
+                  iconProps={{ iconName: "Undo" }}
                   onClick={() => {
                     this.clearResults();
                   }}

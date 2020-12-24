@@ -116,12 +116,6 @@ class PowerBIReport extends Component {
     return (
       <div>
         <div>
-          <Breadcrumb
-            items={itemsWithHref}
-            maxDisplayedItems={3}
-            ariaLabel="Breadcrumb with items rendered as links"
-            overflowAriaLabel="More links"
-          />
           <div className="result-item">
             <div align="left">
               <ActionButton
@@ -137,6 +131,12 @@ class PowerBIReport extends Component {
                 Back to Scenarios
               </ActionButton>
             </div>
+            <Breadcrumb
+              items={itemsWithHref}
+              maxDisplayedItems={3}
+              ariaLabel="Breadcrumb with items rendered as links"
+              overflowAriaLabel="More links"
+            />
             <div align="right">
               <DefaultButton
                 text="Action"
