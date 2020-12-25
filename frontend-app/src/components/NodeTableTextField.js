@@ -47,6 +47,7 @@ class NodeTableTextField extends Component {
   handleKeyPress(e) {
     if (e.key === "Enter") {
       this.setData();
+      this.props.changeFocus();
     }
   }
 
@@ -66,6 +67,7 @@ class NodeTableTextField extends Component {
         }}
         onBlur={this.setData}
         onKeyPress={this.handleKeyPress}
+        ref={this.props.textFieldRef}
         disabled={this.props.isReadOnly}
       />
     );

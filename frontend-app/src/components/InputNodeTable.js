@@ -22,6 +22,12 @@ class InputNodeTable extends Component {
       "Nov",
       "Dec",
     ];
+    this.changeFocus = this.changeFocus.bind(this);
+    this.props.data.forEach((row, yIndex) => {
+      row.forEach((_, xIndex) => {
+        this[`tableData${yIndex}${xIndex}`] = React.createRef();
+      });
+    });
   }
 
   formatDate(date, increment, index) {
@@ -51,6 +57,12 @@ class InputNodeTable extends Component {
       : increment === "month"
       ? `${year}-${month}`
       : `${year}-${month}-${day}`;
+  }
+
+  changeFocus(yIndex, xIndex) {
+    if (yIndex < this.props.data.length - 1) {
+      this[`tableData${yIndex + 1}${xIndex}`].focus();
+    }
   }
 
   render() {
@@ -119,6 +131,12 @@ class InputNodeTable extends Component {
                                 type={"input"}
                                 updateData={context.updateInputNodeData}
                                 isReadOnly={this.props.isReadOnly}
+                                textFieldRef={(ref) =>
+                                  (this[`tableData${nomIdx}${layerIdx}`] = ref)
+                                }
+                                changeFocus={() =>
+                                  this.changeFocus(nomIdx, layerIdx)
+                                }
                               />
                             </td>,
                           ];
