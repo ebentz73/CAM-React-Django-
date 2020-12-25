@@ -9,6 +9,8 @@ import {
   DialogFooter,
   PrimaryButton,
   DefaultButton,
+  MessageBar,
+  MessageBarType,
 } from "@fluentui/react";
 import { withRouter } from "react-router";
 import SetupPage from "./SetupPage";
@@ -27,8 +29,6 @@ function getCookie(name) {
 }
 
 const csrf_token = getCookie("csrftoken");
-
-const dialogStyles = { main: { maxWidth: 450 } };
 
 const dialogContentProps = {
   type: DialogType.normal,
@@ -63,6 +63,7 @@ class ScenarioDefinitionPage extends Component {
       hideDialog: true,
       lastLocation: null,
       confirmedNavigation: false,
+      isShowWarning: false,
     };
 
     this.onClickCategory = this.onClickCategory.bind(this);
@@ -96,6 +97,8 @@ class ScenarioDefinitionPage extends Component {
     this.goScenarioListPage = this.goScenarioListPage.bind(this);
     this.goHomepage = this.goHomepage.bind(this);
 
+    this.hideWarning = this.hideWarning.bind(this);
+
     this.setupProps = {
       updateName: this.changeScenarioName,
       updateDesc: this.changeScenarioDesc,
@@ -113,6 +116,10 @@ class ScenarioDefinitionPage extends Component {
     this.fetchSolutionMetadata();
     this.filtersBySolution(this.solution_id);
     this.fetchNodesBySolution(this.solution_id);
+  }
+
+  hideWarning() {
+    this.setState({ isShowWarning: false });
   }
 
   goHomepage() {
@@ -277,8 +284,12 @@ class ScenarioDefinitionPage extends Component {
         return resp.json();
       })
       .then((resp) => {
-        this.createOrUpdateScenNodeDatas();
-        history.push(`/frontend-app/solution/${this.solution_id}/scenario`);
+        if (resp.ok) {
+          this.createOrUpdateScenNodeDatas();
+          history.push(`/frontend-app/solution/${this.solution_id}/scenario`);
+        } else {
+          this.setState({ isShowWarning: true });
+        }
       })
       .catch((err) => {
         console.error(err);
@@ -598,6 +609,17 @@ class ScenarioDefinitionPage extends Component {
     return (
       <React.Fragment>
         <NavBar />
+        {this.state.isShowWarning && (
+          <MessageBar
+            messageBarType={MessageBarType.severeWarning}
+            onDismiss={this.hideWarning}
+            isMultiline={false}
+            dismissButtonAriaLabel="Close"
+          >
+            Scenario with this name already exists. Please try with other name.
+          </MessageBar>
+        )}
+
         <Dialog
           hidden={this.state.hideDialog}
           onDismiss={this.toggleHideDialog}
