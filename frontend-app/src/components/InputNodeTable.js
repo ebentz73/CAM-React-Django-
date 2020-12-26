@@ -2,10 +2,16 @@ import React, { Component } from "react";
 import { PrimaryButton, Text } from "@fluentui/react";
 import NodeTableTextField from "./NodeTableTextField";
 import NodesContext from "./NodesContext";
+import { LineThicknessIcon } from "@fluentui/react-icons";
 
 class InputNodeTable extends Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      errorMessage: [],
+      isShowWarning: false,
+    };
 
     this.nomLabels = ["Lower Bound", "Low", "Nominal", "High", "Upper Bound"];
     this.months = [
@@ -136,6 +142,13 @@ class InputNodeTable extends Component {
                                 }
                                 changeFocus={() =>
                                   this.changeFocus(nomIdx, layerIdx)
+                                }
+                                validate={(newValue) =>
+                                  this.props.validate(
+                                    nomIdx,
+                                    layerIdx,
+                                    newValue
+                                  )
                                 }
                               />
                             </td>,
