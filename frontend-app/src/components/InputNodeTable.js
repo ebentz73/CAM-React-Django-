@@ -134,14 +134,14 @@ class InputNodeTable extends Component {
                         updateData={context.updateInputRowData}
                         isReadOnly={this.props.isReadOnly}
                         textFieldRef={(ref) =>
-                          (this[`tableData${nomIdx}${layerIdx}`] = ref)
+                          (this[`tableData${nomIdx}0`] = ref)
                         }
-                        changeFocus={() => this.changeFocus(nomIdx, layerIdx)}
+                        changeFocus={() => this.changeFocus(nomIdx, 0)}
                         validate={(newValue) =>
-                          this.validate(nomIdx, layerIdx, newValue)
+                          this.validate(nomIdx, 0, newValue)
                         }
                         isShowWarning={
-                          this.state.warningX === layerIdx &&
+                          this.state.warningX === 0 &&
                           this.state.warningY === nomIdx
                         }
                       />
