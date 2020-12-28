@@ -52,9 +52,9 @@ class NodeTableTextField extends Component {
       } else {
         if (this.props.validate(newVal)) {
           this.setData();
-          this.props.changeFocus();
         }
       }
+      this.props.changeFocus();
     }
   }
 

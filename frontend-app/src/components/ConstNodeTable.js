@@ -117,13 +117,15 @@ class ConstNodeTable extends Component {
                   <tr key={`row_${nodeIdx}`}>
                     <td className="constant-node-name">
                       <Text>{context.nodes[node].name}</Text>
-                      <TooltipHost content={context.nodes[node].notes}>
-                        <ActionButton
-                          iconProps={{
-                            iconName: "info",
-                          }}
-                        ></ActionButton>
-                      </TooltipHost>
+                      {context.nodes[node].notes && (
+                        <TooltipHost content={context.nodes[node].notes}>
+                          <ActionButton
+                            iconProps={{
+                              iconName: "info",
+                            }}
+                          ></ActionButton>
+                        </TooltipHost>
+                      )}
                     </td>
                     {context.nodes[node].data.flatMap((row, layerIdx) => {
                       return layerIdx < this.props.layerOffset
