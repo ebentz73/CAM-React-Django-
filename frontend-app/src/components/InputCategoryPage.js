@@ -39,11 +39,14 @@ class InputCategoryPage extends Component {
 
   setCurrentNode(nodeId) {
     if (nodeId === "const") {
+      let constantNodeIds = this.state.filteredCategoryNodes.filter((node_id) => this.state.nodes[node_id].type === "const")
+      let constantNodes = []
+      constantNodeIds.forEach((element) =>{ constantNodes.push(this.state.nodes[element]) })
       this.setState({
         currentNodeID: "const",
         currentNodeData: {},
         currentNodeType: "const",
-        nodeOnChart: "none",
+        nodeOnChart: constantNodes,
       });
     } else {
       this.setState({

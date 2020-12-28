@@ -47,46 +47,56 @@ class NodeDataChart extends Component {
   }
 
   setupChartData(node) {
-    if (node !== undefined && node.data !== undefined) {
-      let labels = [];
+    let labels = [];
+    let datasets = [];
+
+    if (node !== undefined && node.type === 'input' && node.data !== undefined) {
       for (let i = this.props.layerOffset; i < node.data.length; i++) {
         labels.push(this.formatDate(this.context.layerStartDate, this.context.layerTimeIncrement, i));
       }
-      let datasets = [
+
+      datasets.push(
         {
           label: 'Nominal',
-          data:
-            node.type === "input"
-              ? node.data.flatMap((layer, idx) => idx < this.props.layerOffset ? [] : [layer[2]])
-              : node.data.flatMap((data, idx) => idx < this.props.layerOffset ? [] : [data]),
+          data: node.data.flatMap((layer, idx) => idx < this.props.layerOffset ? [] : [layer[2]]),
           fill: false,
           borderColor: "#50BFAF",
           lineTension: 0,
         },
         {
           label: 'Low',
-          data:
-            node.type === "input"
-              ? node.data.flatMap((layer, idx) => idx < this.props.layerOffset ? [] : [layer[1]])
-              : node.data.flatMap((data, idx) => idx < this.props.layerOffset ? [] : [data]),
+          data: node.data.flatMap((layer, idx) => idx < this.props.layerOffset ? [] : [layer[1]]),
           fill: false,
           borderColor: "#742774",
           lineTension: 0,
         },
         {
           label: 'High',
-          data:
-            node.type === "input"
-              ? node.data.flatMap((layer, idx) => idx < this.props.layerOffset ? [] : [layer[3]])
-              : node.data.flatMap((data, idx) => idx < this.props.layerOffset ? [] : [data]),
+          data: node.data.flatMap((layer, idx) => idx < this.props.layerOffset ? [] : [layer[3]]),
           fill: false,
           borderColor: "#BF2EBF",
           lineTension: 0,
         },
-      ];
-      let newChartData = { labels: labels, datasets: datasets };
-      this.setState({ chartData: newChartData });
+      );
+    } else if (node.count !== 0 && node[0] !== undefined && node[0].type === 'const' && node[0].data !== undefined) {
+      for (let i = this.props.layerOffset; i < node[0].data.length; i++) {
+        labels.push(this.months[i % 12]);
+      }
+
+      node.forEach((node) =>
+      {
+        datasets.push({
+          label: node.name,
+          data: node.data.flatMap((data, idx) => idx < this.props.layerOffset ? [] : [data]),
+          fill: false,
+          borderColor: "#BF2EBF",
+          lineTension: 0,
+        })
+      })
     }
+
+    let newChartData = { labels: labels, datasets: datasets };
+    this.setState({ chartData: newChartData });
   }
 
   componentWillReceiveProps(nextProps, nextContext) {
