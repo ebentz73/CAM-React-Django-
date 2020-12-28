@@ -79,6 +79,7 @@ class AnalyticsSolutionPage extends Component {
     return (
       <React.Fragment>
         <NavBar />
+        <div className="divider" />
         <div className="ms-Grid m-t-100" dir="ltr">
           <div className="ms-Grid-row">
             <div className="ms-Grid-col ms-md3">
