@@ -47,7 +47,7 @@ class NodeTableTextField extends Component {
   handleKeyPress(e) {
     if (e.key === "Enter") {
       let newVal = parseFloat(this.state.value);
-      if (this.props.validate(newVal)) {
+      if (this.props.type !== "const" && this.props.validate(newVal)) {
         this.setData();
         this.props.changeFocus();
       }
