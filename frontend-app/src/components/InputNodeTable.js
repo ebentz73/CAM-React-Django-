@@ -81,9 +81,12 @@ class InputNodeTable extends Component {
         );
       }
     }
-    this.props.showWarning(errorMessage);
     if (errorMessage.length > 0) {
       this.setState({ warningX: xIndex, warningY: yIndex });
+      this.props.showWarning(errorMessage);
+    } else {
+      this.setState({ warningX: null, warningY: null });
+      this.props.showWarning(null);
     }
   }
 
