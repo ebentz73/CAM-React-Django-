@@ -71,18 +71,20 @@ class NodeTable extends Component {
                 >
                   {this.props.nodeOnChart.name}
                 </span>
-                <TooltipHost content={this.props.nodeOnChart.notes}>
-                  <ActionButton
-                    iconProps={{
-                      iconName: "info",
-                      styles: {
-                        root: {
-                          fontSize: "20px",
+                {this.props.nodeOnChart.notes && (
+                  <TooltipHost content={this.props.nodeOnChart.notes}>
+                    <ActionButton
+                      iconProps={{
+                        iconName: "info",
+                        styles: {
+                          root: {
+                            fontSize: "20px",
+                          },
                         },
-                      },
-                    }}
-                  ></ActionButton>
-                </TooltipHost>
+                      }}
+                    ></ActionButton>
+                  </TooltipHost>
+                )}
               </div>
             )}
             <FixedVariableToggle toggleFixed={this.toggleFixedTableView} />

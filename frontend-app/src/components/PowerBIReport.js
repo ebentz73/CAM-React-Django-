@@ -118,26 +118,14 @@ class PowerBIReport extends Component {
         <div>
           <div className="result-item">
             <div align="left">
-              <ActionButton
-                iconProps={{ iconName: "ChevronLeft" }}
-                onClick={() => {
-                  this.props.history.push(
-                    "/frontend-app/solution/" +
-                      this.props.solutionId +
-                      "/scenario"
-                  );
-                }}
-              >
-                Back to Scenarios
-              </ActionButton>
+              <Breadcrumb
+                items={itemsWithHref}
+                maxDisplayedItems={3}
+                ariaLabel="Breadcrumb with items rendered as links"
+                overflowAriaLabel="More links"
+              />
             </div>
-            <Breadcrumb
-              items={itemsWithHref}
-              maxDisplayedItems={3}
-              ariaLabel="Breadcrumb with items rendered as links"
-              overflowAriaLabel="More links"
-            />
-            <div align="right">
+            <div align="right" className="right">
               <DefaultButton
                 text="Action"
                 menuProps={menuProps}

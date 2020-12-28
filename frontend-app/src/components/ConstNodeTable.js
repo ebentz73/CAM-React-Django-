@@ -92,13 +92,15 @@ class ConstNodeTable extends Component {
                   <tr key={`row_${nodeIdx}`}>
                     <td>
                       <Text>{context.nodes[node].name}</Text>
-                      <TooltipHost content={context.nodes[node].notes}>
-                        <ActionButton
-                          iconProps={{
-                            iconName: "info",
-                          }}
-                        ></ActionButton>
-                      </TooltipHost>
+                      {context.nodes[node].notes && (
+                        <TooltipHost content={context.nodes[node].notes}>
+                          <ActionButton
+                            iconProps={{
+                              iconName: "info",
+                            }}
+                          ></ActionButton>
+                        </TooltipHost>
+                      )}
                     </td>
                     <td key={0}>
                       <NodeTableTextField
