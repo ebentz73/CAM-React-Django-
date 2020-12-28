@@ -73,6 +73,7 @@ class InputNodeTable extends Component {
   }
 
   validate(yIndex, xIndex, newValue) {
+    console.log("validate function is called", newValue, yIndex, xIndex);
     let errorMessage = [];
     for (let i = yIndex + 1; i < this.props.data.length; i++) {
       if (newValue > this.props.data[xIndex][i]) {
@@ -84,9 +85,11 @@ class InputNodeTable extends Component {
     if (errorMessage.length > 0) {
       this.setState({ warningX: xIndex, warningY: yIndex });
       this.props.showWarning(errorMessage);
+      return false;
     } else {
       this.setState({ warningX: null, warningY: null });
       this.props.showWarning(null);
+      return true;
     }
   }
 
