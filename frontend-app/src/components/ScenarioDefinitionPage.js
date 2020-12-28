@@ -284,7 +284,7 @@ class ScenarioDefinitionPage extends Component {
         return resp.json();
       })
       .then((resp) => {
-        if (resp.ok) {
+        if (resp.id !== undefined) {
           this.createOrUpdateScenNodeDatas();
           history.push(`/frontend-app/solution/${this.solution_id}/scenario`);
         } else {

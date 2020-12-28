@@ -73,7 +73,6 @@ class InputNodeTable extends Component {
   }
 
   validate(yIndex, xIndex, newValue) {
-    console.log("validate function is called", newValue, yIndex, xIndex);
     let errorMessage = [];
     for (let i = yIndex + 1; i < this.props.data.length; i++) {
       if (newValue > this.props.data[xIndex][i]) {
