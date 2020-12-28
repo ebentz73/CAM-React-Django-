@@ -61,7 +61,21 @@ class NodeTableTextField extends Component {
   }
 
   render() {
-    return (
+    let { isShowWarning } = this.props;
+    return isShowWarning ? (
+      <TextField
+        value={this.state.value}
+        className="table-input"
+        onChange={(e, val) => {
+          this.setState({ value: val });
+        }}
+        onBlur={this.setData}
+        onKeyPress={this.handleKeyPress}
+        ref={this.props.textFieldRef}
+        disabled={this.props.isReadOnly}
+        errorMessage
+      />
+    ) : (
       <TextField
         value={this.state.value}
         className="table-input"

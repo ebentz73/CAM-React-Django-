@@ -9,8 +9,8 @@ class InputNodeTable extends Component {
     super(props);
 
     this.state = {
-      errorMessage: [],
-      isShowWarning: false,
+      warningX: null,
+      warningY: null,
     };
 
     this.nomLabels = ["Lower Bound", "Low", "Nominal", "High", "Upper Bound"];
@@ -29,6 +29,7 @@ class InputNodeTable extends Component {
       "Dec",
     ];
     this.changeFocus = this.changeFocus.bind(this);
+    this.validate = this.validate.bind(this);
     this.props.data.forEach((row, yIndex) => {
       row.forEach((_, xIndex) => {
         this[`tableData${yIndex}${xIndex}`] = React.createRef();
@@ -68,6 +69,21 @@ class InputNodeTable extends Component {
   changeFocus(yIndex, xIndex) {
     if (yIndex < this.props.data.length - 1) {
       this[`tableData${yIndex + 1}${xIndex}`].focus();
+    }
+  }
+
+  validate(yIndex, xIndex, newValue) {
+    let errorMessage = [];
+    for (let i = yIndex + 1; i < this.props.data.length; i++) {
+      if (newValue > this.props.data[xIndex][i]) {
+        errorMessage.push(
+          `${this.nomLabels[yIndex]} must be less than or equal to ${this.nomLabels[i]}.`
+        );
+      }
+    }
+    this.props.showWarning(errorMessage);
+    if (errorMessage.length > 0) {
+      this.setState({ warningX: xIndex, warningY: yIndex });
     }
   }
 
@@ -144,11 +160,11 @@ class InputNodeTable extends Component {
                                   this.changeFocus(nomIdx, layerIdx)
                                 }
                                 validate={(newValue) =>
-                                  this.props.validate(
-                                    nomIdx,
-                                    layerIdx,
-                                    newValue
-                                  )
+                                  this.validate(nomIdx, layerIdx, newValue)
+                                }
+                                isShowWarning={
+                                  this.state.warningX === layerIdx &&
+                                  this.state.warningY === nomIdx
                                 }
                               />
                             </td>,

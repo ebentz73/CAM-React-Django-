@@ -15,38 +15,22 @@ class NodeTable extends Component {
 
     this.state = {
       fixed: false,
-      errorMessage: [],
-      isShowWarning: false,
+      errorMessages: null,
+      xIndex: "",
+      yIndex: "",
     };
 
-    this.nomLabels = ["Lower Bound", "Low", "Nominal", "High", "Upper Bound"];
-
     this.toggleFixedTableView = this.toggleFixedTableView.bind(this);
-    this.validate = this.validate.bind(this);
+    this.showWarning = this.showWarning.bind(this);
     this.hideWarning = this.hideWarning.bind(this);
   }
 
-  validate(yIndex, xIndex, newValue) {
-    let errorMessage = [];
-    for (let i = yIndex + 1; i < this.props.data.length; i++) {
-      if (newValue > this.props.data[xIndex][i]) {
-        errorMessage.push(
-          `${this.nomLabels[yIndex]} must be less than or equal to ${this.nomLabels[i]}.`
-        );
-      }
-    }
-    this.setState({ errorMessage });
-    if (errorMessage.length > 0) {
-      this.setState({ isShowWarning: true });
-      return false;
-    } else {
-      this.setState({ isShowWarning: false });
-      return true;
-    }
+  showWarning(errorMessages) {
+    this.setState({ errorMessages });
   }
 
   hideWarning() {
-    this.setState({ isShowWarning: false });
+    this.setState({ errorMessages: null });
   }
 
   toggleFixedTableView(val) {
@@ -57,14 +41,14 @@ class NodeTable extends Component {
     return (
       this.props.nodeId.length > 0 && (
         <React.Fragment>
-          {this.state.isShowWarning && (
+          {this.state.errorMessages && (
             <MessageBar
               messageBarType={MessageBarType.severeWarning}
               onDismiss={this.hideWarning}
               isMultiline={false}
               dismissButtonAriaLabel="Close"
             >
-              {this.state.errorMessage.map((message, key) => (
+              {this.state.errorMessages.map((message, key) => (
                 <p key={key}>{message}</p>
               ))}
             </MessageBar>
@@ -114,6 +98,7 @@ class NodeTable extends Component {
                     layerOffset={this.props.layerOffset}
                     isReadOnly={this.props.isReadOnly}
                     validate={this.validate}
+                    showWarning={this.showWarning}
                   />
                 ) : (
                   <ConstNodeTable
