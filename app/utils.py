@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import sqlite3
+import traceback
 from typing import AnyStr, Generic, IO, Iterator, TypeVar
 
 import docker
@@ -15,6 +16,7 @@ from grafana_api.grafana_face import GrafanaFace
 from guardian.shortcuts import assign_perm, remove_perm, get_perms_for_model
 
 from profile.models import Role
+import app.models
 
 _Z = TypeVar('_Z')
 
@@ -119,10 +121,17 @@ def is_cloud() -> bool:
 def run_eval_engine(solution_pk: int, scenario_pk: int):
     """Run the eval engine container."""
     url_path = f'api/v1/solutions/{solution_pk}/scenarios/{scenario_pk}/evaluate/'
-    if is_cloud():
-        run_eval_engine_cloud(url_path)
-    else:
-        run_eval_engine_local(url_path, solution_pk)
+    scenario = app.models.Scenario.objects.get(pk=scenario_pk)
+    try:
+        if is_cloud():
+            run_eval_engine_cloud(url_path)
+        else:
+            run_eval_engine_local(url_path, solution_pk)
+        scenario.status = 'Complete'
+    except Exception as ex:
+        traceback.print_exception(type(ex), ex, ex.__traceback__)
+        scenario.status = 'Error'
+    scenario.save()
 
 
 def run_eval_engine_local(url_path: str, solution_pk: int):

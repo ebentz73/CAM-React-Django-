@@ -98,7 +98,7 @@ class Scenario(ModelDiffMixin, models.Model):
     name = models.CharField(max_length=255)
     is_adhoc = models.BooleanField(default=False)
     is_in_progress = models.BooleanField(default=False)
-    status = models.CharField(max_length=256, null=True, blank=True)
+    status = models.CharField(max_length=256, null=True, blank=True, default='Unevaluated')
     layer_date_start = models.DateField()
     shared = models.ManyToManyField(User, blank=True)
 
