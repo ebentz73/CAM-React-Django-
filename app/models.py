@@ -100,6 +100,7 @@ class Scenario(ModelDiffMixin, models.Model):
     is_in_progress = models.BooleanField(default=False)
     status = models.CharField(max_length=256, null=True, blank=True)
     layer_date_start = models.DateField()
+    last_modified = models.DateField(null=True)
     shared = models.ManyToManyField(User, blank=True)
 
     def __str__(self):
