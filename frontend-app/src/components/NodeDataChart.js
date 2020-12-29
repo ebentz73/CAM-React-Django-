@@ -29,10 +29,10 @@ class NodeDataChart extends Component {
       "Dec",
     ];
 
-    this.colorScale = d3.interpolateCool;
+    this.colorScale = d3.interpolateRainbow;
     this.colorRange = {
       colorStart: 0,
-      colorEnd: 0.65,
+      colorEnd: 1,
       useEndAsStart: true,
     }
   }
@@ -99,6 +99,7 @@ class NodeDataChart extends Component {
           fill: false,
           borderColor: colorArray[i],
           lineTension: 0,
+          hidden: true,
         })
       }
     }
