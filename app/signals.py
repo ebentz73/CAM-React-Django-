@@ -225,7 +225,7 @@ def shared_scenario_changed(sender, action, instance, pk_set, **kwargs):
         remove_model_perm(user, instance)
 
     do_action = locals().get(action)
-    if action is None:
+    if do_action is None:
         return
 
     users = User.objects.filter(pk__in=pk_set)
