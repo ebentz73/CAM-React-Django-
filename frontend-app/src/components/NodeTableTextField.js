@@ -60,6 +60,9 @@ class NodeTableTextField extends Component {
   }
 
   render() {
+    const Styles = {
+      fieldGroup: [{ backgroundColor: "lightcoral" }],
+    };
     let { isShowWarning } = this.props;
     return isShowWarning ? (
       <TextField
@@ -73,6 +76,7 @@ class NodeTableTextField extends Component {
         ref={this.props.textFieldRef}
         disabled={this.props.isReadOnly}
         errorMessage
+        styles={Styles}
       />
     ) : (
       <TextField
