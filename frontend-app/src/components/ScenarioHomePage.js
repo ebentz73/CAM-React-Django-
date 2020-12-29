@@ -152,9 +152,15 @@ class ScenarioHomePage extends Component {
           shared: this.state.sharedUsersDirty.map((userId) => ({ id: userId })),
         }),
       }
-    ).catch((err) => {
-      console.error(err);
-    });
+    )
+      .then((response) => {
+        this.fetchScenariosData();
+        this.toggleShareDialog();
+      })
+      .catch((err) => {
+        console.error(err);
+        this.toggleShareDialog();
+      });
   }
 
   clearResults() {
