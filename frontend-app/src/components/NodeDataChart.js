@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Line } from "react-chartjs-2";
+import NodesContext from "./NodesContext";
 
 class NodeDataChart extends Component {
   constructor(props) {
@@ -28,11 +29,28 @@ class NodeDataChart extends Component {
     ];
   }
 
+  formatDate(date, increment, index) {
+      if (date === "") return date;
+      if (increment == "day") {
+          date = new Date(date.getFullYear(), date.getMonth(), date.getDate() + index);
+      } else if (increment == "week") {
+          date = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 7 * index);
+      } else if (increment == "month") {
+          date = new Date(date.getFullYear(), date.getMonth() + index, 1);
+      } else if (increment == "year") {
+          date = new Date(date.getFullYear() + index, 1, 1);
+      }
+      let year = date.getFullYear();
+      let month = `${date.getMonth() + 1}`.padStart(2, "0");
+      let day = `${date.getDate()}`.padStart(2, "0");
+      return increment === "year" ? `${year}` : increment === "month" ? `${year}-${month}` : `${year}-${month}-${day}`;
+  }
+
   setupChartData(node) {
     if (node !== undefined && node.data !== undefined) {
       let labels = [];
       for (let i = this.props.layerOffset; i < node.data.length; i++) {
-        labels.push(this.months[i % 12]);
+        labels.push(this.formatDate(this.context.layerStartDate, this.context.layerTimeIncrement, i));
       }
       let datasets = [
         {
@@ -93,5 +111,6 @@ class NodeDataChart extends Component {
     );
   }
 }
+NodeDataChart.contextType = NodesContext;
 
 export default NodeDataChart;
