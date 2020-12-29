@@ -9,8 +9,6 @@ import {
   DialogFooter,
   PrimaryButton,
   DefaultButton,
-  MessageBar,
-  MessageBarType,
 } from "@fluentui/react";
 import { withRouter } from "react-router";
 import SetupPage from "./SetupPage";
@@ -37,6 +35,16 @@ const dialogContentProps = {
   subText: "You have made changes. Do you want to discard or save them?",
 };
 
+const warningDialogContentProps = {
+  type: DialogType.normal,
+  closeButtonArialLabel: "Close",
+  subText:
+    "Scenario with this name already exists. Please try with other name.",
+};
+
+const warningModalProps = {
+  isBlocking: true,
+};
 class ScenarioDefinitionPage extends Component {
   constructor(props) {
     super(props);
@@ -609,16 +617,12 @@ class ScenarioDefinitionPage extends Component {
     return (
       <React.Fragment>
         <NavBar />
-        {this.state.isShowWarning && (
-          <MessageBar
-            messageBarType={MessageBarType.severeWarning}
-            onDismiss={this.hideWarning}
-            isMultiline={false}
-            dismissButtonAriaLabel="Close"
-          >
-            Scenario with this name already exists. Please try with other name.
-          </MessageBar>
-        )}
+        <Dialog
+          hidden={!this.state.isShowWarning}
+          onDismiss={this.hideWarning}
+          dialogContentProps={warningDialogContentProps}
+          modalProps={warningModalProps}
+        ></Dialog>
 
         <Dialog
           hidden={this.state.hideDialog}
