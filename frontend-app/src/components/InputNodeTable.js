@@ -9,8 +9,7 @@ class InputNodeTable extends Component {
     super(props);
 
     this.state = {
-      warningX: null,
-      warningY: null,
+      errors: null,
     };
 
     this.nomLabels = ["Lower Bound", "Low", "Nominal", "High", "Upper Bound"];
@@ -73,24 +72,32 @@ class InputNodeTable extends Component {
     }
   }
 
-  validate(yIndex, xIndex, newValue) {
-    let errorMessage = [];
-    for (let i = yIndex + 1; i < this.props.data.length; i++) {
-      if (newValue > this.props.data[xIndex][i]) {
-        errorMessage.push(
-          `${this.nomLabels[yIndex]} must be less than or equal to ${this.nomLabels[i]}.`
-        );
+  validate(yIndex, xIndex) {
+    const { data } = this.props;
+    const errors = {};
+
+    for (let i = 0; i < data.length; i += 1) {
+      for (let j = 0; j < data[i].length; j += 1) {
+        const errorMessages = [];
+        for (let k = j + 1; k < data[i].length; k += 1) {
+          if (parseFloat(data[i][j]) > parseFloat(data[i][k])) {
+            errorMessages.push(
+              `${this.nomLabels[j]} must be less than or equal to ${this.nomLabels[k]}.`
+            );
+          }
+        }
+
+        const rowErrorMessage = errors[i] || {};
+        rowErrorMessage[j] = errorMessages;
+        errors[i] = rowErrorMessage;
       }
     }
-    if (errorMessage.length > 0) {
-      this.setState({ warningX: xIndex, warningY: yIndex });
-      this.props.showWarning(errorMessage);
-      return false;
+    if (errors[xIndex][yIndex].length > 0) {
+      this.props.showWarning(errors[xIndex][yIndex]);
     } else {
-      this.setState({ warningX: null, warningY: null });
       this.props.showWarning(null);
-      return true;
     }
+    this.setState({ errors });
   }
 
   render() {
@@ -138,13 +145,11 @@ class InputNodeTable extends Component {
                           (this[`tableData${nomIdx}0`] = ref)
                         }
                         changeFocus={() => this.changeFocus(nomIdx, 0)}
-                        validate={(newValue) =>
-                          this.validate(nomIdx, 0, newValue)
-                        }
                         isShowWarning={
-                          this.state.warningX === 0 &&
-                          this.state.warningY === nomIdx
+                          this.state.errors &&
+                          this.state.errors[layerIdx][nomIdx].length > 0
                         }
+                        validate={() => this.validate(nomIdx, 0)}
                       />
                     </td>
                   </tr>
@@ -176,12 +181,10 @@ class InputNodeTable extends Component {
                                 changeFocus={() =>
                                   this.changeFocus(nomIdx, layerIdx)
                                 }
-                                validate={(newValue) =>
-                                  this.validate(nomIdx, layerIdx, newValue)
-                                }
+                                validate={() => this.validate(nomIdx, layerIdx)}
                                 isShowWarning={
-                                  this.state.warningX === layerIdx &&
-                                  this.state.warningY === nomIdx
+                                  this.state.errors &&
+                                  this.state.errors[layerIdx][nomIdx].length > 0
                                 }
                               />
                             </td>,

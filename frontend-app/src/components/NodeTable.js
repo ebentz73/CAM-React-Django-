@@ -16,8 +16,6 @@ class NodeTable extends Component {
     this.state = {
       fixed: false,
       errorMessages: null,
-      xIndex: "",
-      yIndex: "",
     };
 
     this.toggleFixedTableView = this.toggleFixedTableView.bind(this);
@@ -99,7 +97,6 @@ class NodeTable extends Component {
                     fixed={this.state.fixed}
                     layerOffset={this.props.layerOffset}
                     isReadOnly={this.props.isReadOnly}
-                    validate={this.validate}
                     showWarning={this.showWarning}
                   />
                 ) : (

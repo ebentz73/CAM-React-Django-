@@ -25,14 +25,13 @@ class NodeTableTextField extends Component {
           formatted
         );
       } else {
-        if (this.props.validate(val)) {
-          this.props.updateData(
-            this.props.nodeId,
-            this.props.layerIdx,
-            this.props.nomIdx,
-            formatted
-          );
-        }
+        this.props.updateData(
+          this.props.nodeId,
+          this.props.layerIdx,
+          this.props.nomIdx,
+          formatted
+        );
+        this.props.validate();
       }
       this.state.value = formatted;
     }
@@ -50,12 +49,6 @@ class NodeTableTextField extends Component {
     if (e.key === "Enter") {
       this.setData();
       this.props.changeFocus();
-    }
-  }
-
-  componentWillReceiveProps(nextProps, nextContext) {
-    if (this.props.data !== nextProps.data) {
-      this.setState({ value: nextProps.data });
     }
   }
 
