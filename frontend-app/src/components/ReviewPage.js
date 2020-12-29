@@ -63,10 +63,15 @@ class ReviewPage extends Component {
               <DefaultButton
                 text="Save & exit"
                 onClick={this.props.postScenario}
+                disabled={this.props.isReadOnly}
               />
             </Stack.Item>
             <Stack.Item align="end">
-              <PrimaryButton text="Submit" onClick={this.props.postScenario} />
+              <PrimaryButton
+                text="Submit"
+                onClick={this.props.postScenario}
+                disabled={this.props.isReadOnly}
+              />
             </Stack.Item>
           </Stack>
         </div>

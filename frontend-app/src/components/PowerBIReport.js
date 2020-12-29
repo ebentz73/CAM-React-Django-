@@ -45,6 +45,9 @@ class PowerBIReport extends Component {
       })
       .then((response) => {
         console.log(response);
+        this.props.history.push(
+          "/frontend-app/solution/" + this.props.solutionId + "/scenario"
+        );
       })
       .catch((err) => {
         console.log(err);
@@ -132,7 +135,7 @@ class PowerBIReport extends Component {
               panes: {
                 filters: {
                   expanded: false,
-                  visible: false,
+                  visible: true,
                 },
               },
               background: models.BackgroundType.Transparent,
