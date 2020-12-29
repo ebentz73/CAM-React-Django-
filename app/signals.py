@@ -219,7 +219,6 @@ def input_data_set_scenario_changed(sender, action, instance, pk_set, **kwargs):
 def shared_scenario_changed(sender, action, instance, pk_set, **kwargs):
     def post_add():
         assign_perm('app.view_scenario', user, instance)
-        assign_perm('app.change_scenario', user, instance)
 
     def post_remove():
         remove_model_perm(user, instance)
