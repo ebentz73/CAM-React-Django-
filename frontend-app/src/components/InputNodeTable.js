@@ -69,6 +69,7 @@ class InputNodeTable extends Component {
   changeFocus(yIndex, xIndex) {
     if (yIndex < this.props.data.length - 1) {
       this[`tableData${yIndex + 1}${xIndex}`].focus();
+      this[`tableData${yIndex + 1}${xIndex}`].select();
     }
   }
 
