@@ -5,10 +5,16 @@ class FixedVariableToggle extends Component {
         super(props);
 
         this.state = {
-            variable: true
+            variable: !props.fixed
         }
 
         this.toggleVariable = this.toggleVariable.bind(this);
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        if(prevProps.fixed !== this.props.fixed) {
+            this.setState({variable: !this.props.fixed});
+        }
     }
 
     toggleVariable(val) {

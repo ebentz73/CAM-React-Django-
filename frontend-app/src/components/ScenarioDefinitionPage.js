@@ -64,7 +64,6 @@ class ScenarioDefinitionPage extends Component {
       input_values: {},
       nodes_changed: 0,
       roles: {},
-      activeRoles: [],
       isLoading: true,
       layer_offset: 0,
       layer_time_increment: "month",
@@ -97,7 +96,6 @@ class ScenarioDefinitionPage extends Component {
     this.changeScenarioName = this.changeScenarioName.bind(this);
     this.changeScenarioDesc = this.changeScenarioDesc.bind(this);
     this.changeModelDate = this.changeModelDate.bind(this);
-    this.changeRole = this.changeRole.bind(this);
     this.changeInputs = this.changeInputs.bind(this);
     this.changeInputDataSet = this.changeInputDataSet.bind(this);
     this.discard = this.discard.bind(this);
@@ -219,19 +217,6 @@ class ScenarioDefinitionPage extends Component {
     inputValues[input_id].isIds = true;
 
     this.setState({ input_values: inputValues });
-  }
-
-  changeRole(e, role) {
-    let newRoles = [...this.state.activeRoles];
-    if (role.selected) {
-      newRoles.push(role.key);
-    } else {
-      let index = newRoles.indexOf(role.key);
-      if (index !== -1) {
-        newRoles.splice(index, 1);
-      }
-    }
-    this.setState({ activeRoles: newRoles });
   }
 
   changeTab(val) {
@@ -686,17 +671,6 @@ class ScenarioDefinitionPage extends Component {
                       ariaLabel="Breadcrumb with items rendered as links"
                       overflowAriaLabel="More links"
                     />
-                    {/* Role Filter */}
-                    <Dropdown
-                      options={Object.keys(this.state.roles).map((role) => {
-                        return { key: role, text: role };
-                      })}
-                      label="Roles"
-                      multiSelect
-                      styles={{ root: { margin: "0px 50px 20px 50px" } }}
-                      selectedKeys={this.state.activeRoles}
-                      onChange={(e, val) => this.changeRole(e, val)}
-                    />
                     {/* Input Category Pages */}
                     {this.state.tab === "setup" && (
                       <SetupPage
@@ -722,7 +696,6 @@ class ScenarioDefinitionPage extends Component {
                           this.state.category.length
                         )}
                         index={this.state.category_idx}
-                        roles={this.state.activeRoles}
                         changeTab={this.changeTab}
                         postScenario={this.createOrUpdateScenario}
                         categoryNodes={

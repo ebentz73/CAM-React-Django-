@@ -14,7 +14,7 @@ class NodeTable extends Component {
     super(props);
 
     this.state = {
-      fixed: false,
+      fixed: props.type === "const",
       errorMessages: null,
     };
 
@@ -31,7 +31,13 @@ class NodeTable extends Component {
     this.setState({ errorMessages: null });
   }
 
-  toggleFixedTableView(val) {
+  componentDidUpdate(prevProps, prevState, snapshot) {
+      if(prevProps.type !== this.props.type) {
+          this.setState({fixed: this.props.type === "const"});
+      }
+  }
+
+    toggleFixedTableView(val) {
     this.setState({ fixed: val });
   }
 
@@ -85,7 +91,7 @@ class NodeTable extends Component {
                 )}
               </div>
             )}
-            <FixedVariableToggle toggleFixed={this.toggleFixedTableView} />
+            <FixedVariableToggle fixed={this.state.fixed} toggleFixed={this.toggleFixedTableView} />
           </div>
           <div className="node-table">
             <div className="table-scroll-pane">

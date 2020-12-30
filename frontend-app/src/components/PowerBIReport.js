@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { ActionButton, DefaultButton, Breadcrumb } from "@fluentui/react";
 import { PowerBIEmbed } from "powerbi-client-react";
 import { models } from "powerbi-client";
+import { Text } from "@fluentui/react";
 
 class PowerBIReport extends Component {
   constructor(props) {
@@ -134,25 +135,29 @@ class PowerBIReport extends Component {
             </div>
           </div>
         </div>
-        <PowerBIEmbed
-          embedConfig={{
-            type: "report", // Supported types: report, dashboard, tile, visual and qna
-            id: this.state.reportId,
-            embedUrl: this.state.embedUrl,
-            accessToken: this.state.embedToken,
-            tokenType: models.TokenType.Embed,
-            settings: {
-              panes: {
-                filters: {
-                  expanded: false,
-                  visible: true,
+        { this.state.reportId === undefined ?
+            <div className="results-empty"><Text variant='xLarge'>Report or dashboard has not been configured.</Text></div> :
+            <PowerBIEmbed
+            embedConfig={{
+              type: "report", // Supported types: report, dashboard, tile, visual and qna
+              id: this.state.reportId,
+              embedUrl: this.state.embedUrl,
+              accessToken: this.state.embedToken,
+              tokenType: models.TokenType.Embed,
+              settings: {
+                panes: {
+                  filters: {
+                    expanded: false,
+                    visible: true,
+                  },
                 },
+                background: models.BackgroundType.Transparent,
               },
-              background: models.BackgroundType.Transparent,
-            },
-          }}
-          cssClassName={"report-style-class"}
-        />
+            }}
+            cssClassName={"report-style-class"}
+          />
+        }
+
       </div>
     );
   }

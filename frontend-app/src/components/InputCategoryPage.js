@@ -228,14 +228,7 @@ class InputCategoryPage extends Component {
                 {this.state.filteredCategoryNodes.map((node_id, index) => {
                   let node = this.state.nodes[node_id];
 
-                  // Filter by role
-                  let inRole = false;
-                  node.tags.forEach((tag) => {
-                    this.props.roles.forEach((role) => {
-                      inRole |= tag.includes("CAM_ROLE==" + role);
-                    });
-                  });
-                  if (!node.visible | !inRole | (node.type === "const")) return;
+                  if (!node.visible | (node.type === "const")) return;
                   return (
                     <Node
                       className="highlight"
