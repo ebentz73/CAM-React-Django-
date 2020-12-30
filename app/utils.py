@@ -309,7 +309,7 @@ class PowerBI:
 
     @property
     def powerbi_url_filter(self):
-        return '' if self.scenario is None else f'?filter=app_noderesult/Scenario eq {self.scenario.name}'
+        return '' if self.scenario is None else f"&filter=public_x0020_app_noderesult/scenario eq '{self.scenario.name}'"
 
     @property
     def report(self):
@@ -321,7 +321,6 @@ class PowerBI:
             + self.workspace_id
             + '/reports/'
             + self.report_id
-            + self.powerbi_url_filter
         )
 
         response = requests.get(url, headers=self.headers)
@@ -329,7 +328,7 @@ class PowerBI:
 
         body = response.json()
         self._report = {
-            'embed_url': body['embedUrl'],
+            'embed_url': body['embedUrl'] + self.powerbi_url_filter,
             'dataset_id': body['datasetId'],
         }
         return self._report
