@@ -121,17 +121,10 @@ def is_cloud() -> bool:
 def run_eval_engine(solution_pk: int, scenario_pk: int):
     """Run the eval engine container."""
     url_path = f'api/v1/solutions/{solution_pk}/scenarios/{scenario_pk}/evaluate/'
-    scenario = app.models.Scenario.objects.get(pk=scenario_pk)
-    try:
-        if is_cloud():
-            run_eval_engine_cloud(url_path)
-        else:
-            run_eval_engine_local(url_path, solution_pk)
-        scenario.status = 'Complete'
-    except Exception as ex:
-        traceback.print_exception(type(ex), ex, ex.__traceback__)
-        scenario.status = 'Error'
-    scenario.save()
+    if is_cloud():
+        run_eval_engine_cloud(url_path)
+    else:
+        run_eval_engine_local(url_path, solution_pk)
 
 
 def run_eval_engine_local(url_path: str, solution_pk: int):
