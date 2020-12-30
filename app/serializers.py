@@ -159,6 +159,7 @@ class ScenarioSerializer(serializers.ModelSerializer):
             'layer_date_start',
             'solution',
             'input_data_sets',
+            'last_modified',
         )
 
     @staticmethod
