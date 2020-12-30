@@ -28,8 +28,6 @@ function getCookie(name) {
 
 const csrf_token = getCookie("csrftoken");
 
-const dialogStyles = { main: { maxWidth: 450 } };
-
 const dialogContentProps = {
   type: DialogType.normal,
   title: "Review Changes",
@@ -37,6 +35,16 @@ const dialogContentProps = {
   subText: "You have made changes. Do you want to discard or save them?",
 };
 
+const warningDialogContentProps = {
+  type: DialogType.normal,
+  closeButtonArialLabel: "Close",
+  subText:
+    "Scenario with this name already exists. Please try with other name.",
+};
+
+const warningModalProps = {
+  isBlocking: true,
+};
 class ScenarioDefinitionPage extends Component {
   constructor(props) {
     super(props);
@@ -63,6 +71,8 @@ class ScenarioDefinitionPage extends Component {
       hideDialog: true,
       lastLocation: null,
       confirmedNavigation: false,
+      isShowWarning: false,
+      loading: false,
     };
 
     this.onClickCategory = this.onClickCategory.bind(this);
@@ -96,6 +106,8 @@ class ScenarioDefinitionPage extends Component {
     this.goScenarioListPage = this.goScenarioListPage.bind(this);
     this.goHomepage = this.goHomepage.bind(this);
 
+    this.hideWarning = this.hideWarning.bind(this);
+
     this.setupProps = {
       updateName: this.changeScenarioName,
       updateDesc: this.changeScenarioDesc,
@@ -113,6 +125,10 @@ class ScenarioDefinitionPage extends Component {
     this.fetchSolutionMetadata();
     this.filtersBySolution(this.solution_id);
     this.fetchNodesBySolution(this.solution_id);
+  }
+
+  hideWarning() {
+    this.setState({ isShowWarning: false });
   }
 
   goHomepage() {
@@ -236,6 +252,7 @@ class ScenarioDefinitionPage extends Component {
   }
 
   createOrUpdateScenario(isEvaluating) {
+    this.setState({ loading: true });
     const { history } = this.props;
     let formatDate = (date) => {
       let year = date.getFullYear();
@@ -280,8 +297,13 @@ class ScenarioDefinitionPage extends Component {
         return resp.json();
       })
       .then((resp) => {
-        this.createOrUpdateScenNodeDatas();
-        history.push(`/frontend-app/solution/${this.solution_id}/scenario`);
+        if (resp.id !== undefined) {
+          this.createOrUpdateScenNodeDatas();
+          this.setState({ loading: false });
+          history.push(`/frontend-app/solution/${this.solution_id}/scenario`);
+        } else {
+          this.setState({ isShowWarning: true });
+        }
       })
       .catch((err) => {
         console.error(err);
@@ -409,6 +431,7 @@ class ScenarioDefinitionPage extends Component {
               visible: true,
               selectedCategories: {},
               dirty: false,
+              notes: node.notes,
             };
             Object.keys(this.state.filters).forEach((cat_id) => {
               node_obj.selectedCategories[cat_id] = true;
@@ -601,6 +624,13 @@ class ScenarioDefinitionPage extends Component {
       <React.Fragment>
         <NavBar />
         <Dialog
+          hidden={!this.state.isShowWarning}
+          onDismiss={this.hideWarning}
+          dialogContentProps={warningDialogContentProps}
+          modalProps={warningModalProps}
+        ></Dialog>
+
+        <Dialog
           hidden={this.state.hideDialog}
           onDismiss={this.toggleHideDialog}
           dialogContentProps={dialogContentProps}
@@ -615,8 +645,8 @@ class ScenarioDefinitionPage extends Component {
           <Pivot styles={pivotStyles} className="pivot-margin">
             <PivotItem headerText="Input">
               <NodesContext.Provider value={nodesContext}>
-                <div className="ms-Grid-row">
-                  <div className="ms-Grid-col ms-md2">
+                <div className="ms-Grid-row scenario-definition">
+                  <div className="ms-Grid-col ms-md2 sidebar-left">
                     <div className="progress-sidebar">
                       <ScenarioProgressStep
                         index={-1}
@@ -649,7 +679,7 @@ class ScenarioDefinitionPage extends Component {
                       />
                     </div>
                   </div>
-                  <div className="ms-Grid-col ms-md8">
+                  <div className="ms-Grid-col ms-md8 sidebar-right">
                     <Breadcrumb
                       items={itemsWithHref}
                       maxDisplayedItems={3}
@@ -699,6 +729,7 @@ class ScenarioDefinitionPage extends Component {
                           this.state.inputCategories[this.state.category]
                         }
                         layerOffset={this.state.layer_offset}
+                        isReadOnly={this.state.status !== null}
                       />
                     )}
                     {this.state.tab === "review" && (
@@ -711,6 +742,7 @@ class ScenarioDefinitionPage extends Component {
                         date={this.state.model_date}
                         nodesChanged={this.state.nodes_changed}
                         isReadOnly={this.state.status === 'Evaluating'}
+                        loading={this.state.loading}
                       />
                     )}
                   </div>
@@ -722,6 +754,10 @@ class ScenarioDefinitionPage extends Component {
                 history={this.props.history}
                 solutionId={this.solution_id}
                 scenarioId={this.scenario_id}
+                goHomepage={this.goHomepage}
+                solution_name={this.state.solution_name}
+                goScenarioListPage={this.goScenarioListPage}
+                scenario_name={this.state.scenario_name}
               />
             </PivotItem>
           </Pivot>

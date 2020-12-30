@@ -264,7 +264,7 @@ class PowerBI:
 
     @property
     def username(self):
-        return '' if self.user.is_anonymous else self.user.email
+        return '' if self.user.is_anonymous else str(self.user.pk)
 
     @property
     def client_secret(self):

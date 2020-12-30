@@ -61,6 +61,13 @@ class InputCategoryPage extends Component {
   }
 
   setInputCategoryNodes(categoryNodes) {
+    // Sort alphabetically
+
+    categoryNodes.sort((a, b) => {
+      if (this.props.nodes[a].name < this.props.nodes[b].name) return -1;
+      if (this.props.nodes[a].name > this.props.nodes[b].name) return 1;
+      return 0;
+    });
     this.setState({ categoryNodes: categoryNodes.map((a) => a.toString()) });
     this.setState({
       filteredCategoryNodes: categoryNodes.map((a) => a.toString()),
@@ -247,6 +254,7 @@ class InputCategoryPage extends Component {
                   )}
                   onClick={() => this.setCurrentNode("const")}
                   isSelected={this.state.currentNodeID === "const"}
+                  isReadOnly={this.props.isReadOnly}
                 />
               </div>
             </div>
@@ -261,6 +269,8 @@ class InputCategoryPage extends Component {
                 (node_id) => this.state.nodes[node_id].type === "const"
               )}
               layerOffset={this.props.layerOffset}
+              nodeOnChart={this.state.nodeOnChart}
+              isReadOnly={this.props.isReadOnly}
             />
             {/* ) : (
               <Spinner size={SpinnerSize.large} />
@@ -282,6 +292,7 @@ class InputCategoryPage extends Component {
                   <DefaultButton
                     text="Save & exit"
                     onClick={() => this.props.postScenario(false)}
+                    disabled={this.props.isReadOnly}
                   />
                 </Stack.Item>
                 <Stack.Item align="end">
