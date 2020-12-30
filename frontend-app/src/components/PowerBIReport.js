@@ -1,7 +1,8 @@
 import React, { Component } from "react";
-import { ActionButton, DefaultButton } from "@fluentui/react";
+import { ActionButton, DefaultButton, Breadcrumb } from "@fluentui/react";
 import { PowerBIEmbed } from "powerbi-client-react";
 import { models } from "powerbi-client";
+import { Text } from "@fluentui/react";
 
 class PowerBIReport extends Component {
   constructor(props) {
@@ -78,6 +79,20 @@ class PowerBIReport extends Component {
   }
 
   render() {
+    const itemsWithHref = [
+      {
+        text: "Analytics Solutions",
+        key: "f1",
+        onClick: this.props.goHomepage,
+      },
+      {
+        text: `${this.props.solution_name}`,
+        key: "f2",
+        onClick: this.props.goScenarioListPage,
+      },
+      { text: `${this.props.scenario_name}`, key: "f3", href: "#" },
+    ];
+
     const menuProps = {
       items: [
         {
@@ -101,48 +116,48 @@ class PowerBIReport extends Component {
 
     return (
       <div>
-        <div className="result-item">
-          <div align="left">
-            <ActionButton
-              iconProps={{ iconName: "ChevronLeft" }}
-              onClick={() => {
-                this.props.history.push(
-                  "/frontend-app/solution/" +
-                    this.props.solutionId +
-                    "/scenario"
-                );
-              }}
-            >
-              Back to Scenarios
-            </ActionButton>
-          </div>
-          <div align="right">
-            <DefaultButton
-              text="Action"
-              menuProps={menuProps}
-              allowDisabledFocus
-            />
+        <div>
+          <div className="result-item">
+            <div align="left">
+              <Breadcrumb
+                items={itemsWithHref}
+                maxDisplayedItems={3}
+                ariaLabel="Breadcrumb with items rendered as links"
+                overflowAriaLabel="More links"
+              />
+            </div>
+            <div align="right" className="right">
+              <DefaultButton
+                text="Action"
+                menuProps={menuProps}
+                allowDisabledFocus
+              />
+            </div>
           </div>
         </div>
-        <PowerBIEmbed
-          embedConfig={{
-            type: "report", // Supported types: report, dashboard, tile, visual and qna
-            id: this.state.reportId,
-            embedUrl: this.state.embedUrl,
-            accessToken: this.state.embedToken,
-            tokenType: models.TokenType.Embed,
-            settings: {
-              panes: {
-                filters: {
-                  expanded: false,
-                  visible: true,
+        { this.state.reportId === undefined ?
+            <div className="results-empty"><Text variant='xLarge'>Report or dashboard has not been configured.</Text></div> :
+            <PowerBIEmbed
+            embedConfig={{
+              type: "report", // Supported types: report, dashboard, tile, visual and qna
+              id: this.state.reportId,
+              embedUrl: this.state.embedUrl,
+              accessToken: this.state.embedToken,
+              tokenType: models.TokenType.Embed,
+              settings: {
+                panes: {
+                  filters: {
+                    expanded: false,
+                    visible: true,
+                  },
                 },
+                background: models.BackgroundType.Transparent,
               },
-              background: models.BackgroundType.Transparent,
-            },
-          }}
-          cssClassName={"report-style-class"}
-        />
+            }}
+            cssClassName={"report-style-class"}
+          />
+        }
+
       </div>
     );
   }

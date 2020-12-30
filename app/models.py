@@ -95,10 +95,10 @@ class AnalyticsSolution(ModelDiffMixin, models.Model):
 
 class Scenario(ModelDiffMixin, models.Model):
     solution = models.ForeignKey(AnalyticsSolution, on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     is_adhoc = models.BooleanField(default=False)
     is_in_progress = models.BooleanField(default=False)
-    status = models.CharField(max_length=256, null=True, blank=True)
+    status = models.CharField(max_length=256, null=True, blank=True, default='Unevaluated')
     layer_date_start = models.DateField()
     last_modified = models.DateField(null=True)
     shared = models.ManyToManyField(User, blank=True)
