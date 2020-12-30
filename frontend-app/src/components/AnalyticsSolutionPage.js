@@ -78,7 +78,7 @@ class AnalyticsSolutionPage extends Component {
   render() {
     return (
       <React.Fragment>
-        <NavBar />
+        <NavBar history={this.props.history} />
         <div className="divider" />
         <div className="ms-Grid m-t-100" dir="ltr">
           <div className="ms-Grid-row">

@@ -15,10 +15,23 @@ class UserIcon extends Component {
     this.onShowContextMenu = this.onShowContextMenu.bind(this);
     this.onToggleContextMenu = this.onToggleContextMenu.bind(this);
     this.fetchAllUsers = this.fetchAllUsers.bind(this);
+    this.logout = this.logout.bind(this);
   }
 
   componentDidMount() {
     this.fetchAllUsers();
+  }
+
+  logout() {
+    const { history } = this.props;
+    fetch(`${window.location.protocol}//${window.location.host}/api/logout`)
+      .then((response) => {
+        console.log(response);
+        history.push("/frontend-app/login");
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }
 
   fetchAllUsers() {
@@ -65,7 +78,7 @@ class UserIcon extends Component {
         key: "email",
         text: `${this.state.email}`,
       },
-      { key: "logout", text: "Logout" },
+      { key: "logout", text: "Logout", onClick: () => this.logout() },
     ];
 
     return (
