@@ -6,6 +6,8 @@ import {
   DefaultButton,
   Stack,
   Text,
+  Spinner,
+  SpinnerSize,
 } from "@fluentui/react";
 import { initializeIcons } from "@fluentui/react";
 
@@ -72,6 +74,11 @@ class ReviewPage extends Component {
                 onClick={this.props.postScenario}
                 disabled={this.props.isReadOnly}
               />
+            </Stack.Item>
+            <Stack.Item align="end">
+              {this.props.loading && (
+                <Spinner className="spinner-margin" size={SpinnerSize.large} />
+              )}
             </Stack.Item>
           </Stack>
         </div>
