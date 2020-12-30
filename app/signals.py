@@ -1,5 +1,6 @@
 import os
 import tempfile
+import openpyxl
 
 from django.contrib.auth.models import Group, User
 from django.db.models.signals import m2m_changed, post_save
@@ -13,6 +14,7 @@ from app.models import (
     FilterCategory,
     FilterOption,
     InputDataSet,
+    InputDataSetInput,
     InputNodeData,
     InputPage,
     Model,
@@ -198,6 +200,66 @@ def get_or_create_solution_group(solution):
 def post_save_scenario(sender, instance, **kwargs):
     if 'status' in instance.changed_fields and instance.status == 'Completed.':
         PowerBI(instance.solution).refresh_dataset()
+
+
+@receiver(post_save, sender=InputDataSet)
+def retrieve_spreadsheet_values(sender, **kwargs):
+    ids = kwargs.get('instance')
+    choice = ids.input_choices.first()
+    if choice is None:
+        solution = None
+    else:
+        solution = choice.input.solution
+    if 'file' in ids.changed_fields:
+        wb = openpyxl.load_workbook(ids.file)
+
+        # Input Nodes Worksheet
+        input_ws = wb["Input Nodes"]
+        input_ids_data = {}
+        for row in input_ws.iter_rows(min_row=2):
+            node_name = row[0].value
+            if node_name is None:
+                break
+            node = Node.objects.filter(name=node_name, model__solution=solution).first()
+            if node is not None:
+                lowest = row[7].value
+                low = row[4].value
+                base = row[5].value
+                high = row[6].value
+                highest = row[8].value
+                if node_name in input_ids_data:
+                    input_ids_data[node_name]['data'].append([lowest, low, base, high, highest])
+                else:
+                    input_ids_data[node_name] = {}
+                    input_ids_data[node_name]['data'] = [[lowest, low, base, high, highest]]
+                    input_ids_data[node_name]['node'] = node
+        for node in input_ids_data:
+            node_data, _ = InputNodeData.objects.update_or_create(
+                node=input_ids_data[node]['node'], default_data=input_ids_data[node]['data'],
+                is_model=False, input_data_set=ids
+            )
+
+        # Constant Nodes Worksheet
+        const_ws = wb["Constant Nodes"]
+        const_ids_data = {}
+        for row in const_ws.iter_rows(min_row=2):
+            node_name = row[0].value
+            if node_name is None:
+                break
+            node = Node.objects.filter(name=node_name).first()
+            if node is not None:
+                value = row[4].value
+                if node_name in const_ids_data:
+                    const_ids_data[node_name]['data'].append(value)
+                else:
+                    const_ids_data[node_name] = {}
+                    const_ids_data[node_name]['data'] = [value]
+                    const_ids_data[node_name]['node'] = node
+        for node in const_ids_data:
+            node_data, _ = ConstNodeData.objects.update_or_create(
+                node=const_ids_data[node]['node'], default_data=const_ids_data[node]['data'],
+                is_model=False, input_data_set=ids
+            )
 
 
 @receiver(m2m_changed, sender=InputDataSet.scenarios.through)

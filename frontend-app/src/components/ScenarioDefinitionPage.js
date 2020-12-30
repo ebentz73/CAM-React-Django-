@@ -208,7 +208,7 @@ class ScenarioDefinitionPage extends Component {
     });
   }
 
-  changeInputDataSet(input_id, val) {
+  changeInputDataSet(input_id, val, ids) {
     let inputValues = { ...this.state.input_values };
     if (!inputValues.hasOwnProperty(input_id)) {
       inputValues[input_id] = {};
@@ -216,7 +216,32 @@ class ScenarioDefinitionPage extends Component {
     inputValues[input_id].value = val;
     inputValues[input_id].isIds = true;
 
-    this.setState({ input_values: inputValues });
+    let url = `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.solution_id}/inputdatasets/${ids}/nodedatas/`;
+    return fetch(url, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrf_token,
+      }
+    })
+      .then((resp) => {
+        return resp.json();
+      })
+      .then((resp) => {
+        resp.map(node => {
+          let newNodes = { ...this.state.nodes };
+          let newNumDirty = this.state.nodes_changed;
+          newNodes[node.node].data = node.default_data;
+          if (!newNodes[node.node].dirty) newNumDirty++;
+          newNodes[node.node].dirty = true;
+          this.setState({ nodes: newNodes, nodes_changed: newNumDirty });
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+
+      this.setState({ input_values: inputValues });
   }
 
   changeTab(val) {
