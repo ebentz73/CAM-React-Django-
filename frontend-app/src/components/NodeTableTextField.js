@@ -12,6 +12,7 @@ class NodeTableTextField extends Component {
 
     this.setData = this.setData.bind(this);
     this.handleKeyPress = this.handleKeyPress.bind(this);
+    this.onFocus = this.onFocus.bind(this);
   }
 
   setData(e) {
@@ -46,9 +47,19 @@ class NodeTableTextField extends Component {
   }
 
   handleKeyPress(e) {
-    if (e.key === "Enter") {
-      this.setData();
-      this.props.changeFocus();
+    if (this.props.type === "const") {
+      this.setState();
+    } else {
+      this.props.validate();
+      if (e.key === "Enter") {
+        this.props.changeFocus();
+      }
+    }
+  }
+
+  onFocus() {
+    if (this.props.type !== "const") {
+      this.props.validate();
     }
   }
 
@@ -65,6 +76,7 @@ class NodeTableTextField extends Component {
           this.setState({ value: val });
         }}
         onBlur={this.setData}
+        onFocus={this.onFocus}
         onKeyPress={this.handleKeyPress}
         ref={this.props.textFieldRef}
         disabled={this.props.isReadOnly}
@@ -78,6 +90,7 @@ class NodeTableTextField extends Component {
         onChange={(e, val) => {
           this.setState({ value: val });
         }}
+        onFocus={this.onFocus}
         onBlur={this.setData}
         onKeyPress={this.handleKeyPress}
         ref={this.props.textFieldRef}

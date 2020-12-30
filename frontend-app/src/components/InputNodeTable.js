@@ -95,7 +95,7 @@ class InputNodeTable extends Component {
     if (errors[xIndex][yIndex].length > 0) {
       this.props.showWarning(errors[xIndex][yIndex]);
     } else {
-      this.props.showWarning(null);
+      this.props.hideWarning();
     }
     this.setState({ errors });
   }
@@ -147,7 +147,7 @@ class InputNodeTable extends Component {
                         changeFocus={() => this.changeFocus(nomIdx, 0)}
                         isShowWarning={
                           this.state.errors &&
-                          this.state.errors[layerIdx][nomIdx].length > 0
+                          this.state.errors[0][nomIdx].length > 0
                         }
                         validate={() => this.validate(nomIdx, 0)}
                       />

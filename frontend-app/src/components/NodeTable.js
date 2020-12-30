@@ -98,6 +98,7 @@ class NodeTable extends Component {
                     layerOffset={this.props.layerOffset}
                     isReadOnly={this.props.isReadOnly}
                     showWarning={this.showWarning}
+                    hideWarning={this.hideWarning}
                   />
                 ) : (
                   <ConstNodeTable
