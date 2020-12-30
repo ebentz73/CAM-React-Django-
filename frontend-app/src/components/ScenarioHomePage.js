@@ -304,16 +304,8 @@ class ScenarioHomePage extends Component {
             isResizable: true,
           },
           {
-            key: "date",
-            name: "Layer Start Date",
-            fieldName: "layer_date_start",
-            minWidth: 100,
-            maxWidth: 200,
-            isResizable: true,
-          },
-          {
             key: "date_modified",
-            name: "Last Modified Date",
+            name: "Last Modified",
             fieldName: "last_modified",
             minWidth: 100,
             maxWidth: 200,
