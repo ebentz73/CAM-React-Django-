@@ -1,4 +1,10 @@
 import React, { Component } from "react";
+import {
+  TooltipHost,
+  ActionButton,
+  MessageBar,
+  MessageBarType,
+} from "@fluentui/react";
 import FixedVariableToggle from "./FixedVariableToggle";
 import InputNodeTable from "./InputNodeTable";
 import ConstNodeTable from "./ConstNodeTable";
@@ -8,13 +14,30 @@ class NodeTable extends Component {
     super(props);
 
     this.state = {
-      fixed: false,
+      fixed: props.type === "const",
+      errorMessages: null,
     };
 
     this.toggleFixedTableView = this.toggleFixedTableView.bind(this);
+    this.showWarning = this.showWarning.bind(this);
+    this.hideWarning = this.hideWarning.bind(this);
   }
 
-  toggleFixedTableView(val) {
+  showWarning(errorMessages) {
+    this.setState({ errorMessages });
+  }
+
+  hideWarning() {
+    this.setState({ errorMessages: null });
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+      if(prevProps.type !== this.props.type) {
+          this.setState({fixed: this.props.type === "const"});
+      }
+  }
+
+    toggleFixedTableView(val) {
     this.setState({ fixed: val });
   }
 
@@ -22,8 +45,53 @@ class NodeTable extends Component {
     return (
       this.props.nodeId.length > 0 && (
         <React.Fragment>
-          <div style={{ textAlign: "right" }}>
-            <FixedVariableToggle toggleFixed={this.toggleFixedTableView} />
+          {this.state.errorMessages && (
+            <MessageBar
+              messageBarType={MessageBarType.severeWarning}
+              onDismiss={this.hideWarning}
+              isMultiline={false}
+              dismissButtonAriaLabel="Close"
+            >
+              {this.state.errorMessages.map((message, key) => (
+                <p key={key}>{message}</p>
+              ))}
+            </MessageBar>
+          )}
+          <div
+            style={
+              this.props.type === "input"
+                ? { display: "flex", justifyContent: "space-between" }
+                : { textAlign: "right" }
+            }
+          >
+            {this.props.type === "input" && (
+              <div style={{ display: "flex" }}>
+                <span
+                  style={{
+                    fontSize: "x-large",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  {this.props.nodeOnChart.name}
+                </span>
+                {this.props.nodeOnChart.notes && (
+                  <TooltipHost content={this.props.nodeOnChart.notes}>
+                    <ActionButton
+                      iconProps={{
+                        iconName: "info",
+                        styles: {
+                          root: {
+                            fontSize: "20px",
+                          },
+                        },
+                      }}
+                    ></ActionButton>
+                  </TooltipHost>
+                )}
+              </div>
+            )}
+            <FixedVariableToggle fixed={this.state.fixed} toggleFixed={this.toggleFixedTableView} />
           </div>
           <div className="node-table">
             <div className="table-scroll-pane">
@@ -34,6 +102,9 @@ class NodeTable extends Component {
                     data={this.props.data}
                     fixed={this.state.fixed}
                     layerOffset={this.props.layerOffset}
+                    isReadOnly={this.props.isReadOnly}
+                    showWarning={this.showWarning}
+                    hideWarning={this.hideWarning}
                   />
                 ) : (
                   <ConstNodeTable
@@ -41,7 +112,8 @@ class NodeTable extends Component {
                     data={this.props.data}
                     fixed={this.state.fixed}
                     layerOffset={this.props.layerOffset}
-                    constantNodes={this.props.constantNodes} 
+                    constantNodes={this.props.constantNodes}
+                    isReadOnly={this.props.isReadOnly}
                   />
                 )}
               </table>

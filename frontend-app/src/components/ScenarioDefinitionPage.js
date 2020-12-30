@@ -28,8 +28,6 @@ function getCookie(name) {
 
 const csrf_token = getCookie("csrftoken");
 
-const dialogStyles = { main: { maxWidth: 450 } };
-
 const dialogContentProps = {
   type: DialogType.normal,
   title: "Review Changes",
@@ -37,6 +35,16 @@ const dialogContentProps = {
   subText: "You have made changes. Do you want to discard or save them?",
 };
 
+const warningDialogContentProps = {
+  type: DialogType.normal,
+  closeButtonArialLabel: "Close",
+  subText:
+    "Scenario with this name already exists. Please try with other name.",
+};
+
+const warningModalProps = {
+  isBlocking: true,
+};
 class ScenarioDefinitionPage extends Component {
   constructor(props) {
     super(props);
@@ -56,13 +64,14 @@ class ScenarioDefinitionPage extends Component {
       input_values: {},
       nodes_changed: 0,
       roles: {},
-      activeRoles: [],
       isLoading: true,
       layer_offset: 0,
       layer_time_increment: "month",
       hideDialog: true,
       lastLocation: null,
       confirmedNavigation: false,
+      isShowWarning: false,
+      loading: false,
     };
 
     this.onClickCategory = this.onClickCategory.bind(this);
@@ -87,7 +96,6 @@ class ScenarioDefinitionPage extends Component {
     this.changeScenarioName = this.changeScenarioName.bind(this);
     this.changeScenarioDesc = this.changeScenarioDesc.bind(this);
     this.changeModelDate = this.changeModelDate.bind(this);
-    this.changeRole = this.changeRole.bind(this);
     this.changeInputs = this.changeInputs.bind(this);
     this.changeInputDataSet = this.changeInputDataSet.bind(this);
     this.discard = this.discard.bind(this);
@@ -95,6 +103,8 @@ class ScenarioDefinitionPage extends Component {
     this.toggleHideDialog = this.toggleHideDialog.bind(this);
     this.goScenarioListPage = this.goScenarioListPage.bind(this);
     this.goHomepage = this.goHomepage.bind(this);
+
+    this.hideWarning = this.hideWarning.bind(this);
 
     this.setupProps = {
       updateName: this.changeScenarioName,
@@ -113,6 +123,10 @@ class ScenarioDefinitionPage extends Component {
     this.fetchSolutionMetadata();
     this.filtersBySolution(this.solution_id);
     this.fetchNodesBySolution(this.solution_id);
+  }
+
+  hideWarning() {
+    this.setState({ isShowWarning: false });
   }
 
   goHomepage() {
@@ -230,19 +244,6 @@ class ScenarioDefinitionPage extends Component {
       this.setState({ input_values: inputValues });
   }
 
-  changeRole(e, role) {
-    let newRoles = [...this.state.activeRoles];
-    if (role.selected) {
-      newRoles.push(role.key);
-    } else {
-      let index = newRoles.indexOf(role.key);
-      if (index !== -1) {
-        newRoles.splice(index, 1);
-      }
-    }
-    this.setState({ activeRoles: newRoles });
-  }
-
   changeTab(val) {
     if (val <= -1) {
       this.setState({ tab: "setup", category_idx: -1 });
@@ -260,7 +261,8 @@ class ScenarioDefinitionPage extends Component {
     }
   }
 
-  createOrUpdateScenario() {
+  createOrUpdateScenario(isEvaluating) {
+    this.setState({ loading: true });
     const { history } = this.props;
     let formatDate = (date) => {
       let year = date.getFullYear();
@@ -282,12 +284,15 @@ class ScenarioDefinitionPage extends Component {
       is_adhoc: true,
       layer_date_start: formatDate(this.state.model_date),
       input_data_sets: input_data_sets,
-      run_eval: true,
     };
     if (this.scenario_id) {
       url += `${this.scenario_id}/`;
       method = "PATCH";
       body.id = parseInt(this.scenario_id);
+    }
+    if(isEvaluating) {
+      body.status = 'Evaluating';
+      body.run_eval = true;
     }
     return fetch(url, {
       method: method,
@@ -302,8 +307,13 @@ class ScenarioDefinitionPage extends Component {
         return resp.json();
       })
       .then((resp) => {
-        this.createOrUpdateScenNodeDatas();
-        history.push(`/frontend-app/solution/${this.solution_id}/scenario`);
+        if (resp.id !== undefined) {
+          this.createOrUpdateScenNodeDatas();
+          this.setState({ loading: false });
+          history.push(`/frontend-app/solution/${this.solution_id}/scenario`);
+        } else {
+          this.setState({ isShowWarning: true });
+        }
       })
       .catch((err) => {
         console.error(err);
@@ -431,6 +441,7 @@ class ScenarioDefinitionPage extends Component {
               visible: true,
               selectedCategories: {},
               dirty: false,
+              notes: node.notes,
             };
             Object.keys(this.state.filters).forEach((cat_id) => {
               node_obj.selectedCategories[cat_id] = true;
@@ -623,6 +634,13 @@ class ScenarioDefinitionPage extends Component {
       <React.Fragment>
         <NavBar />
         <Dialog
+          hidden={!this.state.isShowWarning}
+          onDismiss={this.hideWarning}
+          dialogContentProps={warningDialogContentProps}
+          modalProps={warningModalProps}
+        ></Dialog>
+
+        <Dialog
           hidden={this.state.hideDialog}
           onDismiss={this.toggleHideDialog}
           dialogContentProps={dialogContentProps}
@@ -637,8 +655,8 @@ class ScenarioDefinitionPage extends Component {
           <Pivot styles={pivotStyles} className="pivot-margin">
             <PivotItem headerText="Input">
               <NodesContext.Provider value={nodesContext}>
-                <div className="ms-Grid-row">
-                  <div className="ms-Grid-col ms-md2">
+                <div className="ms-Grid-row scenario-definition">
+                  <div className="ms-Grid-col ms-md2 sidebar-left">
                     <div className="progress-sidebar">
                       <ScenarioProgressStep
                         index={-1}
@@ -671,23 +689,12 @@ class ScenarioDefinitionPage extends Component {
                       />
                     </div>
                   </div>
-                  <div className="ms-Grid-col ms-md8">
+                  <div className="ms-Grid-col ms-md8 sidebar-right">
                     <Breadcrumb
                       items={itemsWithHref}
                       maxDisplayedItems={3}
                       ariaLabel="Breadcrumb with items rendered as links"
                       overflowAriaLabel="More links"
-                    />
-                    {/* Role Filter */}
-                    <Dropdown
-                      options={Object.keys(this.state.roles).map((role) => {
-                        return { key: role, text: role };
-                      })}
-                      label="Roles"
-                      multiSelect
-                      styles={{ root: { margin: "0px 50px 20px 50px" } }}
-                      selectedKeys={this.state.activeRoles}
-                      onChange={(e, val) => this.changeRole(e, val)}
                     />
                     {/* Input Category Pages */}
                     {this.state.tab === "setup" && (
@@ -702,7 +709,7 @@ class ScenarioDefinitionPage extends Component {
                         desc={this.state.description}
                         date={this.state.model_date}
                         inputValues={this.state.input_values}
-                        isReadOnly={this.state.status !== null}
+                        isReadOnly={this.state.status == 'Evaluating'}
                       />
                     )}
                     {this.state.tab === "category" && !this.state.isLoading && (
@@ -714,13 +721,13 @@ class ScenarioDefinitionPage extends Component {
                           this.state.category.length
                         )}
                         index={this.state.category_idx}
-                        roles={this.state.activeRoles}
                         changeTab={this.changeTab}
                         postScenario={this.createOrUpdateScenario}
                         categoryNodes={
                           this.state.inputCategories[this.state.category]
                         }
                         layerOffset={this.state.layer_offset}
+                        isReadOnly={this.state.status !== null}
                       />
                     )}
                     {this.state.tab === "review" && (
@@ -732,7 +739,8 @@ class ScenarioDefinitionPage extends Component {
                         desc={this.state.description}
                         date={this.state.model_date}
                         nodesChanged={this.state.nodes_changed}
-                        isReadOnly={this.state.status !== null}
+                        isReadOnly={this.state.status === 'Evaluating'}
+                        loading={this.state.loading}
                       />
                     )}
                   </div>
@@ -744,6 +752,10 @@ class ScenarioDefinitionPage extends Component {
                 history={this.props.history}
                 solutionId={this.solution_id}
                 scenarioId={this.scenario_id}
+                goHomepage={this.goHomepage}
+                solution_name={this.state.solution_name}
+                goScenarioListPage={this.goScenarioListPage}
+                scenario_name={this.state.scenario_name}
               />
             </PivotItem>
           </Pivot>

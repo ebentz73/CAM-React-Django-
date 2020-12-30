@@ -1,44 +1,91 @@
-import React, {Component} from 'react';
-import {Persona, PersonaSize, ContextualMenu} from "@fluentui/react";
+import React, { Component } from "react";
+import { Persona, PersonaSize, ContextualMenu } from "@fluentui/react";
 
 class UserIcon extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            contextMenuShown: false,
-            clickPosition: {}
-        }
+  constructor(props) {
+    super(props);
+    this.state = {
+      contextMenuShown: false,
+      clickPosition: {},
+      fullName: "",
+      email: "",
+    };
 
-        this.onHideContextMenu = this.onHideContextMenu.bind(this);
-        this.onShowContextMenu = this.onShowContextMenu.bind(this);
-        this.onToggleContextMenu = this.onToggleContextMenu.bind(this);
-    }
+    this.onHideContextMenu = this.onHideContextMenu.bind(this);
+    this.onShowContextMenu = this.onShowContextMenu.bind(this);
+    this.onToggleContextMenu = this.onToggleContextMenu.bind(this);
+    this.fetchAllUsers = this.fetchAllUsers.bind(this);
+  }
 
-    onToggleContextMenu(e) {
-        this.setState({contextMenuShown: !this.state.contextMenuShown, clickPosition: e.target});
-    }
+  componentDidMount() {
+    this.fetchAllUsers();
+  }
 
-    onHideContextMenu() {
-        this.setState({contextMenuShown: false});
-    }
+  fetchAllUsers() {
+    fetch(`${window.location.protocol}//${window.location.host}/api/user`)
+      .then((response) => {
+        return response.json();
+      })
+      .then((response) => {
+        const loggedUser = response.filter((user) => user.is_superuser == true);
+        const fullName = `${loggedUser[0].first_name} ${loggedUser[0].last_name}`;
+        const email = `${loggedUser[0].email}`;
+        this.setState({
+          fullName,
+          email,
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
 
-    onShowContextMenu() {
-        this.setState({contextMenuShown: true});
-    }
+  onToggleContextMenu(e) {
+    this.setState({
+      contextMenuShown: !this.state.contextMenuShown,
+      clickPosition: e.target,
+    });
+  }
 
-    render() {
-        return(
-            <div className='nav-bar-user'>
-                <Persona size={PersonaSize.size48}
-                         onClick={(e) => this.onToggleContextMenu(e)} />
-                {this.state.contextMenuShown && <ContextualMenu items={[{key: 'logout', text: 'Logout'}]}
-                                                                target={this.state.clickPosition}
-                                onItemClick={this.onHideContextMenu} onDismiss={this.onHideContextMenu}
-                                hidden={!this.state.contextMenuShown} />}
-            </div>
+  onHideContextMenu() {
+    this.setState({ contextMenuShown: false });
+  }
 
-        );
-    }
+  onShowContextMenu() {
+    this.setState({ contextMenuShown: true });
+  }
+
+  render() {
+    const menuItems = [
+      {
+        key: "username",
+        text: `${this.state.fullName}`,
+      },
+      {
+        key: "email",
+        text: `${this.state.email}`,
+      },
+      { key: "logout", text: "Logout" },
+    ];
+
+    return (
+      <div className="nav-bar-user">
+        <Persona
+          size={PersonaSize.size48}
+          onClick={(e) => this.onToggleContextMenu(e)}
+        />
+        {this.state.contextMenuShown && (
+          <ContextualMenu
+            items={menuItems}
+            target={this.state.clickPosition}
+            onItemClick={this.onHideContextMenu}
+            onDismiss={this.onHideContextMenu}
+            hidden={!this.state.contextMenuShown}
+          />
+        )}
+      </div>
+    );
+  }
 }
 
 export default UserIcon;

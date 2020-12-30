@@ -278,7 +278,7 @@ class ScenarioViewSet(ModelViewSet):
     @action(detail=True, methods=['get'])
     def reset(self, request, solution_pk, pk):
         scenario = Scenario.objects.get(Q(pk=pk))
-        scenario.status = None
+        scenario.status = 'Unevaluated'
         scenario.save()
         serializer = ScenarioSerializer(scenario)
 
