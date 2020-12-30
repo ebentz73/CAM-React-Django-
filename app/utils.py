@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import sqlite3
+import traceback
 from typing import AnyStr, Generic, IO, Iterator, TypeVar
 
 import docker
@@ -15,6 +16,7 @@ from grafana_api.grafana_face import GrafanaFace
 from guardian.shortcuts import assign_perm, remove_perm, get_perms_for_model
 
 from profile.models import Role
+import app.models
 
 _Z = TypeVar('_Z')
 

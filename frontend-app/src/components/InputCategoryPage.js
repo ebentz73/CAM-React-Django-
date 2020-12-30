@@ -284,7 +284,7 @@ class InputCategoryPage extends Component {
                 <Stack.Item align="end">
                   <DefaultButton
                     text="Save & exit"
-                    onClick={this.props.postScenario}
+                    onClick={() => this.props.postScenario(false)}
                     disabled={this.props.isReadOnly}
                   />
                 </Stack.Item>
