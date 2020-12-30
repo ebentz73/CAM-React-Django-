@@ -72,6 +72,7 @@ class ScenarioDefinitionPage extends Component {
       lastLocation: null,
       confirmedNavigation: false,
       isShowWarning: false,
+      loading: false,
     };
 
     this.onClickCategory = this.onClickCategory.bind(this);
@@ -251,6 +252,7 @@ class ScenarioDefinitionPage extends Component {
   }
 
   createOrUpdateScenario() {
+    this.setState({ loading: true });
     const { history } = this.props;
     let formatDate = (date) => {
       let year = date.getFullYear();
@@ -294,6 +296,7 @@ class ScenarioDefinitionPage extends Component {
       .then((resp) => {
         if (resp.id !== undefined) {
           this.createOrUpdateScenNodeDatas();
+          this.setState({ loading: false });
           history.push(`/frontend-app/solution/${this.solution_id}/scenario`);
         } else {
           this.setState({ isShowWarning: true });
@@ -736,6 +739,7 @@ class ScenarioDefinitionPage extends Component {
                         date={this.state.model_date}
                         nodesChanged={this.state.nodes_changed}
                         isReadOnly={this.state.status !== null}
+                        loading={this.state.loading}
                       />
                     )}
                   </div>
