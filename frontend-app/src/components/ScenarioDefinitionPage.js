@@ -284,6 +284,8 @@ class ScenarioDefinitionPage extends Component {
       is_adhoc: true,
       layer_date_start: formatDate(this.state.model_date),
       input_data_sets: input_data_sets,
+      run_eval: true,
+      last_modified: formatDate(new Date()),
     };
     if (this.scenario_id) {
       url += `${this.scenario_id}/`;
