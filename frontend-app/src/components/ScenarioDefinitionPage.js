@@ -251,7 +251,7 @@ class ScenarioDefinitionPage extends Component {
     }
   }
 
-  createOrUpdateScenario() {
+  createOrUpdateScenario(isEvaluating) {
     this.setState({ loading: true });
     const { history } = this.props;
     let formatDate = (date) => {
@@ -274,12 +274,15 @@ class ScenarioDefinitionPage extends Component {
       is_adhoc: true,
       layer_date_start: formatDate(this.state.model_date),
       input_data_sets: input_data_sets,
-      run_eval: true,
     };
     if (this.scenario_id) {
       url += `${this.scenario_id}/`;
       method = "PATCH";
       body.id = parseInt(this.scenario_id);
+    }
+    if(isEvaluating) {
+      body.status = 'Evaluating';
+      body.run_eval = true;
     }
     return fetch(url, {
       method: method,
@@ -707,7 +710,7 @@ class ScenarioDefinitionPage extends Component {
                         desc={this.state.description}
                         date={this.state.model_date}
                         inputValues={this.state.input_values}
-                        isReadOnly={this.state.status !== null}
+                        isReadOnly={this.state.status == 'Evaluating'}
                       />
                     )}
                     {this.state.tab === "category" && !this.state.isLoading && (
@@ -738,7 +741,7 @@ class ScenarioDefinitionPage extends Component {
                         desc={this.state.description}
                         date={this.state.model_date}
                         nodesChanged={this.state.nodes_changed}
-                        isReadOnly={this.state.status !== null}
+                        isReadOnly={this.state.status === 'Evaluating'}
                         loading={this.state.loading}
                       />
                     )}
