@@ -121,7 +121,7 @@ class SetupPage extends Component {
           />
           <DatePicker
             label="Model Start"
-            value={this.props.date}
+            value={this.props.date ? this.props.date : new Date()}
             onSelectDate={(date) => this.props.updateDate(date)}
             strings={DayPickerStrings}
             isRequired={true}
