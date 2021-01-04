@@ -282,6 +282,8 @@ class ScenarioViewSet(ModelViewSet):
         scenario.save()
         serializer = ScenarioSerializer(scenario)
 
+        PowerBI(scenario.solution).refresh_dataset()
+
         NodeResult.objects.filter(scenario_id=pk).delete()
 
         return Response(serializer.data)
