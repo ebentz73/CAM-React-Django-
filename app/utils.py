@@ -3,6 +3,7 @@ import logging
 import os
 import sqlite3
 import traceback
+import xlwt
 from typing import AnyStr, Generic, IO, Iterator, TypeVar
 
 import docker
@@ -382,3 +383,24 @@ class PowerBI:
         )
         response = requests.post(url, headers=self.headers)
         response.raise_for_status()
+
+class ExcelHelper:
+    @staticmethod
+    def create_worksheet(workbook, name, headers):
+        worksheet = workbook.add_sheet(name)
+        font_style = xlwt.XFStyle()
+        font_style.font.bold = True
+
+        for col_num in range(len(headers)):
+            worksheet.write(0, col_num, headers[col_num], font_style)
+
+        return worksheet
+
+    @staticmethod
+    def write_rows(worksheet, row_data, font_style):
+        for row_idx, row in enumerate(row_data, 1):
+            for col_idx, value in enumerate(row, 0):
+                biggest_width = worksheet.col(col_idx).width
+                if (len(str(value)) * 367) > biggest_width:
+                    worksheet.col(col_idx).width = (len(str(value)) * 367)
+                worksheet.write(row_idx, col_idx, str(value), font_style)
