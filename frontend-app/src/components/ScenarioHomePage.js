@@ -164,8 +164,16 @@ class ScenarioHomePage extends Component {
   }
 
   clearResults() {
-    fetch(
-      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.state.solution_id}/scenarios/${this.state.firstCheckedScenarioId}/reset/`
+    Promise.all(
+      this.state.selectedScenarios.map((selectedScenario) => {
+        fetch(
+          `${window.location.protocol}//${
+            window.location.host
+          }/api/v1/solutions/${this.state.solution_id}/scenarios/${
+            selectedScenario + 1
+          }/reset/`
+        );
+      })
     )
       .then((response) => {
         return response.json();
@@ -500,7 +508,7 @@ class ScenarioHomePage extends Component {
               </div>
               <div align="left">
                 <ActionButton
-                  disabled={this.state.countSelected !== 1}
+                  disabled={this.state.countSelected === 0}
                   iconProps={{ iconName: "Undo" }}
                   onClick={() => {
                     this.clearResults();
