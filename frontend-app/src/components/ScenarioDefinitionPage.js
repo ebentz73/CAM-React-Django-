@@ -89,6 +89,7 @@ class ScenarioDefinitionPage extends Component {
     this.changeTab = this.changeTab.bind(this);
 
     this.updateConstNodeData = this.updateConstNodeData.bind(this);
+    this.updateConstRowData = this.updateConstRowData.bind(this);
     this.updateInputNodeData = this.updateInputNodeData.bind(this);
     this.updateInputRowData = this.updateInputRowData.bind(this);
     this.copyToAllLayers = this.copyToAllLayers.bind(this);
@@ -386,6 +387,17 @@ class ScenarioDefinitionPage extends Component {
     this.setState({ nodes: newNodes, nodes_changed: newNumDirty });
   }
 
+  updateConstRowData(node_id, layer_idx, val) {
+    for (let i = 0; i < this.state.nodes[node_id].data.length; i++) {
+      let newNodes = { ...this.state.nodes };
+      let newNumDirty = this.state.nodes_changed;
+      newNodes[node_id].data[i] = val;
+      if (!newNodes[node_id].dirty) newNumDirty++;
+      newNodes[node_id].dirty = true;
+      this.setState({ nodes: newNodes, nodes_changed: newNumDirty });
+    }
+  }
+
   copyToAllLayers(node_id, layer_idx) {
     let newNodes = { ...this.state.nodes };
     let newNumDirty = this.state.nodes_changed;
@@ -605,6 +617,7 @@ class ScenarioDefinitionPage extends Component {
     let nodesContext = {
       nodes: this.state.nodes,
       updateConstNodeData: this.updateConstNodeData,
+      updateConstRowData: this.updateConstRowData,
       updateInputNodeData: this.updateInputNodeData,
       updateInputRowData: this.updateInputRowData,
       copyToAllLayers: this.copyToAllLayers,

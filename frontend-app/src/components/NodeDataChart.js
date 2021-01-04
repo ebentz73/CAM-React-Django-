@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { Line } from "react-chartjs-2";
 import NodesContext from "./NodesContext";
+import * as d3 from "d3-scale-chromatic";
 
 class NodeDataChart extends Component {
   constructor(props) {
@@ -27,6 +28,13 @@ class NodeDataChart extends Component {
       "Nov",
       "Dec",
     ];
+
+    this.colorScale = d3.interpolateRainbow;
+    this.colorRange = {
+      colorStart: 0,
+      colorEnd: 1,
+      useEndAsStart: true,
+    }
   }
 
   formatDate(date, increment, index) {
@@ -47,46 +55,57 @@ class NodeDataChart extends Component {
   }
 
   setupChartData(node) {
-    if (node !== undefined && node.data !== undefined) {
-      let labels = [];
+    let labels = [];
+    let datasets = [];
+
+    if (node !== undefined && node.type === 'input' && node.data !== undefined) {
       for (let i = this.props.layerOffset; i < node.data.length; i++) {
         labels.push(this.formatDate(this.context.layerStartDate, this.context.layerTimeIncrement, i));
       }
-      let datasets = [
+
+      datasets.push(
         {
           label: 'Nominal',
-          data:
-            node.type === "input"
-              ? node.data.flatMap((layer, idx) => idx < this.props.layerOffset ? [] : [layer[2]])
-              : node.data.flatMap((data, idx) => idx < this.props.layerOffset ? [] : [data]),
+          data: node.data.flatMap((layer, idx) => idx < this.props.layerOffset ? [] : [layer[2]]),
           fill: false,
-          borderColor: "#50BFAF",
+          borderColor: this.interpolateColors(3, this.colorScale, this.colorRange)[0],
           lineTension: 0,
         },
         {
           label: 'Low',
-          data:
-            node.type === "input"
-              ? node.data.flatMap((layer, idx) => idx < this.props.layerOffset ? [] : [layer[1]])
-              : node.data.flatMap((data, idx) => idx < this.props.layerOffset ? [] : [data]),
+          data: node.data.flatMap((layer, idx) => idx < this.props.layerOffset ? [] : [layer[1]]),
           fill: false,
-          borderColor: "#742774",
+          borderColor: this.interpolateColors(3, this.colorScale, this.colorRange)[1],
           lineTension: 0,
         },
         {
           label: 'High',
-          data:
-            node.type === "input"
-              ? node.data.flatMap((layer, idx) => idx < this.props.layerOffset ? [] : [layer[3]])
-              : node.data.flatMap((data, idx) => idx < this.props.layerOffset ? [] : [data]),
+          data: node.data.flatMap((layer, idx) => idx < this.props.layerOffset ? [] : [layer[3]]),
           fill: false,
-          borderColor: "#BF2EBF",
+          borderColor: this.interpolateColors(3, this.colorScale, this.colorRange)[2],
           lineTension: 0,
         },
-      ];
-      let newChartData = { labels: labels, datasets: datasets };
-      this.setState({ chartData: newChartData });
+      );
+    } else if (node.length !== 0 && node[0] !== undefined && node[0].type === 'const' && node[0].data !== undefined) {
+      for (let i = this.props.layerOffset; i < node[0].data.length; i++) {
+        labels.push(this.months[i % 12]);
+      }
+
+      let colorArray = this.interpolateColors(node.length, this.colorScale, this.colorRange)
+      for (let [i, val] of node.entries()) {
+        datasets.push({
+          label: val.name,
+          data: val.data.flatMap((data, idx) => idx < this.props.layerOffset ? [] : [data]),
+          fill: false,
+          borderColor: colorArray[i],
+          lineTension: 0,
+          hidden: true,
+        })
+      }
     }
+
+    let newChartData = { labels: labels, datasets: datasets };
+    this.setState({ chartData: newChartData });
   }
 
   componentWillReceiveProps(nextProps, nextContext) {
@@ -96,6 +115,28 @@ class NodeDataChart extends Component {
       this.setState({ chartData: { labels: [], datasets: [] } });
     }
   }
+
+  calculatePoint(i, intervalSize, colorRangeInfo) {
+    let { colorStart, colorEnd, useEndAsStart } = colorRangeInfo;
+    return (useEndAsStart
+      ? (colorEnd - (i * intervalSize))
+      : (colorStart + (i * intervalSize)));
+  }
+
+  interpolateColors(dataLength, colorScale, colorRangeInfo) {
+    let { colorStart, colorEnd } = colorRangeInfo;
+    let colorRange = colorEnd - colorStart;
+    let intervalSize = colorRange / dataLength;
+    let i, colorPoint;
+    let colorArray = [];
+
+    for (i = 0; i < dataLength; i++) {
+      colorPoint = this.calculatePoint(i, intervalSize, colorRangeInfo);
+      colorArray.push(colorScale(colorPoint));
+    }
+
+    return colorArray;
+}
 
   render() {
     return (

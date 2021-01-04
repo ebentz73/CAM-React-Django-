@@ -105,10 +105,10 @@ class ConstNodeTable extends Component {
                     <td key={0}>
                       <NodeTableTextField
                         data={context.nodes[node].data[0]}
-                        nodeId={node}
+                        nodeId={constantNodes[nodeIdx]}
                         layerIdx={0}
                         type={"const"}
-                        updateData={context.updateConstNodeData}
+                        updateData={context.updateConstRowData}
                         isReadOnly={this.props.isReadOnly}
                       />
                     </td>
@@ -134,7 +134,7 @@ class ConstNodeTable extends Component {
                             <td key={layerIdx}>
                               <NodeTableTextField
                                 data={row}
-                                nodeId={constantNodes[layerIdx]}
+                                nodeId={constantNodes[nodeIdx]}
                                 layerIdx={layerIdx}
                                 type={"const"}
                                 updateData={context.updateConstNodeData}
