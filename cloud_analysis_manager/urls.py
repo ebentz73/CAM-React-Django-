@@ -80,7 +80,6 @@ urlpatterns = [
 
     path("api/model/", views.ModelAPIView.as_view()),
 
-    path('api/solution/<pk>/report/', views.PowerBIAPIView.as_view()),
     path('api/solution/<pk>/scenario/', views.AnalyticsSolutionScenarios.as_view()),
     path("api/solution/", views.AnalyticsSolutionAPIView.as_view()),
     path('api/solution/<pk>/node/', views.NodeBySolutionListAPIView.as_view()),
