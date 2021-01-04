@@ -167,11 +167,8 @@ class ScenarioHomePage extends Component {
     Promise.all(
       this.state.selectedScenarios.map((selectedScenario) => {
         fetch(
-          `${window.location.protocol}//${
-            window.location.host
-          }/api/v1/solutions/${this.state.solution_id}/scenarios/${
-            selectedScenario + 1
-          }/reset/`
+          `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.state.solution_id}/scenarios/${this.state.scenarios[selectedScenario].id}
+          /reset/`
         );
       })
     )
