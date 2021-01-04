@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='scenario',
             name='last_modified',
-            field=models.DateField(null=True),
+            field=models.DateField(auto_now=True),
         ),
     ]
