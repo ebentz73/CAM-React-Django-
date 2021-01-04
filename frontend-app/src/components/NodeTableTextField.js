@@ -15,6 +15,13 @@ class NodeTableTextField extends Component {
     this.onFocus = this.onFocus.bind(this);
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.data !== this.state.value) {
+      this.setState({ value: nextProps.data });
+      this.props.validate();
+    }
+  }
+
   setData(e) {
     let val = parseFloat(this.state.value);
     if (!isNaN(val) && this.props.data !== val) {
