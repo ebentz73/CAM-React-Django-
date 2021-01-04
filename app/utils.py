@@ -309,7 +309,7 @@ class PowerBI:
 
     @property
     def powerbi_url_filter(self):
-        return '' if self.scenario is None else f"&filter=app_noderesult/Scenario eq '{self.scenario.name}'"
+        return '' if self.scenario is None else f"&filter=app_noderesult/scenario eq '{self.scenario.name}'"
 
     @property
     def report(self):
