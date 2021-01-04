@@ -275,6 +275,11 @@
   overflow-x: auto;
 }
 
+.results-empty {
+  text-align: center;
+  margin-top: 150px;
+}
+
 /* Login Page */
 .width-450 {
   width: 450px !important;

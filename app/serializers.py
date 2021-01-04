@@ -105,6 +105,7 @@ ConstNodeDataSerializer = generic_serializer(ConstNodeData)
 FilterCategorySerializer = generic_serializer(FilterCategory, depth=1)
 FilterOptionSerializer = generic_serializer(FilterOption)
 InputSerializer = generic_serializer(Input)
+InputDataSetSerializer = generic_serializer(InputDataSet)
 InputDataSetInputChoiceSerializer = generic_serializer(InputDataSetInputChoice)
 InputNodeDataSerializer = generic_serializer(InputNodeData)
 ModelSerializer = generic_serializer(Model)
@@ -159,6 +160,7 @@ class ScenarioSerializer(serializers.ModelSerializer):
             'layer_date_start',
             'solution',
             'input_data_sets',
+            'last_modified',
         )
 
     @staticmethod

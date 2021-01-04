@@ -36,6 +36,12 @@ solution_router.register(r'filtercategories', views.FilterCategoryViewSet, basen
 solution_router.register(r'models', views.AnalyticsModelViewSet, basename='models')
 solution_router.register(r'nodes', views.NodeViewSet, basename='solution-nodes')
 solution_router.register(r'modelnodedatas', views.NodeDataViewSet, basename='solution-modelnodedatas')
+solution_router.register(r'inputdatasets', views.InputDataSetViewSet, basename='inputdatasets')
+
+input_data_set_router = routers.NestedSimpleRouter(solution_router, r'inputdatasets', lookup='inputdataset')
+input_data_set_router.register(r'nodedatas', views.NodeDataViewSet, basename='inputdataset-nodedatas')
+
+input_router = routers.NestedSimpleRouter(solution_router, r'inputs', lookup='input')
 
 model_router = routers.NestedSimpleRouter(solution_router, r'models', lookup='model')
 model_router.register(r'nodes', views.NodeViewSet, basename='nodes')
@@ -59,6 +65,8 @@ urlpatterns = [
     path('', include(model_router.urls)),
     path('', include(scenario_router.urls)),
     path('', include(node_router.urls)),
+    path('', include(input_router.urls)),
+    path('', include(input_data_set_router.urls)),
 
     path('microsoft/', include('microsoft_auth.urls', namespace='microsoft')),
 
@@ -72,7 +80,6 @@ urlpatterns = [
 
     path("api/model/", views.ModelAPIView.as_view()),
 
-    path('api/solution/<pk>/report/', views.PowerBIAPIView.as_view()),
     path('api/solution/<pk>/scenario/', views.AnalyticsSolutionScenarios.as_view()),
     path("api/solution/", views.AnalyticsSolutionAPIView.as_view()),
     path('api/solution/<pk>/node/', views.NodeBySolutionListAPIView.as_view()),

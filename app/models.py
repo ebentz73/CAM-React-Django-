@@ -98,8 +98,9 @@ class Scenario(ModelDiffMixin, models.Model):
     name = models.CharField(max_length=255, unique=True)
     is_adhoc = models.BooleanField(default=False)
     is_in_progress = models.BooleanField(default=False)
-    status = models.CharField(max_length=256, null=True, blank=True)
+    status = models.CharField(max_length=256, null=True, blank=True, default='Unevaluated')
     layer_date_start = models.DateField()
+    last_modified = models.DateField(null=True)
     shared = models.ManyToManyField(User, blank=True)
 
     def __str__(self):
@@ -175,7 +176,7 @@ class Node(models.Model):
         return self.nodedata_set.all()
 
 
-class InputDataSet(models.Model):
+class InputDataSet(models.Model, ModelDiffMixin):
     input_page = models.ForeignKey(InputPage, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     file = models.FileField(upload_to='inputdatasets/', validators=[validate_input_date_set_file])
@@ -284,6 +285,7 @@ class NodeData(PolymorphicModel):
     node = models.ForeignKey(Node, on_delete=NON_POLYMORPHIC_CASCADE, default=None)
     is_model = models.BooleanField(default=True)
     scenario = models.ForeignKey(Scenario, on_delete=NON_POLYMORPHIC_CASCADE, default=None, null=True)
+    input_data_set = models.ForeignKey(InputDataSet, on_delete=NON_POLYMORPHIC_CASCADE, default=None, null=True)
 
 
 class InputNodeData(NodeData):

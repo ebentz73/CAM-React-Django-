@@ -39,11 +39,14 @@ class InputCategoryPage extends Component {
 
   setCurrentNode(nodeId) {
     if (nodeId === "const") {
+      let constantNodeIds = this.state.filteredCategoryNodes.filter((node_id) => this.state.nodes[node_id].type === "const")
+      let constantNodes = []
+      constantNodeIds.forEach((element) =>{ constantNodes.push(this.state.nodes[element]) })
       this.setState({
         currentNodeID: "const",
         currentNodeData: {},
         currentNodeType: "const",
-        nodeOnChart: "none",
+        nodeOnChart: constantNodes,
       });
     } else {
       this.setState({
@@ -228,14 +231,7 @@ class InputCategoryPage extends Component {
                 {this.state.filteredCategoryNodes.map((node_id, index) => {
                   let node = this.state.nodes[node_id];
 
-                  // Filter by role
-                  let inRole = false;
-                  node.tags.forEach((tag) => {
-                    this.props.roles.forEach((role) => {
-                      inRole |= tag.includes("CAM_ROLE==" + role);
-                    });
-                  });
-                  if (!node.visible | !inRole | (node.type === "const")) return;
+                  if (!node.visible | (node.type === "const")) return;
                   return (
                     <Node
                       className="highlight"
@@ -291,7 +287,7 @@ class InputCategoryPage extends Component {
                 <Stack.Item align="end">
                   <DefaultButton
                     text="Save & exit"
-                    onClick={this.props.postScenario}
+                    onClick={() => this.props.postScenario(false)}
                     disabled={this.props.isReadOnly}
                   />
                 </Stack.Item>

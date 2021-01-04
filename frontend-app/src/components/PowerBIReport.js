@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { ActionButton, DefaultButton, Breadcrumb } from "@fluentui/react";
 import { PowerBIEmbed } from "powerbi-client-react";
 import { models } from "powerbi-client";
+import { Text } from "@fluentui/react";
 
 class PowerBIReport extends Component {
   constructor(props) {
@@ -19,21 +20,32 @@ class PowerBIReport extends Component {
 
   downloadResults() {
     fetch(
-      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.props.solutionId}/scenarios/${this.props.scenarioId}/export/`
+`${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.props.solutionId}/scenarios/${this.props.scenarioId}/download-results/`
     )
-      .then((response) => {
-        return response.json();
-      })
-      .then((response) => {
-        console.log(response);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    .then((response) => {
+      return response.json();
+    })
+    .then((response) => {
+      console.log(response);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
   }
 
   downloadInputs() {
-    console.log("DownloadInputs");
+    fetch(
+`${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.props.solutionId}/scenarios/${this.props.scenarioId}/download-inputs/`
+    )
+    .then((response) => {
+      return response.json();
+    })
+    .then((response) => {
+      console.log(response);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
   }
 
   clearResults() {
@@ -56,7 +68,7 @@ class PowerBIReport extends Component {
 
   fetchReportEmbedData() {
     fetch(
-      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.props.solutionId}/powerbi/token`
+      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.props.solutionId}/scenarios/${this.props.scenarioId}/powerbi/token`
     )
       .then((response) => {
         return response.json();
@@ -134,25 +146,29 @@ class PowerBIReport extends Component {
             </div>
           </div>
         </div>
-        <PowerBIEmbed
-          embedConfig={{
-            type: "report", // Supported types: report, dashboard, tile, visual and qna
-            id: this.state.reportId,
-            embedUrl: this.state.embedUrl,
-            accessToken: this.state.embedToken,
-            tokenType: models.TokenType.Embed,
-            settings: {
-              panes: {
-                filters: {
-                  expanded: false,
-                  visible: true,
+        { this.state.reportId === undefined ?
+            <div className="results-empty"><Text variant='xLarge'>Report or dashboard has not been configured.</Text></div> :
+            <PowerBIEmbed
+            embedConfig={{
+              type: "report", // Supported types: report, dashboard, tile, visual and qna
+              id: this.state.reportId,
+              embedUrl: this.state.embedUrl,
+              accessToken: this.state.embedToken,
+              tokenType: models.TokenType.Embed,
+              settings: {
+                panes: {
+                  filters: {
+                    expanded: false,
+                    visible: true,
+                  },
                 },
+                background: models.BackgroundType.Transparent,
               },
-              background: models.BackgroundType.Transparent,
-            },
-          }}
-          cssClassName={"report-style-class"}
-        />
+            }}
+            cssClassName={"report-style-class"}
+          />
+        }
+
       </div>
     );
   }
