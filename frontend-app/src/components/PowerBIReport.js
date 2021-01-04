@@ -23,10 +23,14 @@ class PowerBIReport extends Component {
       `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.props.solutionId}/scenarios/${this.props.scenarioId}/download-results/`
     )
       .then((response) => {
-        return response.json();
+        return response.blob();
       })
-      .then((response) => {
-        console.log(response);
+      .then((blob) => {
+        let url = window.URL.createObjectURL(blob);
+        let a = document.createElement("a");
+        a.href = url;
+        a.download = `scenario${this.props.scenarioId}_results`;
+        a.click();
       })
       .catch((err) => {
         console.log(err);
@@ -38,10 +42,14 @@ class PowerBIReport extends Component {
       `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.props.solutionId}/scenarios/${this.props.scenarioId}/download-inputs/`
     )
       .then((response) => {
-        return response.json();
+        return response.blob();
       })
-      .then((response) => {
-        console.log(response);
+      .then((blob) => {
+        let url = window.URL.createObjectURL(blob);
+        let a = document.createElement("a");
+        a.href = url;
+        a.download = `scenario${this.props.scenarioId}_inputs`;
+        a.click();
       })
       .catch((err) => {
         console.log(err);
