@@ -2,6 +2,7 @@ import csv
 import datetime
 import logging
 import requests
+import xlwt
 from functools import wraps
 
 import material.frontend.views as material
@@ -55,7 +56,7 @@ from app.serializers import (
     InputDataSetSerializer,
     UserSerializer,
 )
-from app.utils import PowerBI, run_eval_engine, assign_model_perm
+from app.utils import PowerBI, run_eval_engine, assign_model_perm, ExcelHelper
 
 
 def validate_api(serializer_cls, many=False):
@@ -257,22 +258,59 @@ class ScenarioViewSet(ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=['get'])
-    def export(self, request, solution_pk, pk):
+    @action(detail=True, methods=['get'], url_path='download-results')
+    def download_results(self, request, solution_pk, pk):
         scenario = Scenario.objects.get(Q(pk=pk))
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="{scenario.name}_results.csv"'
+        response = HttpResponse(content_type='application/ms-excel')
+        response['Content-Disposition'] = f'attachment; filename="{scenario.name}_results.xls"'
 
-        writer = csv.writer(response)
-        writer.writerow(['Scenario', 'Model', 'Node', 'Layer',
-                         'Node Tags', 'Result 10', 'Result 30',
-                         'Result 50', 'Result 70', 'Result 90'])
+        wb = xlwt.Workbook(encoding='utf-8')
+        headers = ['Scenario', 'Model', 'Node', 'Layer',
+                   'Node Tags', 'Result 10', 'Result 30',
+                   'Result 50', 'Result 70', 'Result 90']
+        ws = ExcelHelper.create_worksheet(wb, "Results", headers)
         node_results = NodeResult.objects.filter(Q(scenario_id=pk)).values_list('scenario', 'model', 'node', 'layer',
                                                                                 'node_tags', 'result_10', 'result_30',
                                                                                 'result_50', 'result_70', 'result_90')
-        for node_result in node_results:
-            writer.writerow(node_result)
 
+        ExcelHelper.write_rows(ws, node_results, xlwt.XFStyle())
+        wb.save(response)
+        return response
+
+    @action(detail=True, methods=['get'], url_path='download-inputs')
+    def download_inputs(self, request, solution_pk, pk):
+        solution = AnalyticsSolution.objects.get(Q(pk=solution_pk))
+        scenario = Scenario.objects.get(Q(pk=pk))
+        inputs_nd = InputNodeData.objects.filter(Q(scenario_id=pk)).select_related('node')
+        consts_nd = ConstNodeData.objects.filter(Q(scenario_id=pk)).select_related('node')
+
+        response = HttpResponse(content_type='application/ms-excel')
+        response['Content-Disposition'] = f'attachment; filename="{scenario.name}_inputs.xls"'
+
+        wb = xlwt.Workbook(encoding='utf-8')
+
+        metadata_ws = ExcelHelper.create_worksheet(wb, 'Export Info', ['Scenario', 'Model', 'Date Created'])
+        input_ws = ExcelHelper.create_worksheet(wb, 'Input Nodes', ['Node', 'Scenario', 'Model', 'Layer',
+                                                                    '10', 'Base', '90', 'Low Bound', 'High Bound'])
+        const_ws = ExcelHelper.create_worksheet(wb, 'Constant Nodes', ['Node', 'Scenario', 'Model', 'Layer', 'Value'])
+
+        input_data = []
+        for input_nd in inputs_nd:
+            for idx, data in enumerate(input_nd.default_data, 0):
+                input_data.append([input_nd.node.name, scenario.name, solution.name, 'T' + str(idx).zfill(2),
+                                  data[1], data[2], data[3], data[0], data[4]])
+
+        const_data = []
+        for const_nd in consts_nd:
+            for idx, data in enumerate(const_nd.default_data, 0):
+                const_data.append([const_nd.node.name, scenario.name, solution.name,
+                                   'T' + str(idx).zfill(2), data])
+
+        ExcelHelper.write_rows(metadata_ws, [[scenario.name, solution.name, str(datetime.datetime.now())]], xlwt.XFStyle())
+        ExcelHelper.write_rows(input_ws, input_data, xlwt.XFStyle())
+        ExcelHelper.write_rows(const_ws, const_data, xlwt.XFStyle())
+
+        wb.save(response)
         return response
 
     @action(detail=True, methods=['get'])
@@ -281,6 +319,8 @@ class ScenarioViewSet(ModelViewSet):
         scenario.status = 'Unevaluated'
         scenario.save()
         serializer = ScenarioSerializer(scenario)
+
+        PowerBI(scenario.solution).refresh_dataset()
 
         NodeResult.objects.filter(scenario_id=pk).delete()
 
