@@ -20,32 +20,40 @@ class PowerBIReport extends Component {
 
   downloadResults() {
     fetch(
-`${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.props.solutionId}/scenarios/${this.props.scenarioId}/download-results/`
+      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.props.solutionId}/scenarios/${this.props.scenarioId}/download-results/`
     )
-    .then((response) => {
-      return response.json();
-    })
-    .then((response) => {
-      console.log(response);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+      .then((response) => {
+        return response.blob();
+      })
+      .then((blob) => {
+        let url = window.URL.createObjectURL(blob);
+        let a = document.createElement("a");
+        a.href = url;
+        a.download = `scenario${this.props.scenarioId}_results`;
+        a.click();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 
   downloadInputs() {
     fetch(
-`${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.props.solutionId}/scenarios/${this.props.scenarioId}/download-inputs/`
+      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.props.solutionId}/scenarios/${this.props.scenarioId}/download-inputs/`
     )
-    .then((response) => {
-      return response.json();
-    })
-    .then((response) => {
-      console.log(response);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+      .then((response) => {
+        return response.blob();
+      })
+      .then((blob) => {
+        let url = window.URL.createObjectURL(blob);
+        let a = document.createElement("a");
+        a.href = url;
+        a.download = `scenario${this.props.scenarioId}_inputs`;
+        a.click();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 
   clearResults() {
@@ -146,9 +154,14 @@ class PowerBIReport extends Component {
             </div>
           </div>
         </div>
-        { this.state.reportId === undefined ?
-            <div className="results-empty"><Text variant='xLarge'>Report or dashboard has not been configured.</Text></div> :
-            <PowerBIEmbed
+        {this.state.reportId === undefined ? (
+          <div className="results-empty">
+            <Text variant="xLarge">
+              Report or dashboard has not been configured.
+            </Text>
+          </div>
+        ) : (
+          <PowerBIEmbed
             embedConfig={{
               type: "report", // Supported types: report, dashboard, tile, visual and qna
               id: this.state.reportId,
@@ -167,8 +180,7 @@ class PowerBIReport extends Component {
             }}
             cssClassName={"report-style-class"}
           />
-        }
-
+        )}
       </div>
     );
   }

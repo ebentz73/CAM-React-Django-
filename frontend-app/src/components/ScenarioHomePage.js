@@ -164,8 +164,13 @@ class ScenarioHomePage extends Component {
   }
 
   clearResults() {
-    fetch(
-      `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.state.solution_id}/scenarios/${this.state.firstCheckedScenarioId}/reset/`
+    Promise.all(
+      this.state.selectedScenarios.map((selectedScenario) => {
+        fetch(
+          `${window.location.protocol}//${window.location.host}/api/v1/solutions/${this.state.solution_id}/scenarios/${this.state.scenarios[selectedScenario].id}
+          /reset/`
+        );
+      })
     )
       .then((response) => {
         return response.json();
@@ -480,7 +485,7 @@ class ScenarioHomePage extends Component {
     };
     return (
       <React.Fragment>
-        <NavBar />
+        <NavBar history={this.props.history} />
         <div className="divider" />
         <div className="ms-Grid m-t-100" dir="ltr">
           <div className="ms-Grid-row">
@@ -500,7 +505,7 @@ class ScenarioHomePage extends Component {
               </div>
               <div align="left">
                 <ActionButton
-                  disabled={this.state.countSelected !== 1}
+                  disabled={this.state.countSelected === 0}
                   iconProps={{ iconName: "Undo" }}
                   onClick={() => {
                     this.clearResults();

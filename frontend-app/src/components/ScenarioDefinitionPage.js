@@ -223,13 +223,13 @@ class ScenarioDefinitionPage extends Component {
         Accept: "application/json",
         "Content-Type": "application/json",
         "X-CSRFToken": csrf_token,
-      }
+      },
     })
       .then((resp) => {
         return resp.json();
       })
       .then((resp) => {
-        resp.map(node => {
+        resp.map((node) => {
           let newNodes = { ...this.state.nodes };
           let newNumDirty = this.state.nodes_changed;
           newNodes[node.node].data = node.default_data;
@@ -242,7 +242,7 @@ class ScenarioDefinitionPage extends Component {
         console.error(err);
       });
 
-      this.setState({ input_values: inputValues });
+    this.setState({ input_values: inputValues });
   }
 
   changeTab(val) {
@@ -292,8 +292,8 @@ class ScenarioDefinitionPage extends Component {
       method = "PATCH";
       body.id = parseInt(this.scenario_id);
     }
-    if(isEvaluating) {
-      body.status = 'Evaluating';
+    if (isEvaluating) {
+      body.status = "Evaluating";
       body.run_eval = true;
     }
     return fetch(url, {
@@ -646,7 +646,7 @@ class ScenarioDefinitionPage extends Component {
     };
     return (
       <React.Fragment>
-        <NavBar />
+        <NavBar history={this.props.history} />
         <Dialog
           hidden={!this.state.isShowWarning}
           onDismiss={this.hideWarning}
@@ -723,7 +723,7 @@ class ScenarioDefinitionPage extends Component {
                         desc={this.state.description}
                         date={this.state.model_date}
                         inputValues={this.state.input_values}
-                        isReadOnly={this.state.status == 'Evaluating'}
+                        isReadOnly={this.state.status == "Evaluating"}
                       />
                     )}
                     {this.state.tab === "category" && !this.state.isLoading && (
@@ -753,7 +753,7 @@ class ScenarioDefinitionPage extends Component {
                         desc={this.state.description}
                         date={this.state.model_date}
                         nodesChanged={this.state.nodes_changed}
-                        isReadOnly={this.state.status === 'Evaluating'}
+                        isReadOnly={this.state.status === "Evaluating"}
                         loading={this.state.loading}
                       />
                     )}
