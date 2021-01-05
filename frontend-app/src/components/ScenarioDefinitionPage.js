@@ -646,7 +646,7 @@ class ScenarioDefinitionPage extends Component {
     };
     return (
       <React.Fragment>
-        <NavBar history={this.props.history} />
+        <NavBar goHomepage={this.goHomepage} history={this.props.history} />
         <Dialog
           hidden={!this.state.isShowWarning}
           onDismiss={this.hideWarning}
