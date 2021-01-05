@@ -7,19 +7,18 @@ class UserIcon extends Component {
     this.state = {
       contextMenuShown: false,
       clickPosition: {},
-      fullName: "",
-      email: "",
+      loggedUser: {},
     };
 
     this.onHideContextMenu = this.onHideContextMenu.bind(this);
     this.onShowContextMenu = this.onShowContextMenu.bind(this);
     this.onToggleContextMenu = this.onToggleContextMenu.bind(this);
-    this.fetchAllUsers = this.fetchAllUsers.bind(this);
+    this.getLoggedUser = this.getLoggedUser.bind(this);
     this.logout = this.logout.bind(this);
   }
 
   componentDidMount() {
-    this.fetchAllUsers();
+    this.getLoggedUser();
   }
 
   logout() {
@@ -34,23 +33,9 @@ class UserIcon extends Component {
       });
   }
 
-  fetchAllUsers() {
-    fetch(`${window.location.protocol}//${window.location.host}/api/user`)
-      .then((response) => {
-        return response.json();
-      })
-      .then((response) => {
-        const loggedUser = response.filter((user) => user.is_superuser == true);
-        const fullName = `${loggedUser[0].first_name} ${loggedUser[0].last_name}`;
-        const email = `${loggedUser[0].email}`;
-        this.setState({
-          fullName,
-          email,
-        });
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  getLoggedUser() {
+    const me = JSON.parse(localStorage.getItem("me"));
+    this.setState({ loggedUser: me });
   }
 
   onToggleContextMenu(e) {
@@ -69,14 +54,15 @@ class UserIcon extends Component {
   }
 
   render() {
+    const { fullName, email } = this.state.loggedUser;
     const menuItems = [
       {
-        key: "username",
-        text: `${this.state.fullName}`,
+        key: "fullName",
+        text: fullName,
       },
       {
         key: "email",
-        text: `${this.state.email}`,
+        text: email,
       },
       { key: "logout", text: "Logout", onClick: () => this.logout() },
     ];
